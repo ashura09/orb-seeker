@@ -1,22 +1,110 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Orb Seeker</title>
-    <script type="module" crossorigin src="./assets/index-B0QXTSbo.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-qbWXjL1s.css">
-  </head>
-  <body>
-    <!-- PLACEHOLDER.
-         Your game's real HTML (canvas + the shop / inventory / duel panels)
-         replaces everything inside <body> once we unzip orb-seeker-site.zip. -->
-    <div id="placeholder">
-      <h1>Orb Seeker</h1>
-      <p>Project scaffold is ready. Waiting on <code>index.html</code> from the zip.</p>
-      <p id="three-check">checking three…</p>
-    </div>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Orb Seeker</title>
+<meta name="description" content="Find the seven orbs, duel the wanderers, earn a wish from the Keeper.">
+<meta name="theme-color" content="#0c3a3a">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Orb Seeker">
+  <script type="module" crossorigin src="./assets/index-CYoTwNaK.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BDRaTW4t.css">
+</head>
+<body>
+<canvas id="c"></canvas>
 
-    <!-- type="module" is what lets this file use import/export. -->
-  </body>
+<div id="hud">
+  <div id="counter"></div>
+  <button id="pouch" class="hudbtn" aria-label="Fragments and shop"><span class="gem"></span><span id="fragCount">0</span></button>
+  <button id="satchelBtn" class="hudbtn" aria-label="Inventory">Inventory</button>
+  <div id="finder"><canvas id="rc" width="256" height="256"></canvas></div>
+  <div id="dist"></div>
+  <div id="toast"></div>
+  <div id="hint">Left side: walk &nbsp;·&nbsp; Right side: look around</div>
+</div>
+<div id="stick"><div id="knob"></div></div>
+
+<div id="start" class="panel">
+  <div class="card">
+    <h1>Orb Seeker</h1>
+    <p>Seven numbered orbs are scattered far across the valley, always in rainbow order: 1 is red, 7 is violet. Your finder senses them, but only shows which is which once you're close. Gather all seven and the Keeper, a dragon of the valley, grants a wish. Gather them in order, 1 to 7, and it grants three.</p>
+    <p style="font-size:14px;opacity:.8">Wanderers will challenge you to tap duels. Win fragments, spend them at the trader's cart, and everything you buy or wish for lands in the world for you to pick up and keep.</p>
+    <button id="startBtn">Start exploring</button>
+  </div>
+</div>
+
+<div id="wish" class="panel hidden">
+  <div class="card">
+    <div id="wishAsk">
+      <h1>The Keeper awakens</h1>
+      <p id="wishIntro"></p>
+      <div id="wishInputs"></div>
+      <button id="wishBtn">Make the wish</button>
+    </div>
+    <div id="wishDone" style="display:none">
+      <div class="granted">Granted.</div>
+      <div class="wishtext" id="wishEcho"></div>
+      <p style="font-size:14px;opacity:.8">The Keeper sets your wishes down as tokens. Walk over them to keep them in your inventory.</p>
+      <button id="claimBtn">Claim your wishes</button>
+    </div>
+  </div>
+</div>
+
+<div id="duel" class="panel hidden">
+  <div class="card">
+    <div id="duelPlay">
+      <h1>Tap duel</h1>
+      <p class="who" id="duelWho"></p>
+      <div id="timer">3</div>
+      <div class="barlabel"><span>You</span><span id="youPct">0%</span></div>
+      <div class="bar"><b id="youBar"></b></div>
+      <div class="barlabel"><span id="themName">Them</span><span id="themPct">0%</span></div>
+      <div class="bar them"><b id="themBar"></b></div>
+      <button id="duelStart" style="margin:16px 0 8px">I'm ready</button>
+      <div id="tapzone" style="display:none">Get ready…</div>
+    </div>
+    <div id="duelResult">
+      <div class="big" id="resultBig"></div>
+      <div class="loot" id="resultLoot"></div>
+      <button id="duelDone">Keep exploring</button>
+    </div>
+  </div>
+</div>
+
+<div id="shop" class="panel hidden">
+  <div class="card">
+    <h1>Trader's cart</h1>
+    <p>Buy with fragments. Each item is set down beside you to pick up.</p>
+    <div id="shopItems"></div>
+    <button class="quiet closebtn" id="shopClose">Close</button>
+  </div>
+</div>
+
+<div id="satchel" class="panel hidden">
+  <div class="card">
+    <h1>Inventory</h1>
+    <div class="section">Wishes kept</div>
+    <div id="satchelWishes"></div>
+    <div class="section">Items</div>
+    <div id="satchelItems"></div>
+    <button class="quiet closebtn" id="satchelClose">Close</button>
+  </div>
+</div>
+
+<!-- The game code. type="module" is what lets these files use import/export.
+     The CSS is pulled in by main.js, so there is no <link> for it above. -->
+
+<script>
+  // offline + home-screen support; silently skipped when opened as a plain file
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
 </html>
