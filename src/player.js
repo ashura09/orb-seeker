@@ -1,0 +1,58 @@
+// player.js — the monkey in a ninja suit, and the cosmetics bought in the shop.
+//
+// The parts main.js animates each frame (arms, hands, tail) are exported.
+// `torso` is exported too because wanderers.js reuses its geometry.
+import * as THREE from 'three';
+import { scene, lam, glow, pointLight } from './state.js';
+import { owned } from './save.js';
+
+export const player = new THREE.Group();
+
+const suitMat = lam(0x2b2d5c), furMat = lam(0x7a4f2b), faceMat = lam(0xd9a878);
+export const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.85, 10), suitMat); torso.position.y = 0.55;
+const sash  = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 18), lam(0xe0553d)); sash.rotation.x = Math.PI/2; sash.position.y = 0.42;
+const headM = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), furMat); headM.position.y = 1.32;
+const hood  = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 12, 0, Math.PI*2, 0, Math.PI*0.62), suitMat); hood.position.y = 1.33;
+const face  = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), faceMat); face.scale.set(1, 0.85, 0.6); face.position.set(0, 1.26, 0.22);
+const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), faceMat); muzzle.position.set(0, 1.19, 0.36);
+const eyeGeo = new THREE.SphereGeometry(0.045, 8, 8), eyeMat = lam(0x1b1a17);
+const eyeL = new THREE.Mesh(eyeGeo, eyeMat), eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+eyeL.position.set(-0.09, 1.31, 0.42); eyeR.position.set(0.09, 1.31, 0.42);
+const earGeo = new THREE.SphereGeometry(0.11, 10, 8);
+const earL = new THREE.Mesh(earGeo, furMat), earR = new THREE.Mesh(earGeo, furMat);
+earL.position.set(-0.36, 1.36, 0.02); earR.position.set(0.36, 1.36, 0.02);
+const band = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.035, 6, 20), lam(0xe0553d)); band.rotation.x = Math.PI/2; band.position.y = 1.44;
+const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.03), lam(0xe0553d)); scarfTail.position.set(0.12, 1.2, -0.36); scarfTail.rotation.z = 0.3;
+const armGeo = new THREE.CylinderGeometry(0.08, 0.09, 0.6, 8);
+export const armL = new THREE.Mesh(armGeo, suitMat), armR = new THREE.Mesh(armGeo, suitMat);
+armL.position.set(-0.42, 0.6, 0); armR.position.set(0.42, 0.6, 0);
+const handGeo = new THREE.SphereGeometry(0.09, 8, 8);
+export const handL = new THREE.Mesh(handGeo, furMat), handR = new THREE.Mesh(handGeo, furMat);
+handL.position.set(-0.42, 0.28, 0); handR.position.set(0.42, 0.28, 0);
+export const tailSegs = [];
+for (let i=0;i<6;i++){ const s = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i*0.006, 8, 6), furMat); player.add(s); tailSegs.push(s); }
+player.add(torso, sash, headM, hood, face, muzzle, eyeL, eyeR, earL, earR, band, scarfTail, armL, armR, handL, handR);
+scene.add(player);
+
+// cosmetics from items (attached once collected)
+export const cosmetics = {};
+export function applyCosmetics(){
+  if (owned('cloak')) suitMat.color.set(0x5b2c83);
+  if (owned('hat') && !cosmetics.hat){
+    const h = new THREE.Group();
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), lam(0xd9b86a)); brim.position.y = 1.62;
+    const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), lam(0xcfa955)); top.position.y = 1.78;
+    h.add(brim, top); player.add(h); cosmetics.hat = h;
+  }
+  if (owned('lantern') && !cosmetics.lantern){
+    const g = new THREE.Group();
+    const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.22, 8), lam(0xc9a15a));
+    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glow(0xffe066));
+    const light = pointLight(0xffd27a, 0, 9); light.position.y = 0.3;
+    g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); player.add(g); cosmetics.lantern = g; cosmetics.lanternLight = light;
+  }
+  if (owned('charm') && !cosmetics.charm){
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 30), glow(0xc9a15a)); ring.rotation.x = Math.PI/2; ring.position.y = 0.5;
+    player.add(ring); cosmetics.charm = ring;
+  }
+}
