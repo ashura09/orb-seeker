@@ -51,7 +51,11 @@ export const scene = new THREE.Scene();
 export const DAY = new THREE.Color(0x8fc7ff), NIGHT = new THREE.Color(0x0a0f2a);
 scene.background = DAY.clone();
 scene.fog = new THREE.Fog(DAY.clone(), 45, 130);
-export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 400);
+// near = 0.5 rather than 0.1. Depth precision depends on the far/near ratio, and
+// 400/0.1 = 4000:1 leaves very little precision out at 50-150 m, which is where
+// the ground flicker showed. The camera never gets closer than ~6 m to anything
+// it needs to draw, so raising near costs nothing and buys a 5x better ratio.
+export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 400);
 export const hemi = new THREE.HemisphereLight(0xdfefff, 0x3f6f33, 0.95);
 export const sun  = new THREE.DirectionalLight(0xfff1d6, 0.9); sun.position.set(30, 60, 20);
 scene.add(hemi, sun);

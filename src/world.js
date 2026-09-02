@@ -11,9 +11,17 @@ export const obstacles = [];
 const ground = new THREE.Mesh(new THREE.CircleGeometry(WORLD_R + 20, 64), lam(0x5fa84f));
 ground.rotation.x = -Math.PI/2; scene.add(ground);
 
-const patchGeo = new THREE.CircleGeometry(1, 12);
+// 32 segments, not 12: at 3-12 m across, a 12-sided "circle" reads as a polygon.
+// The extra triangles are free at this scene's budget.
+const patchGeo = new THREE.CircleGeometry(1, 32);
+// The patches sit 2 cm above the ground, which is far too little separation for
+// the depth buffer to resolve at distance -- that is the mottled flicker on the
+// grass. polygonOffset biases them toward the camera in depth space only, so
+// they win the depth test everywhere without being visibly lifted.
+const patchMat = c => { const m = lam(c); m.polygonOffset = true; m.polygonOffsetFactor = -1; m.polygonOffsetUnits = -1; return m; };
+const patchMats = [patchMat(0x55984a), patchMat(0x6ab558)];
 for (let i=0;i<70;i++){
-  const m = new THREE.Mesh(patchGeo, lam(i%2 ? 0x55984a : 0x6ab558));
+  const m = new THREE.Mesh(patchGeo, patchMats[i%2]);
   const a = Math.random()*Math.PI*2, r = Math.random()*WORLD_R;
   m.rotation.x = -Math.PI/2; m.position.set(Math.cos(a)*r, 0.02, Math.sin(a)*r); m.scale.setScalar(3 + Math.random()*9);
   scene.add(m);
