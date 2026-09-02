@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { scene, lam, glow, hex, pointLight, G, $ } from './state.js';
 import { player } from './player.js';
+import { heightAt } from './world.js';
 import { toast, showOrder } from './ui.js';
 import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
@@ -90,7 +91,7 @@ export function placeOrbs(){
   for (let i = spots.length-1; i > 0; i--){ const j = (Math.random()*(i+1))|0; [spots[i], spots[j]] = [spots[j], spots[i]]; }
   orbs.forEach((o, i) => {
     o.x = spots[i].x; o.z = spots[i].z; o.found = false;
-    o.mesh.position.set(o.x, 1.1, o.z); scene.add(o.mesh); dots[i].classList.remove('on');
+    o.mesh.position.set(o.x, heightAt(o.x, o.z) + 1.1, o.z); scene.add(o.mesh); dots[i].classList.remove('on');
   });
   showOrder(true, 0);
 }

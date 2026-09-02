@@ -19,10 +19,36 @@ export const CONFIG = {
   // ---------- the valley ----------
   world: {
     radius: 150,          // how far you can walk from the centre, in metres
-    trees: 90,
-    rocks: 40,
+    props: 260,           // total trees, rocks, reeds and scrub; regions decide the mix
     pillars: 8,
-    groundSegments: 48,   // detail of the meadow's colour variation
+    groundSegments: 128,  // terrain detail, about 4.7 m per quad across 600 m
+  },
+
+  // ---------- the shape of the ground ----------
+  terrain: {
+    amplitude: 7,         // how tall the rolling hills you walk over are
+
+    // The ground reaches far past where you can walk, and climbs into mountains
+    // out there. That, rather than fog, is what stops the world having a
+    // visible edge. Keep the rise gentle inside the valley: an early, steep rim
+    // turns the place into a crater and you cannot see out at all.
+    skirt: 150,           // ground extends this far past the walkable radius
+    rimStart: 0.9,        // fraction of the radius where the ground starts rising
+    rimSpan: 170,         // metres over which it climbs to full height
+    rimHeight: 95,        // how high the far mountains stand
+
+    // Individual peaks beyond even that, to break the skyline. No collision.
+    hillCount: 52,
+    hillNear: 340,
+    hillFar: 760,
+    hillMin: 60,
+    hillMax: 190,
+  },
+
+  // ---------- how far you can see ----------
+  fog: {
+    near: 120,
+    far: 750,             // was 130, which put a wall of haze around the valley
   },
 
   // ---------- walking ----------

@@ -13,6 +13,7 @@
 //     on the G object below and are written as G.state, G.t, and so on.
 import * as THREE from 'three';
 import { randomSeed } from './rng.js';
+import { CONFIG } from './config.js';
 
 // ---------- three.js r185 compatibility ----------
 // The original loaded three r128 from a CDN. Three things changed since; see
@@ -60,12 +61,14 @@ renderer.setSize(innerWidth, innerHeight);
 export const scene = new THREE.Scene();
 export const DAY = new THREE.Color(0x8fc7ff), NIGHT = new THREE.Color(0x0a0f2a);
 scene.background = DAY.clone();
-scene.fog = new THREE.Fog(DAY.clone(), 45, 130);
+// Fog used to close in at 130 m, which meant the valley was always ringed by
+// haze and felt boxed in. Pushed out so the horizon is visible through it.
+scene.fog = new THREE.Fog(DAY.clone(), CONFIG.fog.near, CONFIG.fog.far);
 // near = 0.5 rather than 0.1. Depth precision depends on the far/near ratio, and
 // 400/0.1 = 4000:1 leaves very little precision out at 50-150 m, which is where
 // the ground flicker showed. The camera never gets closer than ~6 m to anything
 // it needs to draw, so raising near costs nothing and buys a 5x better ratio.
-export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 400);
+export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 1200);
 export const hemi = new THREE.HemisphereLight(0xdfefff, 0x3f6f33, 0.95);
 export const sun  = new THREE.DirectionalLight(0xfff1d6, 0.9); sun.position.set(30, 60, 20);
 scene.add(hemi, sun);

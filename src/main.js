@@ -8,7 +8,7 @@ import './style.css';
 
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
-import { WORLD_R, obstacles, buildWorld } from './world.js';
+import { WORLD_R, obstacles, buildWorld, heightAt } from './world.js';
 import { randomSeed } from './rng.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
@@ -138,7 +138,8 @@ function frame(){
       const dx = player.position.x - ob.x, dz = player.position.z - ob.z, d = Math.hypot(dx, dz), min = ob.r + P.radius;
       if (d < min && d > 0.0001){ player.position.x = ob.x + dx/d*min; player.position.z = ob.z + dz/d*min; }
     }
-    player.position.y = Math.abs(Math.sin(bob))*P.bobHeight;
+    // the walk bounce rides on top of the terrain rather than on top of zero
+    player.position.y = heightAt(player.position.x, player.position.z) + Math.abs(Math.sin(bob))*P.bobHeight;
     // arms swing, tail sways
     armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
     handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
@@ -146,12 +147,12 @@ function frame(){
     legL.rotation.x = moving ? -Math.sin(bob)*0.5 : 0; legR.rotation.x = moving ? Math.sin(bob)*0.5 : 0;
     for (const o of orbs){
       if (o.found) continue;
-      o.mesh.position.y = 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;
+      o.mesh.position.y = heightAt(o.x, o.z) + 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;
       if (Math.hypot(o.x - player.position.x, o.z - player.position.z) < ORB.pickupRadius) collect(o);
     }
     for (let i = pickups.length-1; i >= 0; i--){
       const p = pickups[i];
-      p.g.position.y = 0.7 + Math.sin(G.t*2.5 + p.phase)*0.15; p.g.rotation.y += dt*1.2;
+      p.g.position.y = heightAt(p.g.position.x, p.g.position.z) + 0.7 + Math.sin(G.t*2.5 + p.phase)*0.15; p.g.rotation.y += dt*1.2;
       if (Math.hypot(p.g.position.x - player.position.x, p.g.position.z - player.position.z) < 1.5) collectPickup(p, i);
     }
     updateWanderers(dt);
@@ -215,13 +216,15 @@ function frame(){
   const ease  = Math.min(1, dt*CAM.ease);
 
   const horiz  = Math.cos(pitch) * dist;                        // ground distance
-  const camY   = Math.max(CAM.minHeight, aimAt + Math.sin(pitch) * dist);
+  // the whole camera rides the terrain, so cresting a hill does not bury it
+  const groundY = heightAt(player.position.x, player.position.z);
+  const camY   = Math.max(groundY + CAM.minHeight, groundY + aimAt + Math.sin(pitch) * dist);
   const targetY = aimAt + Math.max(0, -pitch) * dist * CAM.lookUpGain;
 
   camera.position.x += ((player.position.x + Math.sin(G.camYaw)*horiz) - camera.position.x)*ease;
   camera.position.z += ((player.position.z + Math.cos(G.camYaw)*horiz) - camera.position.z)*ease;
   camera.position.y += (camY - camera.position.y)*ease;
-  camTarget.set(player.position.x, targetY, player.position.z); camera.lookAt(camTarget);
+  camTarget.set(player.position.x, groundY + targetY, player.position.z); camera.lookAt(camTarget);
 
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);

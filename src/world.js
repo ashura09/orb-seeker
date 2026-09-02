@@ -1,240 +1,275 @@
-// world.js — the valley: its regions, ground, scenery and pond.
+// world.js — the valley: its shape, its regions, and everything standing in it.
 //
-// The valley is divided into REGIONS. Each has its own ground colours and its
-// own taste in scenery, so walking for a minute takes you somewhere that looks
-// different: out of the meadow, into deep forest, up onto rocky ground.
+// Three ideas hold this file together.
 //
-// Everything is generated from a single seed (G.worldSeed) through rng.js, and
-// nothing here calls Math.random directly. That is what lets buildWorld() run
-// again with a new seed when the orbs scatter, so every gathering is a new
-// arrangement of the same kind of place.
+// 1. THE GROUND HAS HEIGHT. heightAt(x, z) is the single source of truth for
+//    how high the ground is anywhere, and everything that stands on it -- the
+//    player, the villagers, the orbs, the Keeper -- asks this one function.
+//    Height is what actually distinguishes a highland from a wetland; colour
+//    alone never did.
 //
-// It is also the groundwork for streaming terrain later: swap "regions decided
-// by a handful of centres" for "regions decided by the chunk you are standing
-// in" and the world stops having edges. See rng.js/cellSeed.
+// 2. REGIONS HAVE THEIR OWN VOCABULARY. A region does not just tint the grass,
+//    it decides which SHAPES grow there. Firs and ferns in the forest, reeds in
+//    the wetland, charred trunks and stumps in the burn.
+//
+// 3. THE VALLEY SITS IN A BOWL, AND THE WORLD CONTINUES PAST IT. The ground
+//    rises toward the rim and a ring of distant hills stands beyond the part
+//    you can walk, so the edge reads as landscape rather than as a wall.
+//
+// Everything derives from one seed through rng.js, so the valley can be rebuilt
+// exactly -- which is what lets it re-roll each gathering, and what would let it
+// stream in chunks later.
 import * as THREE from 'three';
+import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { scene, lam, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
+import { PROPS, PROP_MATERIAL, PROP_RADIUS } from './props.js';
 
 export const WORLD_R = CONFIG.world.radius;
 export const obstacles = [];
 
 // ---------- what kinds of place exist ----------
 //
-// `trees` and `rocks` are relative weights, not counts: a region with trees 2.6
-// gets roughly three times the trees of one with 0.9, out of the same total.
-// This is content rather than balance, so it lives here and not in config.js.
+// `lift` raises or lowers the ground, which is what makes a region read as a
+// different landscape rather than a different colour. `props` are relative
+// weights, not counts.
 const REGIONS = [
-  { name: 'meadow',   ground: [0x55984a, 0x6ab558], trees: 1.0, rocks: 0.7, dead: false },
-  { name: 'forest',   ground: [0x2c6b38, 0x3a7d45], trees: 3.0, rocks: 0.3, dead: false },
-  { name: 'highland', ground: [0x8a8f76, 0x9ba190], trees: 0.3, rocks: 3.0, dead: false },
-  { name: 'wetland',  ground: [0x4a8f6a, 0x5aa47c], trees: 0.6, rocks: 0.4, dead: false },
-  { name: 'burn',     ground: [0x6b5f45, 0x7d6f52], trees: 0.8, rocks: 0.8, dead: true  },
+  { name: 'meadow',   lift:  0, ground: [0x55984a, 0x6ab558],
+    props: { broadleaf: 1.0, shrub: 0.9, rock: 0.5 } },
+  { name: 'forest',   lift:  2, ground: [0x2c6b38, 0x3a7d45],
+    props: { conifer: 3.0, fern: 2.0, stump: 0.5, rock: 0.3 } },
+  { name: 'highland', lift: 11, ground: [0x8a8f76, 0x9ba190],
+    props: { boulder: 2.2, rock: 1.8, shrub: 0.5 } },
+  { name: 'wetland',  lift: -4, ground: [0x4a8f6a, 0x5aa47c],
+    props: { reeds: 3.5, broadleaf: 0.3, rock: 0.2 } },
+  { name: 'burn',     lift:  1, ground: [0x6b5f45, 0x7d6f52],
+    props: { deadTree: 1.8, stump: 1.4, rock: 0.5 } },
 ];
 
-// Where each region sits this time round. Filled in by buildWorld().
 let centres = [];
 
-/**
- * Which region a point belongs to, and how strongly.
- *
- * Returns the nearest region plus a blend weight toward the second nearest, so
- * ground colour can fade across a boundary instead of changing on a hard line.
- */
-function regionAt(x, z){
+/** Which region a point belongs to, plus a blend toward its neighbour. */
+export function regionAt(x, z){
   let best = 0, bestD = Infinity, second = 0, secondD = Infinity;
   for (let i = 0; i < centres.length; i++){
     const d = Math.hypot(x - centres[i].x, z - centres[i].z);
     if (d < bestD){ secondD = bestD; second = best; bestD = d; best = i; }
     else if (d < secondD){ secondD = d; second = i; }
   }
-  // 0 at the centre of a region, approaching 0.5 at the border with its neighbour
-  const blend = secondD === Infinity ? 0 : (bestD / (bestD + secondD));
-  return { region: centres[best].region, neighbour: centres[second].region, blend, index: best };
+  const blend = secondD === Infinity ? 0 : bestD / (bestD + secondD);
+  return { region: centres[best].region, neighbour: centres[second].region, blend };
 }
-export { regionAt };
+
+// ---------- height ----------
+const noise = new ImprovedNoise();
+let noiseOffset = 0;
+
+// Two octaves is enough for rolling ground: one for the broad shape of the
+// valley floor, one for the bumps you actually walk over.
+function terrainNoise(x, z){
+  return noise.noise(x * 0.008 + noiseOffset, z * 0.008, 0) * 1.0
+       + noise.noise(x * 0.028 + noiseOffset, z * 0.028, 5.3) * 0.35;
+}
+
+/**
+ * How high the ground is at a point. The one source of truth.
+ *
+ * Three things add up: rolling noise, the lift of whichever region you are in,
+ * and the rim that turns the valley into a bowl. The rim is the piece that
+ * stops the world from ending at a visible line -- the ground climbs away from
+ * you instead.
+ */
+export function heightAt(x, z){
+  const T = CONFIG.terrain;
+  let h = terrainNoise(x, z) * T.amplitude;
+
+  const { region, neighbour, blend } = regionAt(x, z);
+  h += region.lift * (1 - blend) + neighbour.lift * blend;
+
+  // Distance out from the middle, turned into a 0..1 climb. Squared so the
+  // ground stays almost flat where you actually walk and only rears up far away.
+  const r = Math.hypot(x, z);
+  const rise = Math.min(1, Math.max(0, (r - WORLD_R * T.rimStart) / T.rimSpan));
+  h += rise * rise * T.rimHeight;
+
+  return h;
+}
 
 // ---------- ground ----------
-//
-// One mesh with the colour painted into its vertices. The valley used to be a
-// flat disc with 70 darker circles laid on top, which caused mottled streaking:
-// all 70 sat at the same height and overlapped, so they fought for pixels.
-// Vertex colours cannot fight themselves, blend smoothly, and cost 70 fewer
-// draw calls.
 const GROUND_SEGS = CONFIG.world.groundSegments;
-const groundGeo = new THREE.PlaneGeometry((WORLD_R + 20) * 2, (WORLD_R + 20) * 2, GROUND_SEGS, GROUND_SEGS);
+const GROUND_HALF = WORLD_R + CONFIG.terrain.skirt;
+const groundGeo = new THREE.PlaneGeometry(GROUND_HALF * 2, GROUND_HALF * 2, GROUND_SEGS, GROUND_SEGS);
 groundGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(groundGeo.attributes.position.count * 3), 3));
 
 const ground = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-// Fine mottling on top of the region colour, so a region is not a flat wash.
+// Fine mottling so a region is not a flat wash of one colour.
 function mottle(x, z){
   const n = 0.5
     + 0.26 * Math.sin(x * 0.050) * Math.cos(z * 0.043)
-    + 0.16 * Math.sin(x * 0.110 + 1.7) * Math.cos(z * 0.090 - 0.4)
-    + 0.08 * Math.sin((x + z) * 0.021 + 2.3);
+    + 0.16 * Math.sin(x * 0.110 + 1.7) * Math.cos(z * 0.090 - 0.4);
   return Math.min(1, Math.max(0, n));
 }
 
 const colA = new THREE.Color(), colB = new THREE.Color(), colOut = new THREE.Color();
 
-function paintGround(){
+function shapeGround(){
   const pos = groundGeo.attributes.position;
   const col = groundGeo.attributes.color;
   for (let i = 0; i < pos.count; i++){
-    // the plane is unrotated here, so its x/y are world x/z
+    // the plane is unrotated here, so its x/y are world x/z and z is height
     const x = pos.getX(i), z = pos.getY(i);
+    pos.setZ(i, heightAt(x, z));
+
     const { region, neighbour, blend } = regionAt(x, z);
     const m = mottle(x, z);
-
     colA.setHex(region.ground[0]).lerp(colB.setHex(region.ground[1]), m);
     colB.setHex(neighbour.ground[0]).lerp(colOut.setHex(neighbour.ground[1]), m);
-    colOut.copy(colA).lerp(colB, blend);          // soften the border
-
+    colOut.copy(colA).lerp(colB, blend);
     col.setXYZ(i, colOut.r, colOut.g, colOut.b);
   }
+  pos.needsUpdate = true;
   col.needsUpdate = true;
+  groundGeo.computeVertexNormals();   // so the light catches the slopes
 }
 
-// ---------- scenery, drawn with InstancedMesh ----------
+// ---------- the horizon ----------
 //
-// 90 trees used to be 180 separate objects and up to 180 GPU instructions. An
-// InstancedMesh draws them all in one, with a per-copy position and colour.
-// The counts are fixed so the buffers never need reallocating -- a re-roll just
-// rewrites the matrices.
-const COUNTS = { trees: CONFIG.world.trees, rocks: CONFIG.world.rocks, pillars: CONFIG.world.pillars };
+// Hills standing beyond the part of the valley you can walk. They have no
+// collision and are never reached; their whole job is to be visible past the
+// rim so the world reads as continuing rather than stopping.
+const hillGeo = new THREE.ConeGeometry(1, 1, 7);
+let hills = null;
 
-const trunkGeo  = new THREE.CylinderGeometry(0.22, 0.32, 1.6, 6);
-const leafGeo   = new THREE.ConeGeometry(1.2, 3.2, 7);
-const rockGeo   = new THREE.DodecahedronGeometry(1, 0);
-const pillarGeo = new THREE.CylinderGeometry(0.6, 0.7, 5, 8);
+function buildHorizon(rng){
+  const T = CONFIG.terrain;
+  if (hills){ scene.remove(hills); hills.geometry.dispose(); }
+  const count = T.hillCount;
+  hills = new THREE.InstancedMesh(hillGeo, lam(0x6f8570), count);
+  hills.frustumCulled = false;
+  const d = new THREE.Object3D();
+  for (let i = 0; i < count; i++){
+    const a = (i / count) * Math.PI * 2 + rng() * 0.35;
+    const r = T.hillNear + rng() * (T.hillFar - T.hillNear);
+    const h = T.hillMin + rng() * (T.hillMax - T.hillMin);
+    const w = h * (0.9 + rng() * 1.3);
+    // Planted ON the far ground, which is itself 90 m up by then, with the base
+    // sunk a little so they grow out of the mountains rather than sitting on
+    // top of them like hats.
+    const hx = Math.cos(a) * r, hz = Math.sin(a) * r;
+    d.position.set(hx, heightAt(hx, hz) + h * 0.5 - h * 0.28, hz);
+    d.rotation.set(0, rng() * Math.PI, 0);
+    d.scale.set(w, h, w);
+    d.updateMatrix();
+    hills.setMatrixAt(i, d.matrix);
+  }
+  hills.instanceMatrix.needsUpdate = true;
+  scene.add(hills);
+}
 
-const trunks  = new THREE.InstancedMesh(trunkGeo,  lam(0x6b4a2a), COUNTS.trees);
-const leaves  = new THREE.InstancedMesh(leafGeo,   lam(0xffffff), COUNTS.trees);
-const rocks   = new THREE.InstancedMesh(rockGeo,   lam(0x8a8f96), COUNTS.rocks);
-const pillars = new THREE.InstancedMesh(pillarGeo, lam(0xd9cfb4), COUNTS.pillars);
-scene.add(trunks, leaves, rocks, pillars);
-
-// Leaf colour is per-instance, so one mesh covers every shade -- including the
-// burnt region, where the leaves are scaled away entirely and only trunks stand.
-const LEAF_GREENS = [0x2f7a3c, 0x3d8f45, 0x276b3a].map(c => new THREE.Color(c));
-
+// ---------- scenery ----------
+//
+// One InstancedMesh per prop kind, rebuilt on each re-roll with exactly the
+// count that was placed, so no capacity is wasted drawing invisible instances.
+let propMeshes = [];
 const dummy = new THREE.Object3D();
 
-// The pond is the one flat thing still laid over the ground, so it keeps a
-// depth bias to guarantee it wins against the meadow beneath it.
 const pondMat = lam(0x4aa6d9);
 pondMat.polygonOffset = true; pondMat.polygonOffsetFactor = -2; pondMat.polygonOffsetUnits = -2;
-const pond = new THREE.Mesh(new THREE.CircleGeometry(7, 32), pondMat);
+const pond = new THREE.Mesh(new THREE.CircleGeometry(8, 32), pondMat);
 pond.rotation.x = -Math.PI / 2;
-pond.position.y = 0.04;
 scene.add(pond);
 
-/**
- * Builds (or rebuilds) the whole valley from a seed.
- *
- * Called once at startup, and again every time the orbs scatter, so each
- * gathering happens somewhere recognisably the same but arranged anew.
- */
+const pillarGeo = new THREE.CylinderGeometry(0.6, 0.7, 5, 8);
+const pillars = new THREE.InstancedMesh(pillarGeo, lam(0xd9cfb4), CONFIG.world.pillars);
+scene.add(pillars);
+
+/** Builds, or rebuilds, the entire valley from one seed. */
 export function buildWorld(seed){
   const rng = makeRng(seed);
   obstacles.length = 0;
+  noiseOffset = (seed % 1000) * 0.37;   // a different landscape shape each time
 
-  // Scatter the region centres, shuffling which kind of place goes where.
+  // ----- where the regions sit -----
   const order = REGIONS.map((_, i) => i);
   for (let i = order.length - 1; i > 0; i--){
     const j = (rng() * (i + 1)) | 0;
     [order[i], order[j]] = [order[j], order[i]];
   }
-  // Spread the centres around the valley rather than letting them clump, and
-  // hand each one a region. The shuffle above means the forest is somewhere new
-  // every gathering.
   centres = order.map((regionIndex, i) => {
     const a = (i / order.length) * Math.PI * 2 + rng() * 0.9;
-    const r = WORLD_R * (0.25 + rng() * 0.5);
+    const r = WORLD_R * (0.25 + rng() * 0.45);
     return { x: Math.cos(a) * r, z: Math.sin(a) * r, region: REGIONS[regionIndex] };
   });
 
-  paintGround();
+  shapeGround();
+  buildHorizon(rng);
 
-  // ----- trees and rocks, weighted by the region they land in -----
-  const maxTree = Math.max(...REGIONS.map(r => r.trees));
-  const maxRock = Math.max(...REGIONS.map(r => r.rocks));
+  // ----- decide what stands where -----
+  const placements = {};                      // kind -> [{x, z, s, rot}]
+  for (const kind of Object.keys(PROPS)) placements[kind] = [];
 
-  // Rejection sampling: throw a dart, keep it with a probability set by how
-  // much that region likes this kind of prop. Dense forest therefore fills up
-  // and the highland stays bare, without anyone deciding counts by hand.
-  function scatter(count, maxWeight, weightOf, place){
-    let placed = 0, guard = 0;
-    while (placed < count && guard++ < count * 400){
-      const a = rng() * Math.PI * 2;
-      const r = 6 + rng() * (WORLD_R - 6);
-      const x = Math.cos(a) * r, z = Math.sin(a) * r;
-      const { region } = regionAt(x, z);
-      if (rng() > weightOf(region) / maxWeight) continue;
-      place(x, z, region, placed++);
-    }
-    return placed;
+  const total = CONFIG.world.props;
+  let guard = 0;
+  while (guard++ < total * 300){
+    const placed = Object.values(placements).reduce((n, a) => n + a.length, 0);
+    if (placed >= total) break;
+
+    const a = rng() * Math.PI * 2;
+    const r = 6 + rng() * (WORLD_R - 10);
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
+    const { region } = regionAt(x, z);
+
+    // roulette across this region's own vocabulary
+    const entries = Object.entries(region.props);
+    const sum = entries.reduce((n, [, w]) => n + w, 0);
+    let pick = rng() * sum, kind = entries[0][0];
+    for (const [k, w] of entries){ if ((pick -= w) <= 0){ kind = k; break; } }
+
+    const s = 0.75 + rng() * 0.7;
+    placements[kind].push({ x, z, s, rot: rng() * Math.PI * 2 });
+    const rad = PROP_RADIUS[kind] * s;
+    if (rad > 0) obstacles.push({ x, z, r: rad });
   }
 
-  const treesPlaced = scatter(COUNTS.trees, maxTree, r => r.trees, (x, z, region, i) => {
-    const s = 1 + rng() * 1.4;
-    dummy.position.set(x, 0.8 * s, z); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(s);
-    dummy.updateMatrix(); trunks.setMatrixAt(i, dummy.matrix);
-
-    // a burnt region keeps its trunks and loses its canopy
-    dummy.position.set(x, 3.1 * s, z);
-    dummy.scale.setScalar(region.dead ? 0.0001 : s);
-    dummy.updateMatrix(); leaves.setMatrixAt(i, dummy.matrix);
-    leaves.setColorAt(i, LEAF_GREENS[(rng() * 3) | 0]);
-
-    obstacles.push({ x, z, r: 0.9 * s });
-  });
-
-  const rocksPlaced = scatter(COUNTS.rocks, maxRock, r => r.rocks, (x, z, region, i) => {
-    const s = 0.6 + rng() * 1.6;
-    dummy.position.set(x, s * 0.35, z);
-    dummy.rotation.set(0, rng() * Math.PI, 0);
-    dummy.scale.set(s, s * 0.7, s);
-    dummy.updateMatrix(); rocks.setMatrixAt(i, dummy.matrix);
-    obstacles.push({ x, z, r: s * 0.9 });
-  });
-
-  // Anything not placed is parked out of sight rather than left at the origin,
-  // where it would appear as a pile of trees on the player's head.
-  for (let i = treesPlaced; i < COUNTS.trees; i++){
-    dummy.position.set(0, -500, 0); dummy.scale.setScalar(0.0001); dummy.updateMatrix();
-    trunks.setMatrixAt(i, dummy.matrix); leaves.setMatrixAt(i, dummy.matrix);
-  }
-  for (let i = rocksPlaced; i < COUNTS.rocks; i++){
-    dummy.position.set(0, -500, 0); dummy.scale.setScalar(0.0001); dummy.updateMatrix();
-    rocks.setMatrixAt(i, dummy.matrix);
+  // ----- build one instanced mesh per kind -----
+  for (const m of propMeshes){ scene.remove(m); }
+  propMeshes = [];
+  for (const [kind, list] of Object.entries(placements)){
+    if (!list.length) continue;
+    const mesh = new THREE.InstancedMesh(PROPS[kind], PROP_MATERIAL, list.length);
+    list.forEach((p, i) => {
+      dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
+      dummy.rotation.set(0, p.rot, 0);
+      dummy.scale.setScalar(p.s);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    scene.add(mesh);
+    propMeshes.push(mesh);
   }
 
-  // ----- the ruin stands in the rocky ground, the pond sits in the wetland -----
+  // ----- the ruin stands on the high ground, the pond lies in the low -----
   const highland = centres.find(c => c.region.name === 'highland') || centres[0];
-  for (let i = 0; i < COUNTS.pillars; i++){
-    const a = (i / COUNTS.pillars) * Math.PI * 2;
-    const x = highland.x + Math.cos(a) * 6, z = highland.z + Math.sin(a) * 6;
+  for (let i = 0; i < CONFIG.world.pillars; i++){
+    const a = (i / CONFIG.world.pillars) * Math.PI * 2;
+    const x = highland.x + Math.cos(a) * 7, z = highland.z + Math.sin(a) * 7;
     const h = 0.5 + rng() * 0.7;
-    dummy.position.set(x, 2.5 * h, z); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, h, 1);
-    dummy.updateMatrix(); pillars.setMatrixAt(i, dummy.matrix);
+    dummy.position.set(x, heightAt(x, z) + 2.5 * h, z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(1, h, 1);
+    dummy.updateMatrix();
+    pillars.setMatrixAt(i, dummy.matrix);
     obstacles.push({ x, z, r: 0.9 });
   }
+  pillars.instanceMatrix.needsUpdate = true;
 
   const wetland = centres.find(c => c.region.name === 'wetland') || centres[1] || centres[0];
-  pond.position.x = wetland.x;
-  pond.position.z = wetland.z;
-
-  trunks.instanceMatrix.needsUpdate = true;
-  leaves.instanceMatrix.needsUpdate = true;
-  if (leaves.instanceColor) leaves.instanceColor.needsUpdate = true;
-  rocks.instanceMatrix.needsUpdate = true;
-  pillars.instanceMatrix.needsUpdate = true;
+  pond.position.set(wetland.x, heightAt(wetland.x, wetland.z) + 0.06, wetland.z);
 }
 
-// The valley the player arrives in.
 buildWorld(G.worldSeed);
