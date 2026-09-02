@@ -8,6 +8,11 @@ import { owned } from './save.js';
 
 export const player = new THREE.Group();
 
+// The upper body is a group of its own, lifted clear of the ground so the legs
+// below have somewhere to be. Everything that used to be added straight to
+// `player` goes in here, so it all rises together and the proportions hold.
+const body = new THREE.Group(); body.position.y = 0.30; player.add(body);
+
 const suitMat = lam(0x2b2d5c), furMat = lam(0x7a4f2b), faceMat = lam(0xd9a878);
 export const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.85, 10), suitMat); torso.position.y = 0.55;
 const sash  = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 18), lam(0xe0553d)); sash.rotation.x = Math.PI/2; sash.position.y = 0.42;
@@ -30,8 +35,25 @@ const handGeo = new THREE.SphereGeometry(0.09, 8, 8);
 export const handL = new THREE.Mesh(handGeo, furMat), handR = new THREE.Mesh(handGeo, furMat);
 handL.position.set(-0.42, 0.28, 0); handR.position.set(0.42, 0.28, 0);
 export const tailSegs = [];
-for (let i=0;i<6;i++){ const s = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i*0.006, 8, 6), furMat); player.add(s); tailSegs.push(s); }
-player.add(torso, sash, headM, hood, face, muzzle, eyeL, eyeR, earL, earR, band, scarfTail, armL, armR, handL, handR);
+for (let i=0;i<6;i++){ const s = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i*0.006, 8, 6), furMat); body.add(s); tailSegs.push(s); }
+body.add(torso, sash, headM, hood, face, muzzle, eyeL, eyeR, earL, earR, band, scarfTail, armL, armR, handL, handR);
+// ---------- legs ----------
+// Each leg is a Group placed at the hip, with the thigh and foot hanging below
+// it. Rotating the group swings the whole leg from the hip, which is what you
+// want; rotating the cylinder itself would pivot it around its middle.
+function makeLeg(side){
+  const g = new THREE.Group();
+  g.position.set(side * 0.15, 0.46, 0);
+  const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.11, 0.44, 8), suitMat);
+  thigh.position.y = -0.22;
+  const foot = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.1, 0.28), furMat);
+  foot.position.set(0, -0.44, 0.05);
+  g.add(thigh, foot);
+  player.add(g);
+  return g;
+}
+export const legL = makeLeg(-1), legR = makeLeg(1);
+
 scene.add(player);
 
 // cosmetics from items (attached once collected)
@@ -42,17 +64,17 @@ export function applyCosmetics(){
     const h = new THREE.Group();
     const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), lam(0xd9b86a)); brim.position.y = 1.62;
     const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), lam(0xcfa955)); top.position.y = 1.78;
-    h.add(brim, top); player.add(h); cosmetics.hat = h;
+    h.add(brim, top); body.add(h); cosmetics.hat = h;
   }
   if (owned('lantern') && !cosmetics.lantern){
     const g = new THREE.Group();
     const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.22, 8), lam(0xc9a15a));
     const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glow(0xffe066));
     const light = pointLight(0xffd27a, 0, 9); light.position.y = 0.3;
-    g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); player.add(g); cosmetics.lantern = g; cosmetics.lanternLight = light;
+    g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); body.add(g); cosmetics.lantern = g; cosmetics.lanternLight = light;
   }
   if (owned('charm') && !cosmetics.charm){
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 30), glow(0xc9a15a)); ring.rotation.x = Math.PI/2; ring.position.y = 0.5;
-    player.add(ring); cosmetics.charm = ring;
+    body.add(ring); cosmetics.charm = ring;
   }
 }

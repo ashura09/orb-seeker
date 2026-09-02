@@ -9,7 +9,7 @@ import './style.css';
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
 import { WORLD_R, obstacles } from './world.js';
-import { player, armL, armR, handL, handR, tailSegs, cosmetics, applyCosmetics } from './player.js';
+import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics } from './player.js';
 import { orbs, collect, placeOrbs } from './orbs.js';
 import { keys, joy } from './input.js';
 import { updateWanderers, homeWanderers } from './wanderers.js';
@@ -72,6 +72,8 @@ function frame(){
     // arms swing, tail sways
     armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
     handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
+    // legs swing opposite the arms, which is what walking looks like
+    legL.rotation.x = moving ? -Math.sin(bob)*0.5 : 0; legR.rotation.x = moving ? Math.sin(bob)*0.5 : 0;
     for (const o of orbs){
       if (o.found) continue;
       o.mesh.position.y = 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;

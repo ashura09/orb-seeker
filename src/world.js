@@ -8,24 +8,56 @@ import { scene, lam } from './state.js';
 export const WORLD_R = 150;
 export const obstacles = [];
 
-const ground = new THREE.Mesh(new THREE.CircleGeometry(WORLD_R + 20, 64), lam(0x5fa84f));
-ground.rotation.x = -Math.PI/2; scene.add(ground);
+// ---------- ground ----------
+//
+// This used to be a flat green disc with 70 darker circles laid on top as
+// "grass patches". That caused the mottled streaking on the meadow: all 70 sat
+// at exactly y = 0.02, and 102 pairs of them overlapped, so wherever two
+// patches crossed they were perfectly coplanar and fought for the same pixels.
+// No depth-offset trick fixes that, because every patch had the same offset.
+//
+// Instead the variation is now painted into the ground itself as vertex
+// colours. One surface means nothing can z-fight, the colour blends smoothly
+// instead of ending at a hard circular edge, and it costs 70 fewer draw calls,
+// which is what actually matters on a phone.
+// 48 x 48 is plenty: the slowest colour wave has a ~57 m period and each cell
+// is ~7 m, so the variation is captured with room to spare. 64 doubled the
+// triangle count for no visible gain.
+const GROUND_SEGS = 48;
+const groundGeo = new THREE.PlaneGeometry((WORLD_R + 20) * 2, (WORLD_R + 20) * 2, GROUND_SEGS, GROUND_SEGS);
 
-// 32 segments, not 12: at 3-12 m across, a 12-sided "circle" reads as a polygon.
-// The extra triangles are free at this scene's budget.
-const patchGeo = new THREE.CircleGeometry(1, 32);
-// The patches sit 2 cm above the ground, which is far too little separation for
-// the depth buffer to resolve at distance -- that is the mottled flicker on the
-// grass. polygonOffset biases them toward the camera in depth space only, so
-// they win the depth test everywhere without being visibly lifted.
-const patchMat = c => { const m = lam(c); m.polygonOffset = true; m.polygonOffsetFactor = -1; m.polygonOffsetUnits = -1; return m; };
-const patchMats = [patchMat(0x55984a), patchMat(0x6ab558)];
-for (let i=0;i<70;i++){
-  const m = new THREE.Mesh(patchGeo, patchMats[i%2]);
-  const a = Math.random()*Math.PI*2, r = Math.random()*WORLD_R;
-  m.rotation.x = -Math.PI/2; m.position.set(Math.cos(a)*r, 0.02, Math.sin(a)*r); m.scale.setScalar(3 + Math.random()*9);
-  scene.add(m);
+// Layered sine waves standing in for noise: cheap, and good enough for broad
+// meadow mottling. Returns roughly 0..1.
+function meadow(x, z){
+  const n = 0.50
+    + 0.26 * Math.sin(x * 0.050) * Math.cos(z * 0.043)
+    + 0.16 * Math.sin(x * 0.110 + 1.7) * Math.cos(z * 0.090 - 0.4)
+    + 0.08 * Math.sin((x + z) * 0.021 + 2.3);
+  return Math.min(1, Math.max(0, n));
 }
+
+// Three greens, blended by that value. Colours are constructed through
+// THREE.Color so colour management converts them the same way materials do.
+const GRASS_DARK = new THREE.Color(0x55984a);
+const GRASS_MID  = new THREE.Color(0x5fa84f);
+const GRASS_LIT  = new THREE.Color(0x6ab558);
+{
+  const pos = groundGeo.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  const c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++){
+    // the plane is still unrotated here, so its x/y are the world x/z
+    const n = meadow(pos.getX(i), pos.getY(i));
+    if (n < 0.5) c.copy(GRASS_DARK).lerp(GRASS_MID, n * 2);
+    else         c.copy(GRASS_MID).lerp(GRASS_LIT, (n - 0.5) * 2);
+    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+  }
+  groundGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+}
+
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
 
 const trunkGeo = new THREE.CylinderGeometry(0.22, 0.32, 1.6, 6), leafGeo = new THREE.ConeGeometry(1.2, 3.2, 7);
 const trunkMat = lam(0x6b4a2a), leafMats = [0x2f7a3c, 0x3d8f45, 0x276b3a].map(c => lam(c));
@@ -50,7 +82,11 @@ function addPillar(x, z, h){
   scene.add(m); obstacles.push({x, z, r:0.9});
 }
 
-const pond = new THREE.Mesh(new THREE.CircleGeometry(7, 24), lam(0x4aa6d9));
+// The pond is the one flat thing still laid over the ground, so it keeps a
+// depth bias to guarantee it wins against the meadow beneath it.
+const pondMat = lam(0x4aa6d9);
+pondMat.polygonOffset = true; pondMat.polygonOffsetFactor = -2; pondMat.polygonOffsetUnits = -2;
+const pond = new THREE.Mesh(new THREE.CircleGeometry(7, 32), pondMat);
 pond.rotation.x = -Math.PI/2; pond.position.set(-28, 0.04, 22); scene.add(pond);
 
 function scatter(n, fn, minR, maxR){
