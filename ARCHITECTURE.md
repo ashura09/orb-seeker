@@ -64,46 +64,78 @@ really two features.
 
 Moving folders first just relocates a tangle.
 
-## Balancing the game live
-
-Open the game with `?tune` on the URL and a panel appears with a slider for every
-value in `config.js`:
-
-    http://localhost:5173/?tune
-    https://ashura09.github.io/orb-seeker/?tune      (works on your phone)
-
-Drag and the game responds immediately. "Copy what I changed" gives you a short
-list of just the values you moved, to edit into `config.js` by hand -- which
-keeps the comments there. Sliders marked with a circular arrow are read once at
-startup, so those need a reload.
-
-The panel is a dynamic import, so lil-gui is a separate 9 KB chunk that players
-who never use `?tune` never download.
-
 ## Balancing the game
 
 Every number worth tuning lives in `src/config.js`, grouped by what it affects:
-world, player, camera, orbs, wanderers, duel, finder, ceremony, dayNight, loop.
-Item prices are the `ITEMS` table in the same file.
+world, terrain, sky, shadows, bloom, fog, player, camera, orbs, wanderers, duel,
+finder, ceremony, dayNight, loop. Item prices are the `ITEMS` table in the same file.
 
 Nothing in that file imports anything or does anything — it is only values, so you can
 change one, reload, and see the result without reading any other file.
 
-What deliberately stays out: shapes and proportions (the dragon's neck, the monkey's
-ears) and colours. Those are art, not balance, and they live beside the code that
-builds them.
+What deliberately stays out: shapes, proportions and colours. Those are art, not
+balance. Prop colours live in the `PALETTE` table in `props.js`; character and
+creature proportions live beside the code that builds them.
+
+### The live tuning panel
+
+Add `?tune` to the URL and a slider appears for every value in `config.js`:
+
+    http://localhost:5173/?tune
+    https://ashura09.github.io/orb-seeker/?tune      (works on your phone)
+
+Drag one and the game responds immediately. **Copy what I changed** gives a short diff
+of only the values you moved, to edit into `config.js` by hand — which keeps the
+comments there. Sliders marked with a circular arrow are read once at startup and need
+a reload.
+
+It is a dynamic import, so lil-gui is a separate 9 KB chunk that players who never use
+`?tune` never download.
+
+### Seeing the cost
+
+Add `?stats` for frames per second (including the worst seen), draw calls and triangles.
+Both flags can be combined.
+
+## What each module is for
+
+    config    every tunable number, plus the shop's ITEMS table
+    voice     everything anyone says: villager lines, the Keeper's greetings
+    events    the publish/subscribe bus that keeps the graph acyclic
+    rng       seeded randomness, so a whole valley rebuilds from one number
+    props     the glTF models: loaded, recoloured, scaled, merged for instancing
+    save      load and save to browser storage
+    state     renderer, scene, camera, lights, and the shared G object
+    world     terrain height, regions, scenery placement, the horizon
+    sky       the gradient dome, the sun, and shadow setup
+    bloom     the glow pass, behind CONFIG.bloom.enabled
+    input     joystick, look-drag, keyboard; emits intent, decides nothing
+    player    the monkey, its cosmetics and its crawl pose
+    ui        HUD, toasts, the order chain, the stats overlay
+    orbs      the seven orbs: placement, collection, their pooled lights
+    shop      the trader's cart
+    inventory pickups you walk over, and the Inventory panel
+    wanderers the seven villagers, their camps and their hearing
+    duel      the tap duel
+    finder    the radar
+    keeper    the dragon and the wish ceremony
+    tuner     the ?tune panel
+    main      builds everything, wires listeners, runs the frame loop
 
 ## Current layering
 
-With the bus in place the graph sorts itself, no folders required yet:
+The graph sorts itself, no folders required yet. **Zero cycles** across 20 modules:
 
 ```
-0   config, events, save, state   depend on nothing
-1   input, player, ui, world
-2   orbs, shop
-3   inventory, wanderers
-4   duel, finder, keeper
-5   main
+0   config, events, props, rng, save, voice     depend on nothing
+1   state, tuner
+2   bloom, input, player, sky, ui, world
+3   orbs, shop
+4   inventory, wanderers
+5   duel, finder, keeper
+6   main
 ```
 
-Nothing at a lower number imports anything at a higher one.
+Nothing at a lower number imports anything at a higher one. Re-check it any time with a
+quick scan of the `import ... from './x.js'` lines; if a cycle ever appears, the fix is
+almost always an event rather than an import.
