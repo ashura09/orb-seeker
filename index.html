@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Orb Seeker">
-  <script type="module" crossorigin src="./assets/index-CYoTwNaK.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BDRaTW4t.css">
+  <script type="module" crossorigin src="./assets/index-T6S5xPUS.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DUCzITNK.css">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -101,8 +101,16 @@
      The CSS is pulled in by main.js, so there is no <link> for it above. -->
 
 <script>
-  // offline + home-screen support; silently skipped when opened as a plain file
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  // Offline + home-screen support. Silently skipped when opened as a plain file.
+  //
+  // Deliberately NOT registered on localhost. The service worker caches
+  // aggressively and will happily serve you the previous version of your own
+  // code while you are editing it -- it survives restarting the dev server and
+  // ordinary reloads, so edits look like they are doing nothing. Skipping it in
+  // development removes that trap entirely; the deployed site still gets full
+  // offline support.
+  const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !isLocal) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
 </script>
