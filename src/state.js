@@ -69,9 +69,21 @@ scene.fog = new THREE.Fog(DAY.clone(), CONFIG.fog.near, CONFIG.fog.far);
 // the ground flicker showed. The camera never gets closer than ~6 m to anything
 // it needs to draw, so raising near costs nothing and buys a 5x better ratio.
 export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 1200);
-export const hemi = new THREE.HemisphereLight(0xdfefff, 0x3f6f33, 0.95);
-export const sun  = new THREE.DirectionalLight(0xfff1d6, 0.9); sun.position.set(30, 60, 20);
-scene.add(hemi, sun);
+// Sky fill and bounce. The ground colour was a dark green, which meant any
+// slope facing away from the sun fell to nearly black -- fine on a flat disc
+// with no hills, badly wrong once the valley had them. A lighter bounce colour
+// keeps backlit faces readable.
+export const hemi = new THREE.HemisphereLight(0xe6f2ff, 0x6f8a5e, 0.85);
+
+// Warm and low, so shadows are long and the light has a direction you can feel.
+export const sun = new THREE.DirectionalLight(0xfff0d0, 1.05);
+sun.position.set(60, 85, 40);
+
+// A little flat fill so nothing in shadow is ever pure black. Shadows should
+// read as darker, not as holes.
+export const ambient = new THREE.AmbientLight(0xbdd4e8, 0.22);
+
+scene.add(hemi, sun, ambient);
 
 export const lam = (c, e=0) => new THREE.MeshLambertMaterial(e ? {color:c, emissive:c, emissiveIntensity:e} : {color:c});
 export const glow = (c, op=1) => new THREE.MeshBasicMaterial({color:c, transparent:op<1, opacity:op});

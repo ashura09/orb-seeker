@@ -109,6 +109,7 @@ groundGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(groun
 
 const ground = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
 ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;   // casts nothing -- there is nothing beneath it
 scene.add(ground);
 
 // Fine mottling so a region is not a flat wash of one colour.
@@ -259,6 +260,8 @@ export function buildWorld(seed){
       const geo = PROPS[kind]?.[variant];
       if (!geo) continue;
       const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       group.forEach((p, i) => {
         dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
         dummy.rotation.set(0, p.rot, 0);
@@ -279,6 +282,8 @@ export function buildWorld(seed){
   if (columns && columns.length){
     const n = CONFIG.world.pillars;
     pillars = new THREE.InstancedMesh(columns[0], PROP_MATERIAL, n);
+    pillars.castShadow = true;
+    pillars.receiveShadow = true;
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
       const x = highland.x + Math.cos(a) * 7.5, z = highland.z + Math.sin(a) * 7.5;

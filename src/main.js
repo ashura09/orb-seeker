@@ -11,6 +11,8 @@ import { save, owned } from './save.js';
 import { WORLD_R, obstacles, buildWorld, heightAt } from './world.js';
 import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
+import { paintSky, setupShadows, followPlayer, setNightLevel } from './sky.js';
+import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy } from './input.js';
@@ -58,6 +60,9 @@ loadProps()
     homeWanderers();
   })
   .catch(err => console.error('the valley could not be built:', err));
+
+setupShadows();
+setupBloom();
 
 initStats(renderer);
 
@@ -129,11 +134,21 @@ function frame(){
   }
   const f = forward(), rx = -f.z, rz = f.x;
 
-  // day / night easing
+  // ---------- day and night ----------
+  // Repainting the sky walks every dome vertex, so it only happens when the
+  // light has actually moved rather than on every single frame.
+  const nightBefore = G.night;
   G.night += (G.nightTarget - G.night) * Math.min(1, dt*DN.easeRate);
-  scene.background.copy(DAY).lerp(NIGHT, G.night); scene.fog.color.copy(scene.background);
-  hemi.intensity = DN.hemiDay - DN.hemiNightDrop*G.night; sun.intensity = DN.sunDay - DN.sunNightDrop*G.night;
+  if (Math.abs(G.night - nightBefore) > 0.001 || G.t < 0.2) paintSky(G.night);
+
+  // Fog still tracks the sky so the horizon dissolves into it rather than
+  // ending against it.
+  scene.fog.color.copy(DAY).lerp(NIGHT, G.night);
+  setNightLevel(G.night);
   if (cosmetics.lanternLight) cosmetics.lanternLight.intensity = DN.lanternBase + G.night*DN.lanternNightBoost;
+
+  // the sun and its shadow box travel with you
+  followPlayer(player.position.x, player.position.y, player.position.z);
 
   // the whistle fades, then the cooldown clears and the button comes back
   if (G.whistleT > 0) G.whistleT = Math.max(0, G.whistleT - dt);
@@ -247,8 +262,13 @@ function frame(){
 
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);
-  renderer.render(scene, camera);
+  renderFrame();   // through the bloom composer when it is on
 }
 frame();
 
-window.addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+window.addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  resizeBloom(innerWidth, innerHeight);
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+});

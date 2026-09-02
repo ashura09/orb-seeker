@@ -54,6 +54,7 @@ function makeLeg(side){
 }
 export const legL = makeLeg(-1), legR = makeLeg(1);
 
+player.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
 scene.add(player);
 
 // ---------- crawling ----------

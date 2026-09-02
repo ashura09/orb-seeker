@@ -131,6 +131,7 @@ function buildWanderer(w){
     g.add(bk, leaf);
   }
 
+  g.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
   scene.add(g);
   return {g, limbs};
 }

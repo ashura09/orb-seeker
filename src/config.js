@@ -51,6 +51,48 @@ export const CONFIG = {
     far: 750,             // was 130, which put a wall of haze around the valley
   },
 
+  // ---------- the sky ----------
+  // A gradient dome rather than a flat background colour. Real skies are darker
+  // overhead than at the horizon, and that alone makes a world feel large.
+  sky: {
+    radius: 900,          // must sit inside the camera's far plane
+    falloff: 0.55,        // <1 tightens the gradient toward the horizon
+    dayHorizon:   0xbfe0f5,
+    dayZenith:    0x4a90d9,
+    nightHorizon: 0x2a3560,
+    nightZenith:  0x070d24,
+    // Where the sun sits relative to you. Long shadows come from a low sun.
+    sunOffsetX: 60,
+    sunOffsetY: 85,
+    sunOffsetZ: 40,
+  },
+
+  // ---------- shadows ----------
+  // The single cheapest thing that makes a scene look real: without them
+  // nothing has weight and everything looks pasted onto the ground.
+  //
+  // The shadow camera follows the player and covers `range` metres around them,
+  // rather than trying to cover the whole valley -- one shadow map stretched
+  // over 150 m would be soft and blocky everywhere.
+  // ---------- glow ----------
+  // A full extra pass over every pixel, which is the expensive kind of effect
+  // on a phone. Turn it off first if the frame rate is poor there.
+  bloom: {
+    enabled: true,
+    strength: 0.55,       // how far the light bleeds
+    radius: 0.5,
+    threshold: 0.72,      // only pixels brighter than this glow -- keeps the
+                          // grass out of it and leaves the orbs in
+  },
+
+  shadows: {
+    enabled: true,
+    mapSize: 2048,        // drop to 1024 if a phone struggles
+    range: 45,            // metres around the player that receive shadows
+    bias: -0.0005,
+    normalBias: 0.035,    // handles sloped terrain better than bias alone
+  },
+
   // ---------- walking ----------
   player: {
     speed: 7,             // metres per second
@@ -182,10 +224,12 @@ export const CONFIG = {
   // ---------- day and night ----------
   dayNight: {
     easeRate: 0.8,         // how quickly night falls
-    hemiDay: 0.95,
-    hemiNightDrop: 0.7,
-    sunDay: 0.9,
-    sunNightDrop: 0.8,
+    hemiDay: 0.85,
+    hemiNightDrop: 0.62,
+    sunDay: 1.05,
+    sunNightDrop: 0.95,
+    ambientDay: 0.22,
+    ambientNightDrop: 0.12,
     lanternBase: 0.2,
     lanternNightBoost: 1.4,
   },
