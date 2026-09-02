@@ -10,6 +10,7 @@ import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from '.
 import { save, owned } from './save.js';
 import { WORLD_R, obstacles, buildWorld, heightAt } from './world.js';
 import { randomSeed } from './rng.js';
+import { loadProps } from './props.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy } from './input.js';
@@ -39,6 +40,24 @@ const camTarget = new THREE.Vector3();
 const { player: P, camera: CAM, orbs: ORB, ceremony: CER, dayNight: DN } = CONFIG;
 G.camPitch = CAM.pitch;   // starting elevation
 let bob = 0;
+
+// ---------- build the valley once the models are here ----------
+//
+// The scenery is 30 glTF models, which load over the network, so the world
+// cannot be built at import time any more. The frame loop starts immediately
+// and the valley appears a moment later -- which is invisible in practice,
+// because the start card is covering the screen while it happens.
+//
+// Orbs and villagers are placed a second time afterwards: their first placement
+// happened on flat ground before the terrain existed, so they would otherwise
+// be standing at the wrong height.
+loadProps()
+  .then(() => {
+    buildWorld(G.worldSeed);
+    placeOrbs();
+    homeWanderers();
+  })
+  .catch(err => console.error('the valley could not be built:', err));
 
 initStats(renderer);
 

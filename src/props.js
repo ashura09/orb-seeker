@@ -1,131 +1,189 @@
 // props.js — the things that stand in the valley.
 //
-// Every prop used to be one primitive: a tree was a cylinder with a cone on
-// top, a rock was a dodecahedron, and that was the whole vocabulary. Four
-// shapes for a whole world, identical in every region.
+// These are Kenney's Nature Kit models (CC0, public domain — see
+// public/models/KENNEY-LICENSE.txt). They replaced hand-built primitives: a
+// tree used to be a cylinder with a cone on top.
 //
-// Each prop here is instead built from several primitives MERGED into a single
-// geometry with its colours baked into the vertices. That buys two things at
-// once: a fir tree can be a trunk plus three stacked tiers and still cost one
-// draw call for every fir in the valley, and a region can be given its own
-// vocabulary of shapes rather than the same tree tinted differently.
+// HOW THEY ARE PREPARED, AND WHY
+//
+// Each .glb arrives as two or three primitives, one per material, with no
+// textures at all — just named colours like "woodBark" and "leafsGreen". So
+// each model is flattened on load: every primitive's colour is baked into its
+// vertices and the lot is merged into ONE geometry.
+//
+// That matters because it means every conifer in the valley is a single
+// InstancedMesh and therefore a single draw call, however many there are, and
+// they all share one material. It is the same pipeline the hand-built props
+// used, which is why world.js needed almost no changes.
+//
+// Models also arrive at whatever size the artist made them, so each is scaled
+// to a target height in metres and sat with its base on y = 0. The valley then
+// has consistent proportions no matter where a model came from.
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// Paints a colour into a geometry's vertices so merged parts keep their own
-// colours under a single material.
-function paint(geo, hex){
-  const c = new THREE.Color(hex);
-  const n = geo.attributes.position.count;
-  const colors = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++){ colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b; }
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+// kind -> { files, size in metres, collision radius }
+//
+// `size` is the model's LARGEST dimension, not its height. Scaling by height
+// alone wrecks wide, flat models: rock_largeA is far broader than it is tall,
+// so forcing it to 2.4 m high made it 8 m across and it swallowed the screen.
+// Scaling the longest axis keeps every model in proportion and bounds its
+// footprint, whatever shape it happens to be.
+//
+// Several files under one kind means the valley gets variety for free: world.js
+// asks for a "conifer" and gets one of three.
+const CATALOGUE = {
+  conifer:   { files: ['tree_pineTallA_detailed', 'tree_pineTallC_detailed', 'tree_pineDefaultA'], size: 7.0, radius: 0.5 },
+  broadleaf: { files: ['tree_default', 'tree_oak', 'tree_detailed'],                               size: 5.5, radius: 0.55 },
+  deadTree:  { files: ['tree_thin', 'stump_oldTall'],                                              size: 4.5, radius: 0.35 },
+  stump:     { files: ['stump_old', 'stump_round'],                                                size: 1.0, radius: 0.45 },
+  boulder:   { files: ['rock_largeA', 'rock_largeB', 'stone_largeC'],                              size: 2.8, radius: 1.1 },
+  rock:      { files: ['rock_smallA', 'rock_smallC', 'stone_smallB'],                              size: 1.1, radius: 0.45 },
+  reeds:     { files: ['grass_leafsLarge', 'grass_large'],                                         size: 1.6, radius: 0 },
+  shrub:     { files: ['plant_bush', 'plant_bushLarge'],                                           size: 1.4, radius: 0 },
+  fern:      { files: ['plant_bushSmall', 'grass_leafs'],                                          size: 0.9, radius: 0 },
+  flower:    { files: ['flower_redA', 'flower_purpleA'],                                           size: 0.5, radius: 0 },
+  mushroom:  { files: ['mushroom_redGroup'],                                                       size: 0.5, radius: 0 },
+  fallenLog: { files: ['log'],                                                                     size: 2.2, radius: 0.5 },
+  lily:      { files: ['lily_large'],                                                              size: 0.9, radius: 0 },
+  column:    { files: ['statue_column', 'statue_columnDamaged', 'statue_obelisk'],                 size: 4.2, radius: 0.7 },
+};
+
+// ---------- palette ----------
+//
+// The whole kit uses just twelve materials, which makes it cheap to art-direct.
+// Kenney's own palette is a stylised one -- teal foliage, orange bark, pale
+// blue stone -- and it fights the warm greens this valley already had. So each
+// material is remapped by NAME to a colour that belongs here.
+//
+// This is the file to edit to change how the world looks. Delete an entry and
+// that material keeps the kit's original colour.
+const PALETTE = {
+  // Kept deliberately far apart in tone. Mapping every green to nearly the same
+  // value made the whole valley read as one flat mass; foliage needs a lighter
+  // canopy and a darker underside to have any shape at all.
+  leafsGreen:   0x63b04a,   // canopy, lighter than the ground
+  leafsDark:    0x2f6b34,   // shaded foliage and undersides
+  grass:        0x7cbf5a,   // the tufts on rocks and logs
+  woodBark:     0x6b4a2a,   // was orange
+  woodBarkDark: 0x55381f,
+  woodInner:    0xc9a882,
+  dirt:         0x7a6142,   // was bright orange
+  stone:        0x9aa3ab,   // matches the game's rock grey
+  stoneDark:    0x767c84,
+  _defaultMat:  0xa8a8a8,
+  // colorRed and colorPurple are the flowers, and are left alone on purpose.
+};
+
+// kind -> array of prepared geometries, one per variant. Filled by loadProps().
+export const PROPS = {};
+export const PROP_RADIUS = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.radius]));
+
+// One material for every prop: the colour rides in the vertices.
+export const PROP_MATERIAL = new THREE.MeshLambertMaterial({ vertexColors: true });
+
+/**
+ * Flattens a loaded glTF scene into one geometry with baked vertex colours.
+ *
+ * The colours come from each mesh's own material, which GLTFLoader has already
+ * converted into the renderer's working colour space, so they are copied
+ * straight across rather than reinterpreted.
+ */
+function flatten(root){
+  const pieces = [];
+  root.updateWorldMatrix(true, true);
+  root.traverse(node => {
+    if (!node.isMesh) return;
+    const geo = node.geometry.clone();
+    geo.applyMatrix4(node.matrixWorld);
+
+    // strip anything we do not use, so merging never fails on mismatched sets
+    for (const name of Object.keys(geo.attributes)){
+      if (name !== 'position' && name !== 'normal') geo.deleteAttribute(name);
+    }
+    if (!geo.attributes.normal) geo.computeVertexNormals();
+
+    // COLOUR SPACE, and it matters.
+    //
+    // glTF says baseColorFactor is LINEAR, so GLTFLoader stores it as linear.
+    // But Kenney's exporter wrote sRGB values into that field -- the .mtl files
+    // in the same kit carry the identical numbers as Kd, which is sRGB by
+    // convention. Taken as linear they render far too bright: bark came out
+    // salmon and leaves came out turquoise.
+    //
+    // Reinterpreting them as sRGB puts them back where the artist meant, and
+    // matches how every hand-written colour in this project is already treated.
+    // A remapped colour is written as a plain hex, which THREE converts from
+    // sRGB for us. Anything not remapped keeps the model's own colour, which
+    // needs the same reinterpretation for the reason above.
+    const name = node.material?.name;
+    const c = PALETTE[name] !== undefined
+      ? new THREE.Color(PALETTE[name])
+      : new THREE.Color().copy(node.material?.color ?? new THREE.Color(0xffffff)).convertSRGBToLinear();
+    const n = geo.attributes.position.count;
+    const colors = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++){ colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b; }
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    pieces.push(geo);
+  });
+  if (!pieces.length) return null;
+  return pieces.length === 1 ? pieces[0] : mergeGeometries(pieces, false);
+}
+
+/** Scales a geometry so its longest axis matches `size`, base on the ground. */
+function normalise(geo, size){
+  geo.computeBoundingBox();
+  const box = geo.boundingBox;
+  const longest = Math.max(
+    box.max.x - box.min.x,
+    box.max.y - box.min.y,
+    box.max.z - box.min.z,
+  );
+  if (longest > 0){
+    const s = size / longest;
+    geo.scale(s, s, s);
+    geo.computeBoundingBox();
+  }
+  // centre on x/z and drop the base to zero, so placement code can ignore size
+  const b = geo.boundingBox;
+  geo.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
+  geo.computeBoundingBox();
   return geo;
 }
 
-// part: [geometry, colour, x, y, z, rotX, rotY, rotZ, scale]
-function build(parts){
-  const pieces = parts.map(([geo, hex, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, s = 1]) => {
-    const g = geo.clone();
-    g.scale(s, s, s);
-    if (rx) g.rotateX(rx);
-    if (ry) g.rotateY(ry);
-    if (rz) g.rotateZ(rz);
-    g.translate(x, y, z);
-    return paint(g, hex);
-  });
-  return mergeGeometries(pieces, false);
+let loaded = false;
+
+/**
+ * Loads every model. Call once, and await it before building the world.
+ * A model that fails to load is skipped with a warning rather than taking the
+ * whole valley down with it.
+ */
+export async function loadProps(){
+  if (loaded) return PROPS;
+  const loader = new GLTFLoader();
+
+  const jobs = [];
+  for (const [kind, entry] of Object.entries(CATALOGUE)){
+    PROPS[kind] = [];
+    for (const file of entry.files){
+      jobs.push(
+        loader.loadAsync(`models/${file}.glb`)
+          .then(gltf => {
+            const geo = flatten(gltf.scene);
+            if (geo) PROPS[kind].push(normalise(geo, entry.size));
+          })
+          .catch(err => console.warn(`could not load models/${file}.glb`, err))
+      );
+    }
+  }
+  await Promise.all(jobs);
+
+  // Drop any kind that ended up with nothing, so world.js never asks for a
+  // geometry that is not there.
+  for (const kind of Object.keys(PROPS)){
+    if (!PROPS[kind].length) delete PROPS[kind];
+  }
+  loaded = true;
+  return PROPS;
 }
-
-// ---------- the raw primitives, cloned into the shapes below ----------
-const cyl  = (rt, rb, h, seg = 6) => new THREE.CylinderGeometry(rt, rb, h, seg);
-const cone = (r, h, seg = 7) => new THREE.ConeGeometry(r, h, seg);
-const ball = (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h);
-const dodec = (r, d = 0) => new THREE.DodecahedronGeometry(r, d);
-
-const BARK = 0x6b4a2a, BARK_DARK = 0x4a3520, CHAR = 0x3a3330, ASH = 0x585049;
-const NEEDLE = 0x2c6b38, NEEDLE_LIGHT = 0x3a8248, LEAFY = 0x4f9a45, LEAFY_LIGHT = 0x5fae52;
-const STONE = 0x8a8f96, STONE_DARK = 0x74797f, MOSS = 0x54793f;
-const REED = 0x7a8f4a, REED_DRY = 0x9a9a5a, SHRUB = 0x4a7a3c;
-
-// ---------- the vocabulary ----------
-//
-// Each entry is a finished geometry. Keys are referenced by world.js when it
-// decides what a region is made of.
-export const PROPS = {
-  // A fir: trunk with three tiers, narrowing upward. Forest.
-  conifer: build([
-    [cyl(0.16, 0.26, 2.2), BARK, 0, 1.1, 0],
-    [cone(1.30, 2.0), NEEDLE,       0, 2.6, 0],
-    [cone(1.00, 1.8), NEEDLE_LIGHT, 0, 3.7, 0],
-    [cone(0.65, 1.5), NEEDLE,       0, 4.7, 0],
-  ]),
-
-  // A round-crowned tree: overlapping canopy balls. Meadow.
-  broadleaf: build([
-    [cyl(0.20, 0.30, 1.9), BARK, 0, 0.95, 0],
-    [ball(1.25, 10, 8), LEAFY,        0,    2.6, 0],
-    [ball(0.95, 10, 8), LEAFY_LIGHT,  0.75, 2.3, 0.35],
-    [ball(0.85, 10, 8), LEAFY,       -0.65, 2.4, -0.3],
-  ]),
-
-  // Burnt: a forked trunk, no canopy at all. Burn.
-  deadTree: build([
-    [cyl(0.10, 0.24, 3.0), CHAR, 0, 1.5, 0],
-    [cyl(0.05, 0.10, 1.4), CHAR, 0.42, 2.7, 0.1, 0, 0, -0.7],
-    [cyl(0.04, 0.09, 1.1), CHAR, -0.35, 2.9, -0.15, 0, 0, 0.8],
-  ]),
-
-  // What is left after a fire, or a felling. Burn and forest.
-  stump: build([
-    [cyl(0.38, 0.46, 0.6), BARK_DARK, 0, 0.3, 0],
-    [cyl(0.34, 0.34, 0.08), ASH, 0, 0.62, 0],
-  ]),
-
-  // A big lump of rock, made of three overlapping ones so it is not a
-  // recognisable single solid. Highland.
-  boulder: build([
-    [dodec(1.15), STONE,      0,    0.55, 0],
-    [dodec(0.75), STONE_DARK, 0.85, 0.35, 0.2],
-    [dodec(0.55), STONE,     -0.6,  0.3, -0.45],
-    [dodec(0.30), MOSS,       0.1,  1.35, 0.1],
-  ]),
-
-  // A plain small rock. Everywhere.
-  rock: build([
-    [dodec(0.85), STONE, 0, 0.42, 0],
-  ]),
-
-  // A clump of reeds. Wetland.
-  reeds: build([
-    [cone(0.07, 1.6, 4), REED,     0,     0.8, 0],
-    [cone(0.06, 1.9, 4), REED,     0.22,  0.95, 0.12, 0, 0, -0.12],
-    [cone(0.06, 1.4, 4), REED_DRY, -0.20, 0.7, 0.18, 0, 0, 0.15],
-    [cone(0.05, 1.7, 4), REED,     0.08,  0.85, -0.24, 0, 0, 0.08],
-    [cone(0.05, 1.2, 4), REED_DRY, -0.14, 0.6, -0.14, 0, 0, -0.1],
-  ]),
-
-  // Low scrub. Meadow and highland.
-  shrub: build([
-    [ball(0.52, 8, 6), SHRUB,  0,    0.4, 0],
-    [ball(0.38, 8, 6), LEAFY,  0.4,  0.3, 0.15],
-    [ball(0.34, 8, 6), SHRUB, -0.32, 0.28, -0.2],
-  ]),
-
-  // Ground cover for the forest floor.
-  fern: build([
-    [cone(0.42, 0.7, 5), MOSS,   0,    0.35, 0,    0.35, 0, 0],
-    [cone(0.38, 0.6, 5), SHRUB,  0.25, 0.3, 0.2,  -0.3, 0, 0.3],
-    [cone(0.36, 0.6, 5), MOSS,  -0.22, 0.3, -0.18, 0.2, 0, -0.35],
-  ]),
-};
-
-// One shared material: colour comes from the baked vertex colours, so every
-// prop kind can use the same one.
-export const PROP_MATERIAL = new THREE.MeshLambertMaterial({ vertexColors: true });
-
-// Roughly how wide each prop is at the base, for collision.
-export const PROP_RADIUS = {
-  conifer: 0.55, broadleaf: 0.6, deadTree: 0.35, stump: 0.5,
-  boulder: 1.4, rock: 0.7, reeds: 0.0, shrub: 0.0, fern: 0.0,
-};

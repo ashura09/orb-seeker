@@ -36,21 +36,26 @@ export const obstacles = [];
 // weights, not counts.
 const REGIONS = [
   { name: 'meadow',   lift:  0, ground: [0x55984a, 0x6ab558],
-    props: { broadleaf: 1.0, shrub: 0.9, rock: 0.5 } },
+    props: { broadleaf: 1.0, shrub: 0.9, flower: 1.2, rock: 0.4 } },
   { name: 'forest',   lift:  2, ground: [0x2c6b38, 0x3a7d45],
-    props: { conifer: 3.0, fern: 2.0, stump: 0.5, rock: 0.3 } },
+    props: { conifer: 3.0, fern: 2.0, mushroom: 0.7, stump: 0.5, fallenLog: 0.4, rock: 0.3 } },
   { name: 'highland', lift: 11, ground: [0x8a8f76, 0x9ba190],
     props: { boulder: 2.2, rock: 1.8, shrub: 0.5 } },
   { name: 'wetland',  lift: -4, ground: [0x4a8f6a, 0x5aa47c],
-    props: { reeds: 3.5, broadleaf: 0.3, rock: 0.2 } },
+    props: { reeds: 3.5, broadleaf: 0.3, fern: 0.5, rock: 0.2 } },
   { name: 'burn',     lift:  1, ground: [0x6b5f45, 0x7d6f52],
-    props: { deadTree: 1.8, stump: 1.4, rock: 0.5 } },
+    props: { deadTree: 1.8, stump: 1.4, fallenLog: 0.5, rock: 0.5 } },
 ];
 
 let centres = [];
 
 /** Which region a point belongs to, plus a blend toward its neighbour. */
+const DEFAULT_REGION = { name: 'meadow', lift: 0, ground: [0x55984a, 0x6ab558], props: {} };
+
 export function regionAt(x, z){
+  // The world is built only once the models have loaded, so this can be asked
+  // before there are any regions. Answer sensibly rather than throwing.
+  if (!centres.length) return { region: DEFAULT_REGION, neighbour: DEFAULT_REGION, blend: 0 };
   let best = 0, bestD = Infinity, second = 0, secondD = Infinity;
   for (let i = 0; i < centres.length; i++){
     const d = Math.hypot(x - centres[i].x, z - centres[i].z);
@@ -183,9 +188,9 @@ const pond = new THREE.Mesh(new THREE.CircleGeometry(8, 32), pondMat);
 pond.rotation.x = -Math.PI / 2;
 scene.add(pond);
 
-const pillarGeo = new THREE.CylinderGeometry(0.6, 0.7, 5, 8);
-const pillars = new THREE.InstancedMesh(pillarGeo, lam(0xd9cfb4), CONFIG.world.pillars);
-scene.add(pillars);
+// The ruin uses the kit's columns rather than plain cylinders, so it is built
+// with the rest of the world once the models are in.
+let pillars = null;
 
 /** Builds, or rebuilds, the entire valley from one seed. */
 export function buildWorld(seed){
@@ -229,47 +234,66 @@ export function buildWorld(seed){
     let pick = rng() * sum, kind = entries[0][0];
     for (const [k, w] of entries){ if ((pick -= w) <= 0){ kind = k; break; } }
 
-    const s = 0.75 + rng() * 0.7;
-    placements[kind].push({ x, z, s, rot: rng() * Math.PI * 2 });
-    const rad = PROP_RADIUS[kind] * s;
+    const variants = PROPS[kind];
+    if (!variants || !variants.length) continue;          // that model failed to load
+    const variant = (rng() * variants.length) | 0;
+    const s = 0.8 + rng() * 0.55;
+    placements[kind].push({ x, z, s, variant, rot: rng() * Math.PI * 2 });
+    const rad = (PROP_RADIUS[kind] || 0) * s;
     if (rad > 0) obstacles.push({ x, z, r: rad });
   }
 
   // ----- build one instanced mesh per kind -----
   for (const m of propMeshes){ scene.remove(m); }
   propMeshes = [];
+  // One mesh per (kind, variant): three shapes of pine cost three draw calls,
+  // not one per tree.
   for (const [kind, list] of Object.entries(placements)){
     if (!list.length) continue;
-    const mesh = new THREE.InstancedMesh(PROPS[kind], PROP_MATERIAL, list.length);
-    list.forEach((p, i) => {
-      dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
-      dummy.rotation.set(0, p.rot, 0);
-      dummy.scale.setScalar(p.s);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    scene.add(mesh);
-    propMeshes.push(mesh);
+    const byVariant = new Map();
+    for (const p of list){
+      if (!byVariant.has(p.variant)) byVariant.set(p.variant, []);
+      byVariant.get(p.variant).push(p);
+    }
+    for (const [variant, group] of byVariant){
+      const geo = PROPS[kind]?.[variant];
+      if (!geo) continue;
+      const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
+      group.forEach((p, i) => {
+        dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
+        dummy.rotation.set(0, p.rot, 0);
+        dummy.scale.setScalar(p.s);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      scene.add(mesh);
+      propMeshes.push(mesh);
+    }
   }
 
   // ----- the ruin stands on the high ground, the pond lies in the low -----
   const highland = centres.find(c => c.region.name === 'highland') || centres[0];
-  for (let i = 0; i < CONFIG.world.pillars; i++){
-    const a = (i / CONFIG.world.pillars) * Math.PI * 2;
-    const x = highland.x + Math.cos(a) * 7, z = highland.z + Math.sin(a) * 7;
-    const h = 0.5 + rng() * 0.7;
-    dummy.position.set(x, heightAt(x, z) + 2.5 * h, z);
-    dummy.rotation.set(0, 0, 0);
-    dummy.scale.set(1, h, 1);
-    dummy.updateMatrix();
-    pillars.setMatrixAt(i, dummy.matrix);
-    obstacles.push({ x, z, r: 0.9 });
+  if (pillars) scene.remove(pillars);
+  const columns = PROPS.column;
+  if (columns && columns.length){
+    const n = CONFIG.world.pillars;
+    pillars = new THREE.InstancedMesh(columns[0], PROP_MATERIAL, n);
+    for (let i = 0; i < n; i++){
+      const a = (i / n) * Math.PI * 2;
+      const x = highland.x + Math.cos(a) * 7.5, z = highland.z + Math.sin(a) * 7.5;
+      dummy.position.set(x, heightAt(x, z), z);
+      dummy.rotation.set(0, rng() * Math.PI * 2, 0);
+      dummy.scale.setScalar(0.85 + rng() * 0.5);
+      dummy.updateMatrix();
+      pillars.setMatrixAt(i, dummy.matrix);
+      obstacles.push({ x, z, r: 0.8 });
+    }
+    pillars.instanceMatrix.needsUpdate = true;
+    scene.add(pillars);
   }
-  pillars.instanceMatrix.needsUpdate = true;
 
   const wetland = centres.find(c => c.region.name === 'wetland') || centres[1] || centres[0];
   pond.position.set(wetland.x, heightAt(wetland.x, wetland.z) + 0.06, wetland.z);
 }
 
-buildWorld(G.worldSeed);
