@@ -10,12 +10,34 @@ renderPouch();
 
 export const toastEl = $('toast');
 let toastT = 0;
-export function toast(msg, secs=2.2){ toastEl.textContent = msg; toastEl.style.opacity = 1; toastT = secs; }
+export function toast(msg, secs=2.2){ toastEl.classList.remove('echo'); toastEl.textContent = msg; toastEl.style.opacity = 1; toastT = secs; }
 
 // Counts the current toast down; called once per frame from main.js.
 // (In the original this was two lines inline in the frame loop.)
 export function updateToast(dt){
   if (toastT > 0){ toastT -= dt; if (toastT <= 0) toastEl.style.opacity = 0; }
+}
+
+// ---------- the order chain ----------
+// Collecting 1..7 in order is worth three wishes instead of one. That tension
+// used to be announced by a toast that faded; now it sits beside the counter
+// for as long as it matters.
+const orderTag = document.createElement('span');
+orderTag.id = 'orderTag';
+orderTag.className = 'none';
+$('counter').appendChild(orderTag);
+
+export function showOrder(kept, found){
+  if (found === 0){ orderTag.className = 'none'; orderTag.textContent = ''; return; }
+  orderTag.className = kept ? 'kept' : 'broken';
+  orderTag.textContent = kept ? 'in order' : 'order broken';
+}
+
+// A toast in the Keeper's register rather than the HUD's -- used for old wishes
+// resurfacing, which should feel like a memory, not a notification.
+export function echoToast(msg, secs = 5){
+  toast(msg, secs);
+  toastEl.classList.add('echo');
 }
 
 export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');

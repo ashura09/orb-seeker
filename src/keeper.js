@@ -13,6 +13,7 @@ import { orbs, orbGeo } from './orbs.js';
 import { spawnPickup } from './inventory.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
+import { keeperGreeting } from './voice.js';
 
 export const keeper = new THREE.Group();
 export const ka = {wings:[], tail:[], neck:[], eyes:[], sparks:null, ring:null, built:false};
@@ -101,7 +102,9 @@ export function beginEnding(){
   keeper.lookAt(player.position.x, 0, player.position.z);
   keeper.scale.setScalar(0.001); scene.add(keeper);
   const n = G.orderKept ? CONFIG.ceremony.wishesInOrder : CONFIG.ceremony.wishesOutOfOrder;
-  $('wishIntro').textContent = G.orderKept ? 'Seven orbs, gathered in perfect order. The Keeper grants three wishes.' : 'You have gathered all seven orbs. Speak your wish.';
+  // save.cycles is how many gatherings came before this one, so the Keeper
+  // greets a first-time seeker differently from a familiar one.
+  $('wishIntro').textContent = keeperGreeting(save.cycles, G.orderKept);
   $('wishBtn').textContent = n === 1 ? 'Make the wish' : 'Make the wishes';
   $('wishAsk').style.display = 'block'; $('wishDone').style.display = 'none';
   $('wishInputs').innerHTML = '';

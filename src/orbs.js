@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { scene, lam, glow, hex, pointLight, G, $ } from './state.js';
 import { player } from './player.js';
-import { toast } from './ui.js';
+import { toast, showOrder } from './ui.js';
 import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 
@@ -92,6 +92,7 @@ export function placeOrbs(){
     o.x = spots[i].x; o.z = spots[i].z; o.found = false;
     o.mesh.position.set(o.x, 1.1, o.z); scene.add(o.mesh); dots[i].classList.remove('on');
   });
+  showOrder(true, 0);
 }
 placeOrbs();
 
@@ -100,5 +101,6 @@ export function collect(o){
   else if (G.found < 6) toast(G.orderKept ? `Orb ${o.n} found, in order. ${G.found+1} of 7` : `Orb ${o.n} found. ${G.found+1} of 7`);
   o.found = true; G.found++; scene.remove(o.mesh); dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);
+  showOrder(G.orderKept, G.found);
   if (G.found === 7){ toast(G.orderKept ? 'All seven, in perfect order' : 'All seven gathered'); emit(EVENTS.ORBS_ALL_FOUND); }
 }

@@ -9,6 +9,7 @@ import { joy, stickEl } from './input.js';
 import { tierRate, pickTarget } from './wanderers.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
+import { voiceOf } from './voice.js';
 
 const duelEl = $('duel');
 const D = CONFIG.duel;
@@ -18,7 +19,10 @@ export function startDuel(w){
   G.state = 'duel'; duel.w = w; duel.you = 0; duel.them = 0; duel.time = D.seconds; duel.ready = D.countdown; duel.waiting = true; duel.over = false;
   joy.active = false; joy.x = joy.y = 0; stickEl.style.display = 'none';
   const tierWord = ['a gentle', 'an easy', 'a steady', 'a quick', 'a fast', 'a fierce', 'a blistering'][w.tier-1];
-  $('duelWho').textContent = `${w.name} challenges you. Keeps camp near orb ${w.tier}, so expect ${tierWord} pace. Ten seconds: tap as fast as you can and fill your bar before theirs. Press ready when you are, and a short count will start.`;
+  // What they say comes first; the rules go underneath, quieter.
+  $('duelWho').textContent = `“${voiceOf(w.short).challenge}”`;
+  $('duelRules').textContent = `${w.name} keeps camp by orb ${w.tier}, so expect ${tierWord} pace. Ten seconds: tap to fill your bar before theirs.`;
+  $('resultSay').textContent = '';
   $('themName').textContent = w.short;
   $('duelPlay').style.display = 'block'; $('duelResult').style.display = 'none';
   $('duelStart').style.display = 'inline-block'; $('tapzone').style.display = 'none'; $('tapzone').textContent = 'Get ready…';
@@ -68,10 +72,12 @@ export function endDuel(won){
     const flawless = roll < D.flawlessChance;
     loot = flawless ? base*D.flawlessMultiplier : base;
     $('resultBig').textContent = flawless ? 'Flawless!' : 'You win';
+    $('resultSay').textContent = `“${voiceOf(duel.w.short).theyLose}”`;
     $('resultLoot').textContent = `${first} hands over ${loot} fragments.`;
     if (navigator.vibrate) navigator.vibrate([40,40,80]);
   } else {
     loot = D.consolation; $('resultBig').textContent = 'Outpaced';
+    $('resultSay').textContent = `“${voiceOf(duel.w.short).theyWin}”`;
     $('resultLoot').textContent = `${first} wins, but tosses you ${loot} fragment for the effort.`;
   }
   addFragments(loot); duel.w.cooldown = CONFIG.wanderers.cooldown; pickTarget(duel.w);

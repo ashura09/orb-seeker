@@ -55,7 +55,12 @@
   .wishtext{font-style:italic;font-size:17px;margin-bottom:18px;line-height:1.5}
 
   /* duel */
-  .who{font-size:15px;margin:0 0 12px;opacity:.85}
+  /* what the villager actually says, in their own voice */
+  .who{font-size:16px;margin:0 0 6px;font-style:italic;line-height:1.45}
+  /* the mechanical explanation, kept quieter than the character */
+  .rules{font-size:13px;margin:0 0 12px;opacity:.62;line-height:1.4}
+  /* their line after the duel is decided */
+  .say{font-style:italic;font-size:15px;opacity:.8;margin:0 0 10px;line-height:1.45}
   .bar{height:22px;border-radius:11px;background:rgba(0,0,0,.12);overflow:hidden;margin:6px 0 2px;border:2px solid var(--brass)}
   .bar b{display:block;height:100%;width:0;background:var(--face);transition:width .08s linear}
   .bar.them b{background:#e0553d}
@@ -90,3 +95,19 @@
   #stats{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);
     text-align:center;font:bold 13px ui-monospace,Menlo,Consolas,monospace;color:#8ff5c8;
     text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;z-index:10}
+
+  /* the order chain, beside the seven counter dots. Breaking the order drops
+     your reward from three wishes to one, so it should be visible while it
+     still matters -- not just a toast that fades. */
+  /* order:2 puts this after the seven dots. ui.js loads before orbs.js -- it is
+     lower in the module graph -- so the tag element is appended to #counter
+     first and would otherwise sit to the LEFT of the dots. #counter is a
+     flexbox, so ordering it in CSS is simpler than fighting the load order. */
+  #orderTag{order:2;margin-left:8px;font-size:11px;font-weight:bold;letter-spacing:.04em;
+    padding:2px 8px;border-radius:999px;white-space:nowrap;transition:opacity .3s}
+  #orderTag.kept{color:#0c3a3a;background:rgba(143,245,200,.85);border:1px solid rgba(12,58,58,.25)}
+  #orderTag.broken{color:#fff;background:rgba(224,85,61,.85);border:1px solid rgba(0,0,0,.2)}
+  #orderTag.none{opacity:0}
+
+  /* an old wish resurfacing at the start of a gathering */
+  #toast.echo{font-style:italic;font-size:18px;font-weight:normal}

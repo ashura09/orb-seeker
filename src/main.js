@@ -17,7 +17,8 @@ import { duel, updateDuel } from './duel.js';
 import { pickups, collectPickup, spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
-import { toast, updateToast, initStats } from './ui.js';
+import { toast, updateToast, initStats, echoToast } from './ui.js';
+import { wishEcho } from './voice.js';
 import { CONFIG } from './config.js';
 import './shop.js';
 
@@ -38,7 +39,27 @@ let bob = 0;
 
 initStats(renderer);
 
-$('startBtn').addEventListener('click', () => { $('start').classList.add('hidden'); G.state = 'play'; });
+// ---------- the valley remembers ----------
+//
+// save.wishes has held every sentence the player ever typed, stamped with the
+// gathering it belonged to, since the game was written. Nothing ever read it
+// back. At the start of a gathering one of them resurfaces, quietly.
+//
+// Older wishes are preferred: being reminded of something you asked for six
+// gatherings ago lands harder than something from last time.
+function recallAWish(){
+  if (!save.wishes.length) return;
+  const oldest = Math.min(...save.wishes.map(w => w.cycle));
+  const candidates = save.wishes.filter(w => w.cycle === oldest);
+  const pick = candidates[(Math.random() * candidates.length) | 0];
+  echoToast(wishEcho(pick.text, save.cycles - pick.cycle));
+}
+
+$('startBtn').addEventListener('click', () => {
+  $('start').classList.add('hidden');
+  G.state = 'play';
+  setTimeout(recallAWish, 2200);   // let the panel clear before the memory arrives
+});
 
 function frame(){
   requestAnimationFrame(frame);
@@ -115,7 +136,7 @@ function frame(){
     keeper.position.y += dt*6*k; keeper.scale.setScalar(1 - k*0.9);
     if (G.departT >= CER.departSeconds){ scene.remove(keeper); G.departT = -1; G.ceremony = false; G.nightTarget = 0; G.respawnT = CER.respawnSeconds; $('hint').style.opacity = 0.75; }
   }
-  if (G.respawnT > 0){ G.respawnT -= dt; if (G.respawnT <= 0){ G.respawnT = -1; placeOrbs(); homeWanderers(); toast('The seven orbs have scattered across the valley again', 3); } }
+  if (G.respawnT > 0){ G.respawnT -= dt; if (G.respawnT <= 0){ G.respawnT = -1; placeOrbs(); homeWanderers(); toast('The seven orbs have scattered across the valley again', 3); setTimeout(recallAWish, 3600); } }
 
   // camera
   const cine = G.state === 'ending' || G.state === 'wish';
