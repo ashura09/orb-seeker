@@ -1,0 +1,14 @@
+/* Placeholder styling. The game's real CSS moves here from index.html's
+   <style> block in step 3. */
+:root { color-scheme: dark; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: system-ui, sans-serif;
+  background: #14121a;
+  color: #e8e4f0;
+}
+#placeholder { text-align: center; padding: 2rem; }
+code { background: #262233; padding: 0.15em 0.4em; border-radius: 4px; }
