@@ -11,6 +11,7 @@ import { save, persist } from './save.js';
 import { toast } from './ui.js';
 import { orbs, orbGeo } from './orbs.js';
 import { spawnPickup } from './inventory.js';
+import { on, EVENTS } from './events.js';
 
 export const keeper = new THREE.Group();
 export const ka = {wings:[], tail:[], neck:[], eyes:[], sparks:null, ring:null, built:false};
@@ -136,3 +137,9 @@ $('claimBtn').addEventListener('click', () => {
 export function keeperDeparts(){
   G.departT = 0; toast('The Keeper rises and the valley sleeps. The orbs will scatter again soon.', 3.5);
 }
+
+// ---------- what wakes the Keeper ----------
+// orbs.js does not know this file exists; it only announces that the seventh
+// orb was collected. The same for the last wish token being picked up.
+on(EVENTS.ORBS_ALL_FOUND, beginEnding);
+on(EVENTS.WISHES_ALL_COLLECTED, keeperDeparts);

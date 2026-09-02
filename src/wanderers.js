@@ -8,7 +8,7 @@ import { player } from './player.js';
 import { owned } from './save.js';
 import { orbs } from './orbs.js';
 import { WORLD_R } from './world.js';
-import { startDuel } from './duel.js';
+import { emit, EVENTS } from './events.js';
 
 // Each villager has a build, a skin tone, headwear and a prop that says what
 // they do for a living — so you can tell who is walking toward you from across
@@ -182,6 +182,6 @@ export function updateWanderers(dt){
       w.bob += dt*9; w.g.position.y = Math.abs(Math.sin(w.bob))*0.1;
       animateLimbs(w, true);
     } else { w.wait -= dt; if (w.wait <= 0) pickTarget(w); animateLimbs(w, false); }
-    if (G.state === 'play' && hunting && pd < 2.2) startDuel(w);
+    if (G.state === 'play' && hunting && pd < 2.2) emit(EVENTS.DUEL_CHALLENGE, w);
   }
 }

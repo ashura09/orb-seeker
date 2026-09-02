@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { scene, lam, glow, hex, pointLight, G, $ } from './state.js';
 import { player } from './player.js';
 import { toast } from './ui.js';
-import { beginEnding } from './keeper.js';
+import { emit, EVENTS } from './events.js';
 
 export const ORB_COLORS = [0xff6b6b, 0xffa94d, 0xffe066, 0x8ce99a, 0x66d9e8, 0x748ffc, 0xda77f2];
 export const orbGeo = new THREE.SphereGeometry(0.55, 18, 14);
@@ -97,5 +97,5 @@ export function collect(o){
   else if (G.found < 6) toast(G.orderKept ? `Orb ${o.n} found, in order. ${G.found+1} of 7` : `Orb ${o.n} found. ${G.found+1} of 7`);
   o.found = true; G.found++; scene.remove(o.mesh); dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);
-  if (G.found === 7){ toast(G.orderKept ? 'All seven, in perfect order' : 'All seven gathered'); beginEnding(); }
+  if (G.found === 7){ toast(G.orderKept ? 'All seven, in perfect order' : 'All seven gathered'); emit(EVENTS.ORBS_ALL_FOUND); }
 }

@@ -25,7 +25,9 @@ sense?* If `orbs.js` breaks when you delete the dragon, the boundary is in the w
 
 ## Why the bus
 
-As of the audit there were four import cycles:
+**Status: done.** The dependency graph is acyclic as of 2 September 2026.
+
+The audit found four import cycles:
 
 ```
 duel <-> wanderers      inventory <-> keeper
@@ -54,10 +56,25 @@ really two features.
 
 ## Order of work
 
-1. Event bus — removes all four cycles, no behaviour change
+1. ~~Event bus — removes all four cycles, no behaviour change~~ **done**
 2. `domain/config.js` — gather the scattered tuning numbers
 3. Split `state.js` into renderer / materials / shared state
 4. Separate rules from screens, one feature at a time (duel first — clearest seam)
 5. Move files into folders — **last**, once imports already point the right way
 
 Moving folders first just relocates a tangle.
+
+## Current layering
+
+With the bus in place the graph sorts itself, no folders required yet:
+
+```
+0   events, save, state          depend on nothing
+1   input, player, ui, world
+2   orbs, shop
+3   inventory, wanderers
+4   duel, finder, keeper
+5   main
+```
+
+Nothing at a lower number imports anything at a higher one.

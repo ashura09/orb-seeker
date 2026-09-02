@@ -8,7 +8,7 @@ import { player, applyCosmetics } from './player.js';
 import { save, persist, owned } from './save.js';
 import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
-import { keeperDeparts } from './keeper.js';
+import { emit, on, EVENTS } from './events.js';
 
 // {g, kind:'item'|'wish', id?, text?, phase}
 export const pickups = [];
@@ -44,7 +44,7 @@ export function collectPickup(p, idx){
   }
   bump($('satchelBtn'));
   if (navigator.vibrate) navigator.vibrate([30, 30, 60]);
-  if (G.ceremony && !pickups.some(q => q.kind === 'wish')) keeperDeparts();
+  if (G.ceremony && !pickups.some(q => q.kind === 'wish')) emit(EVENTS.WISHES_ALL_COLLECTED);
 }
 
 export function renderSatchel(){
@@ -64,6 +64,10 @@ export function renderSatchel(){
     it.appendChild(row);
   });
 }
+
+// shop.js takes the payment and announces it. Setting the crate down in the
+// world is this file's job, so the shop no longer needs to know how that works.
+on(EVENTS.ITEM_BOUGHT, id => spawnPickup('item', id));
 
 $('satchelBtn').addEventListener('click', () => { if (G.state !== 'play') return; G.state = 'satchel'; renderSatchel(); $('satchel').classList.remove('hidden'); });
 $('satchelClose').addEventListener('click', () => { $('satchel').classList.add('hidden'); G.state = 'play'; });

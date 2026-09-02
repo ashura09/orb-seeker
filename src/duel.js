@@ -7,6 +7,7 @@ import { save, owned } from './save.js';
 import { addFragments } from './ui.js';
 import { joy, stickEl } from './input.js';
 import { tierRate, pickTarget } from './wanderers.js';
+import { on, EVENTS } from './events.js';
 
 const duelEl = $('duel');
 export const duel = {w:null, you:0, them:0, time:10, ready:3, waiting:true, over:false};
@@ -75,3 +76,7 @@ export function endDuel(won){
 }
 
 $('duelDone').addEventListener('click', () => { duelEl.classList.add('hidden'); G.state = 'play'; });
+
+// wanderers.js announces that a villager caught you; it does not open the panel
+// itself, so it no longer needs to know this file exists.
+on(EVENTS.DUEL_CHALLENGE, startDuel);

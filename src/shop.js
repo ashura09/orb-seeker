@@ -5,7 +5,7 @@
 import { $, G, hex } from './state.js';
 import { save, persist } from './save.js';
 import { renderPouch, toast, pouchEl } from './ui.js';
-import { spawnPickup } from './inventory.js';
+import { emit, EVENTS } from './events.js';
 
 export const ITEMS = [
   {id:'boots',   name:'Swift boots',     desc:'Walk 40% faster.',                              cost:12, color:0x66d9e8},
@@ -36,7 +36,7 @@ export function renderShop(){
       const b = document.createElement('button'); b.textContent = `${u.cost} ◆`; b.disabled = save.fragments < u.cost;
       b.addEventListener('click', () => {
         save.fragments -= u.cost; save.items[u.id] = 'bought'; persist(); renderPouch(); renderShop();
-        spawnPickup('item', u.id); toast(`${u.name} set down beside you`);
+        emit(EVENTS.ITEM_BOUGHT, u.id); toast(`${u.name} set down beside you`);
       });
       row.appendChild(b);
     }
