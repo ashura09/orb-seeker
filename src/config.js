@@ -32,6 +32,10 @@ export const CONFIG = {
     bobRate: 10,          // how fast the walk bounce cycles
     bobHeight: 0.12,
     radius: 0.45,         // how close you can get to a tree trunk
+
+    // Crawling: quieter, but slow. The trade is the whole point -- you give up
+    // ground to give up noise.
+    crawlSpeedMultiplier: 0.42,
   },
 
   // ---------- camera ----------
@@ -93,6 +97,16 @@ export const CONFIG = {
     waitMax: 4,
     cooldown: 25,          // seconds before the same villager challenges again
     bobRate: 9,
+
+    // Crawling multiplies how far they hear you, so it stacks correctly with
+    // the Silver bell instead of overriding it.
+    crawlHearingMultiplier: 0.45,
+
+    // Whistling is the opposite: for a moment you are audible from much
+    // further away, and anyone in range comes looking.
+    whistleRange: 55,
+    whistleSeconds: 1.6,      // how long the noise carries
+    whistleCooldown: 5,       // before you can whistle again
   },
 
   // ---------- the tap duel ----------

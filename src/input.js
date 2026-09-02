@@ -4,6 +4,7 @@
 // exported so duel.js can force the joystick to let go when a duel starts.
 import { $, G, canvas } from './state.js';
 import { CONFIG } from './config.js';
+import { emit, EVENTS } from './events.js';
 
 export const stickEl = $('stick'), knobEl = $('knob');
 export const joy = {active:false, id:null, cx:0, cy:0, x:0, y:0};
@@ -44,6 +45,15 @@ canvas.addEventListener('touchcancel',e => { for (const x of e.changedTouches) e
 canvas.addEventListener('mousedown', e => startTouch({clientX:e.clientX, clientY:e.clientY, identifier:'m'}));
 window.addEventListener('mousemove', e => moveTouch({clientX:e.clientX, clientY:e.clientY, identifier:'m'}));
 window.addEventListener('mouseup',   () => endTouch({identifier:'m'}));
-window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  // C and V are one-shot actions, so they fire on the key going down rather
+  // than being held. e.repeat guards against the keyboard auto-repeating.
+  if (!e.repeat){
+    if (k === 'c') emit(EVENTS.CRAWL_TOGGLE);
+    if (k === 'v') emit(EVENTS.WHISTLE);
+  }
+  keys[k] = true;
+});
 // R and F tilt the view on a keyboard, the way Q and E turn it.
 window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);

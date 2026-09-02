@@ -173,7 +173,11 @@ function animateLimbs(w, moving){
 
 export function updateWanderers(dt){
   const W = CONFIG.wanderers;
-  const hear = owned('bell') ? W.hearingWithBell : W.hearingRange;
+  // How far you carry. Crawling multiplies the base so it still stacks with the
+  // Silver bell; whistling overrides both for as long as the noise lasts.
+  let hear = owned('bell') ? W.hearingWithBell : W.hearingRange;
+  if (G.crawling) hear *= W.crawlHearingMultiplier;
+  if (G.whistleT > 0) hear = Math.max(hear, W.whistleRange);
   for (const w of wanderers){
     w.cooldown = Math.max(0, w.cooldown - dt);
     const pdx = player.position.x - w.g.position.x, pdz = player.position.z - w.g.position.z, pd = Math.hypot(pdx, pdz);

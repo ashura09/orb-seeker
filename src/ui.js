@@ -1,6 +1,7 @@
 // ui.js — toasts, the fragment pouch counter, and the little bump animation.
 import { $ } from './state.js';
 import { save, persist } from './save.js';
+import { emit, EVENTS } from './events.js';
 
 export const pouchEl = $('pouch'), fragEl = $('fragCount');
 export function renderPouch(){ fragEl.textContent = save.fragments; }
@@ -38,6 +39,22 @@ export function showOrder(kept, found){
 export function echoToast(msg, secs = 5){
   toast(msg, secs);
   toastEl.classList.add('echo');
+}
+
+// ---------- crawl and whistle buttons ----------
+// They only announce intent; main.js decides what the game does about it.
+const crawlBtn = $('crawlBtn'), whistleBtn = $('whistleBtn');
+crawlBtn.addEventListener('click', () => emit(EVENTS.CRAWL_TOGGLE));
+whistleBtn.addEventListener('click', () => emit(EVENTS.WHISTLE));
+
+export function setCrawlButton(on){
+  crawlBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  crawlBtn.textContent = on ? 'Stand' : 'Crawl';
+}
+
+// Greyed out while the whistle is on cooldown, so the button tells the truth.
+export function setWhistleReady(ready){
+  whistleBtn.disabled = !ready;
 }
 
 export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');

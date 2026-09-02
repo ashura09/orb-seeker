@@ -9,7 +9,7 @@ import './style.css';
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
 import { WORLD_R, obstacles } from './world.js';
-import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics } from './player.js';
+import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy } from './input.js';
 import { updateWanderers, homeWanderers } from './wanderers.js';
@@ -17,8 +17,9 @@ import { duel, updateDuel } from './duel.js';
 import { pickups, collectPickup, spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
-import { toast, updateToast, initStats, echoToast } from './ui.js';
+import { toast, updateToast, initStats, echoToast, setCrawlButton, setWhistleReady } from './ui.js';
 import { wishEcho } from './voice.js';
+import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import './shop.js';
 
@@ -39,6 +40,30 @@ G.camPitch = CAM.pitch;   // starting elevation
 let bob = 0;
 
 initStats(renderer);
+
+// ---------- crawl and whistle ----------
+//
+// The two ends of one dial. Villagers notice you at CONFIG.wanderers.hearingRange;
+// crawling multiplies that down and whistling forces it up, so you can choose to
+// slip past the camp guarding the orb you want -- or call its keeper over when
+// you would rather have the fragments.
+on(EVENTS.CRAWL_TOGGLE, () => {
+  if (G.state !== 'play') return;
+  G.crawling = !G.crawling;
+  setCrawlPose(G.crawling);
+  setCrawlButton(G.crawling);
+  toast(G.crawling ? 'Crawling. Slower, and harder to hear.' : 'Standing.', 1.6);
+});
+
+on(EVENTS.WHISTLE, () => {
+  if (G.state !== 'play' || G.whistleCd > 0) return;
+  const W = CONFIG.wanderers;
+  G.whistleT = W.whistleSeconds;
+  G.whistleCd = W.whistleCooldown;
+  setWhistleReady(false);
+  toast('You whistle. It carries.', 1.8);
+  if (navigator.vibrate) navigator.vibrate([15, 40, 15]);
+});
 
 // The tuning panel, only when asked for with ?tune on the URL. A dynamic import
 // means Vite splits lil-gui into its own chunk, so players who never open the
@@ -90,11 +115,18 @@ function frame(){
   hemi.intensity = DN.hemiDay - DN.hemiNightDrop*G.night; sun.intensity = DN.sunDay - DN.sunNightDrop*G.night;
   if (cosmetics.lanternLight) cosmetics.lanternLight.intensity = DN.lanternBase + G.night*DN.lanternNightBoost;
 
+  // the whistle fades, then the cooldown clears and the button comes back
+  if (G.whistleT > 0) G.whistleT = Math.max(0, G.whistleT - dt);
+  if (G.whistleCd > 0){
+    G.whistleCd = Math.max(0, G.whistleCd - dt);
+    if (G.whistleCd === 0) setWhistleReady(true);
+  }
+
   if (G.state === 'play'){
     const len = Math.hypot(mx, my);
     let moving = false;
     if (len > 0.08){
-      const k = Math.min(len, 1) * (owned('boots') ? P.bootsMultiplier : 1);
+      const k = Math.min(len, 1) * (owned('boots') ? P.bootsMultiplier : 1) * (G.crawling ? P.crawlSpeedMultiplier : 1);
       const vx = f.x*(-my) + rx*mx, vz = f.z*(-my) + rz*mx, vl = Math.hypot(vx, vz) || 1;
       player.position.x += vx/vl*P.speed*k*dt; player.position.z += vz/vl*P.speed*k*dt;
       player.rotation.y = Math.atan2(vx, vz); bob += dt*P.bobRate*k; moving = true;

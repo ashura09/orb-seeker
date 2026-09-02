@@ -29,6 +29,8 @@ export const EVENTS = {
   DUEL_CHALLENGE:        'duel:challenge',        // a villager caught you  (payload: the villager)
   ITEM_BOUGHT:           'shop:item-bought',      // paid for at the cart   (payload: item id)
   WISHES_ALL_COLLECTED:  'wishes:all-collected',  // last wish token picked up
+  CRAWL_TOGGLE:          'player:crawl-toggle',   // the player asked to crawl or stand
+  WHISTLE:               'player:whistle',        // the player made a noise on purpose
 };
 
 const listeners = new Map();

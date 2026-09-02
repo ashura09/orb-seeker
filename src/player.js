@@ -56,6 +56,19 @@ export const legL = makeLeg(-1), legR = makeLeg(1);
 
 scene.add(player);
 
+// ---------- crawling ----------
+// Drops the upper body to the ground and tips it forward, and lays the legs out
+// behind. Purely visual -- what crawling DOES lives in wanderers.js (they hear
+// you from closer) and main.js (you move slower).
+// The walk cycle swings the legs on rotation.x, so the crawl splays them on
+// rotation.z instead and the two never fight each other.
+export function setCrawlPose(on){
+  body.position.y = on ? 0.02 : 0.30;
+  body.rotation.x = on ? 1.15 : 0;
+  legL.rotation.z = on ? -0.35 : 0;
+  legR.rotation.z = on ?  0.35 : 0;
+}
+
 // cosmetics from items (attached once collected)
 export const cosmetics = {};
 export function applyCosmetics(){

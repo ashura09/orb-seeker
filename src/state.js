@@ -32,6 +32,9 @@ export const G = {
   t: 0,            // seconds since load, used by every animation
   camYaw: 0,       // camera angle around the player, written by input.js
   camPitch: 0,     // camera elevation; set from config on first frame
+  crawling: false, // quieter and slower
+  whistleT: 0,     // seconds of noise still carrying
+  whistleCd: 0,    // seconds until you can whistle again
   found: 0,        // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0,        // 0 = day, 1 = night; eased every frame
