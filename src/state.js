@@ -68,7 +68,8 @@ scene.fog = new THREE.Fog(DAY.clone(), CONFIG.fog.near, CONFIG.fog.far);
 // 400/0.1 = 4000:1 leaves very little precision out at 50-150 m, which is where
 // the ground flicker showed. The camera never gets closer than ~6 m to anything
 // it needs to draw, so raising near costs nothing and buys a 5x better ratio.
-export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 1200);
+// far plane must clear the furthest hill or the horizon gets sliced off
+export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 2600);
 // Sky fill and bounce. The ground colour was a dark green, which meant any
 // slope facing away from the sun fell to nearly black -- fine on a flat disc
 // with no hills, badly wrong once the valley had them. A lighter bounce colour

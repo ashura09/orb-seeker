@@ -250,13 +250,23 @@ function frame(){
   const ease  = Math.min(1, dt*CAM.ease);
 
   const horiz  = Math.cos(pitch) * dist;                        // ground distance
-  // the whole camera rides the terrain, so cresting a hill does not bury it
   const groundY = heightAt(player.position.x, player.position.z);
-  const camY   = Math.max(groundY + CAM.minHeight, groundY + aimAt + Math.sin(pitch) * dist);
+
+  // Where the camera wants to sit, in world terms.
+  const wantX = player.position.x + Math.sin(G.camYaw) * horiz;
+  const wantZ = player.position.z + Math.cos(G.camYaw) * horiz;
+
+  // The camera sits BEHIND you, which on a slope can put it over ground higher
+  // than the ground you are standing on -- and it would then be inside the hill,
+  // looking out through the back of it at nothing. So it is held clear of the
+  // terrain beneath ITSELF, not beneath the player.
+  const groundUnderCamera = heightAt(wantX, wantZ);
+  const wantY = groundY + aimAt + Math.sin(pitch) * dist;
+  const camY  = Math.max(wantY, groundUnderCamera + CAM.minHeight);
   const targetY = aimAt + Math.max(0, -pitch) * dist * CAM.lookUpGain;
 
-  camera.position.x += ((player.position.x + Math.sin(G.camYaw)*horiz) - camera.position.x)*ease;
-  camera.position.z += ((player.position.z + Math.cos(G.camYaw)*horiz) - camera.position.z)*ease;
+  camera.position.x += (wantX - camera.position.x)*ease;
+  camera.position.z += (wantZ - camera.position.z)*ease;
   camera.position.y += (camY - camera.position.y)*ease;
   camTarget.set(player.position.x, groundY + targetY, player.position.z); camera.lookAt(camTarget);
 

@@ -32,23 +32,28 @@ export const CONFIG = {
     // out there. That, rather than fog, is what stops the world having a
     // visible edge. Keep the rise gentle inside the valley: an early, steep rim
     // turns the place into a crater and you cannot see out at all.
-    skirt: 150,           // ground extends this far past the walkable radius
-    rimStart: 0.9,        // fraction of the radius where the ground starts rising
-    rimSpan: 170,         // metres over which it climbs to full height
-    rimHeight: 95,        // how high the far mountains stand
+    // The first attempt started the rise at 0.9 of the radius, which put a wall
+    // climbing at 135 m -- INSIDE the 150 m you can walk. That is what turned
+    // the valley into a bowl. The rise now begins beyond the walkable edge, so
+    // the whole floor is open and the land only gathers itself up in the
+    // distance.
+    skirt: 250,           // ground extends this far past the walkable radius
+    rimStart: 1.05,       // 157 m -- past the 150 m you can reach
+    rimSpan: 220,
+    rimHeight: 75,
 
     // Individual peaks beyond even that, to break the skyline. No collision.
-    hillCount: 52,
-    hillNear: 340,
-    hillFar: 760,
-    hillMin: 60,
-    hillMax: 190,
+    hillCount: 58,
+    hillNear: 430,
+    hillFar: 1000,
+    hillMin: 70,
+    hillMax: 220,
   },
 
   // ---------- how far you can see ----------
   fog: {
-    near: 120,
-    far: 750,             // was 130, which put a wall of haze around the valley
+    near: 140,
+    far: 950,             // started at 130, which ringed the valley with haze
   },
 
   // ---------- the sky ----------

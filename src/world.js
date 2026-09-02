@@ -126,10 +126,20 @@ function shapeGround(){
   const pos = groundGeo.attributes.position;
   const col = groundGeo.attributes.color;
   for (let i = 0; i < pos.count; i++){
-    // the plane is unrotated here, so its x/y are world x/z and z is height
-    const x = pos.getX(i), z = pos.getY(i);
+    // MIND THE SIGN. The plane is still unrotated here: it lies in local XY and
+    // gets rotated -90 degrees about X to lie flat. That rotation maps local +y
+    // to world -z, so the world coordinate of this vertex is (x, height, -y).
+    //
+    // Sampling heightAt(x, +y) built the terrain from a MIRRORED copy of the
+    // height function, while the player, props, orbs and villagers all used the
+    // true one. Everything was placed up to 9 m off the visible surface: props
+    // floated or sank, and walking onto high ground dropped you through the
+    // floor.
+    const x = pos.getX(i), z = -pos.getY(i);
     pos.setZ(i, heightAt(x, z));
 
+    // same corrected z: the ground colours were mirrored too, which is why the
+    // forest's dark green never sat under the actual forest
     const { region, neighbour, blend } = regionAt(x, z);
     const m = mottle(x, z);
     colA.setHex(region.ground[0]).lerp(colB.setHex(region.ground[1]), m);
