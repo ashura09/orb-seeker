@@ -12,6 +12,7 @@
 //     exported that way (you'd only ever see the starting value), so they live
 //     on the G object below and are written as G.state, G.t, and so on.
 import * as THREE from 'three';
+import { randomSeed } from './rng.js';
 
 // ---------- three.js r185 compatibility ----------
 // The original loaded three r128 from a CDN. Three things changed since; see
@@ -35,6 +36,11 @@ export const G = {
   crawling: false, // quieter and slower
   whistleT: 0,     // seconds of noise still carrying
   whistleCd: 0,    // seconds until you can whistle again
+
+  // The number the whole valley is generated from. Change it and the forest,
+  // the highland, the wetland and every tree move somewhere else. A new one is
+  // rolled each time the orbs scatter.
+  worldSeed: randomSeed(),
   found: 0,        // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0,        // 0 = day, 1 = night; eased every frame

@@ -8,7 +8,8 @@ import './style.css';
 
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
-import { WORLD_R, obstacles } from './world.js';
+import { WORLD_R, obstacles, buildWorld } from './world.js';
+import { randomSeed } from './rng.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy } from './input.js';
@@ -181,7 +182,20 @@ function frame(){
     keeper.position.y += dt*6*k; keeper.scale.setScalar(1 - k*0.9);
     if (G.departT >= CER.departSeconds){ scene.remove(keeper); G.departT = -1; G.ceremony = false; G.nightTarget = 0; G.respawnT = CER.respawnSeconds; $('hint').style.opacity = 0.75; }
   }
-  if (G.respawnT > 0){ G.respawnT -= dt; if (G.respawnT <= 0){ G.respawnT = -1; placeOrbs(); homeWanderers(); toast('The seven orbs have scattered across the valley again', 3); setTimeout(recallAWish, 3600); } }
+  if (G.respawnT > 0){
+    G.respawnT -= dt;
+    if (G.respawnT <= 0){
+      G.respawnT = -1;
+      // A new gathering is a new arrangement of the valley: the forest, the
+      // rocky ground and the wetland all move. Same kind of place, never the
+      // same walk twice.
+      G.worldSeed = randomSeed();
+      buildWorld(G.worldSeed);
+      placeOrbs(); homeWanderers();
+      toast('The valley has shifted, and the seven orbs are scattered again', 3.5);
+      setTimeout(recallAWish, 3600);
+    }
+  }
 
   // ---------- camera ----------
   //
