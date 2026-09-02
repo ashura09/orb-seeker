@@ -35,16 +35,35 @@ export const CONFIG = {
   },
 
   // ---------- camera ----------
+  // The camera orbits the player on a sphere: camYaw spins around, camPitch
+  // rides up and down. distance is the orbit RADIUS, not the ground distance.
+  //
+  // The defaults reproduce the old fixed camera exactly: at pitch 0.354 and
+  // radius 6.93 the camera sits 6.5 m back and 3.6 m up, which is where it used
+  // to be nailed in place.
   camera: {
-    distance: 6.5,        // normal follow distance
-    height: 3.6,
-    lookAtHeight: 1.2,
-    cinematicDistance: 12,   // pulled back for the ceremony
-    cinematicHeight: 7,
+    distance: 6.93,
+    pitch: 0.354,          // starting elevation, radians (~20 degrees up)
+    lookAtHeight: 1.2,     // the point on the player the camera aims at
+
+    // How far up and down you can swing. Negative pitch drops the camera and
+    // raises what it looks at, which is how you see the sky and the Keeper
+    // overhead without the camera pushing through the ground.
+    pitchMin: -0.62,
+    pitchMax: 1.25,        // nearly straight down
+    minHeight: 0.8,        // camera never gets closer than this to the ground
+    lookUpGain: 1.5,       // how much the aim point rises as you look up
+
+    cinematicDistance: 12.01,   // the ceremony pulls back
+    cinematicPitch: 0.042,
     cinematicLookAt: 6.5,
-    ease: 6,              // higher = snappier follow, lower = floatier
-    turnSpeed: 2,         // Q and E keys, radians per second
+
+    ease: 6,               // higher = snappier follow, lower = floatier
+    turnSpeed: 2,          // Q and E keys, radians per second
+    pitchKeySpeed: 1.4,    // R and F keys
     dragSensitivity: 0.008,
+    dragSensitivityY: 0.006,
+    invertY: false,        // flip if dragging up should look down instead
   },
 
   // ---------- the seven orbs ----------

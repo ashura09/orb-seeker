@@ -30,7 +30,8 @@ export const hex = c => '#'+c.toString(16).padStart(6,'0');
 export const G = {
   state: 'start',
   t: 0,            // seconds since load, used by every animation
-  camYaw: 0,       // camera angle, written by input.js
+  camYaw: 0,       // camera angle around the player, written by input.js
+  camPitch: 0,     // camera elevation; set from config on first frame
   found: 0,        // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0,        // 0 = day, 1 = night; eased every frame

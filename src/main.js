@@ -35,6 +35,7 @@ applyCosmetics();
 const timer = new THREE.Timer();
 const camTarget = new THREE.Vector3();
 const { player: P, camera: CAM, orbs: ORB, ceremony: CER, dayNight: DN } = CONFIG;
+G.camPitch = CAM.pitch;   // starting elevation
 let bob = 0;
 
 initStats(renderer);
@@ -69,6 +70,11 @@ function frame(){
   if (keys['w']||keys['arrowup']) my = -1; if (keys['s']||keys['arrowdown']) my = 1;
   if (keys['a']||keys['arrowleft']) mx = -1; if (keys['d']||keys['arrowright']) mx = 1;
   if (keys['q']) G.camYaw += CAM.turnSpeed*dt; if (keys['e']) G.camYaw -= CAM.turnSpeed*dt;
+  // R and F tilt the view up and down on a keyboard
+  if (keys['r'] || keys['f']){
+    const tilt = (keys['f'] ? 1 : 0) - (keys['r'] ? 1 : 0);
+    G.camPitch = Math.max(CAM.pitchMin, Math.min(CAM.pitchMax, G.camPitch + tilt*CAM.pitchKeySpeed*dt));
+  }
   const f = forward(), rx = -f.z, rz = f.x;
 
   // day / night easing
@@ -138,13 +144,31 @@ function frame(){
   }
   if (G.respawnT > 0){ G.respawnT -= dt; if (G.respawnT <= 0){ G.respawnT = -1; placeOrbs(); homeWanderers(); toast('The seven orbs have scattered across the valley again', 3); setTimeout(recallAWish, 3600); } }
 
-  // camera
+  // ---------- camera ----------
+  //
+  // The camera orbits the player on a sphere. camYaw spins it around; camPitch
+  // rides it up and down. `dist` is the radius of that sphere, so the ground
+  // distance shrinks as you climb -- which is what makes looking down feel
+  // right rather than like sliding backwards.
+  //
+  // Looking UP is the awkward case: pitch alone would push the camera below the
+  // ground. So past level, the camera stops descending (minHeight) and instead
+  // the point it aims at climbs, which tips the view skyward. That is how you
+  // get to see the Keeper overhead.
   const cine = G.state === 'ending' || G.state === 'wish';
-  const dist = cine ? CAM.cinematicDistance : CAM.distance, ease = Math.min(1, dt*CAM.ease);
-  camera.position.x += ((player.position.x + Math.sin(G.camYaw)*dist) - camera.position.x)*ease;
-  camera.position.z += ((player.position.z + Math.cos(G.camYaw)*dist) - camera.position.z)*ease;
-  camera.position.y += ((cine ? CAM.cinematicHeight : CAM.height) - camera.position.y)*ease;
-  camTarget.set(player.position.x, cine ? CAM.cinematicLookAt : CAM.lookAtHeight, player.position.z); camera.lookAt(camTarget);
+  const dist  = cine ? CAM.cinematicDistance : CAM.distance;
+  const pitch = G.camPitch;   // yours during the ceremony too, so you can look up at the Keeper
+  const aimAt = cine ? CAM.cinematicLookAt   : CAM.lookAtHeight;
+  const ease  = Math.min(1, dt*CAM.ease);
+
+  const horiz  = Math.cos(pitch) * dist;                        // ground distance
+  const camY   = Math.max(CAM.minHeight, aimAt + Math.sin(pitch) * dist);
+  const targetY = aimAt + Math.max(0, -pitch) * dist * CAM.lookUpGain;
+
+  camera.position.x += ((player.position.x + Math.sin(G.camYaw)*horiz) - camera.position.x)*ease;
+  camera.position.z += ((player.position.z + Math.cos(G.camYaw)*horiz) - camera.position.z)*ease;
+  camera.position.y += (camY - camera.position.y)*ease;
+  camTarget.set(player.position.x, targetY, player.position.z); camera.lookAt(camTarget);
 
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);

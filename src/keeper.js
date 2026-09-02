@@ -94,6 +94,9 @@ export function animateKeeper(dt){
 
 export function beginEnding(){
   G.state = 'ending'; G.ceremony = true; G.endT = 0; G.nightTarget = 1;
+  // Frame the ceremony, but leave the camera in the player's hands afterwards --
+  // the Keeper stands overhead and is worth looking up at.
+  G.camPitch = CONFIG.camera.cinematicPitch;
   $('hint').style.opacity = 0;
   orbs.forEach((o, i) => { const m = new THREE.Mesh(orbGeo, lam(o.color, 0.9)); m.add(pointLight(o.color, 1.5, 12)); scene.add(m); ringOrbs.push({m, i}); });
   buildKeeper();
