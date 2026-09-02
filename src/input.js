@@ -3,6 +3,7 @@
 // The left half of the screen walks, the right half looks around. Both are
 // exported so duel.js can force the joystick to let go when a duel starts.
 import { $, G, canvas } from './state.js';
+import { CONFIG } from './config.js';
 
 export const stickEl = $('stick'), knobEl = $('knob');
 export const joy = {active:false, id:null, cx:0, cy:0, x:0, y:0};
@@ -21,7 +22,7 @@ function moveTouch(tch){
     let dx = tch.clientX - joy.cx, dy = tch.clientY - joy.cy; const len = Math.hypot(dx, dy);
     if (len > R){ dx *= R/len; dy *= R/len; }
     joy.x = dx/R; joy.y = dy/R; knobEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-  } else if (look.active && tch.identifier === look.id){ G.camYaw -= (tch.clientX - look.lastX) * 0.008; look.lastX = tch.clientX; }
+  } else if (look.active && tch.identifier === look.id){ G.camYaw -= (tch.clientX - look.lastX) * CONFIG.camera.dragSensitivity; look.lastX = tch.clientX; }
 }
 function endTouch(tch){
   if (joy.active && tch.identifier === joy.id){ joy.active=false; joy.x=joy.y=0; stickEl.style.display='none'; }

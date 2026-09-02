@@ -1,0 +1,151 @@
+// config.js — every number you would change to make the game feel different.
+//
+// This is the file to open when you want to balance the game. Nothing here
+// imports anything, and nothing here does anything: it is only values. That
+// means you can change a number, reload, and see the result without reading
+// any other file.
+//
+// What is NOT here, on purpose:
+//   - Shapes and proportions (the dragon's neck, the monkey's ears). Those are
+//     art, not balance, and they live next to the code that builds them.
+//   - Colours. Same reason.
+//   - Anything that appears exactly once and has an obvious name where it is.
+//
+// A number earns its place here if you might reasonably want to tune it while
+// playtesting.
+
+export const CONFIG = {
+
+  // ---------- the valley ----------
+  world: {
+    radius: 150,          // how far you can walk from the centre, in metres
+    trees: 90,
+    rocks: 40,
+    pillars: 8,
+    groundSegments: 48,   // detail of the meadow's colour variation
+  },
+
+  // ---------- walking ----------
+  player: {
+    speed: 7,             // metres per second
+    bootsMultiplier: 1.4, // Swift boots. The shop text says "40% faster".
+    bobRate: 10,          // how fast the walk bounce cycles
+    bobHeight: 0.12,
+    radius: 0.45,         // how close you can get to a tree trunk
+  },
+
+  // ---------- camera ----------
+  camera: {
+    distance: 6.5,        // normal follow distance
+    height: 3.6,
+    lookAtHeight: 1.2,
+    cinematicDistance: 12,   // pulled back for the ceremony
+    cinematicHeight: 7,
+    cinematicLookAt: 6.5,
+    ease: 6,              // higher = snappier follow, lower = floatier
+    turnSpeed: 2,         // Q and E keys, radians per second
+    dragSensitivity: 0.008,
+  },
+
+  // ---------- the seven orbs ----------
+  orbs: {
+    minDistanceFromPlayer: 30,  // never spawn one on top of you
+    minSpacing: 45,             // metres between orbs, so they feel scattered
+    innerRadius: 40,            // nearest an orb can land to the centre
+    outerRadius: 140,           // furthest (innerRadius + spread)
+    pickupRadius: 1.6,          // how close you walk to collect one
+    litAtOnce: 3,               // how many orbs cast light -- see orbs.js for why
+    lightRange: 9,
+    lightIntensity: 1.2,
+    lightCutoff: 40,            // beyond this an orb gets no light at all
+  },
+
+  // ---------- the villagers ----------
+  wanderers: {
+    hearingRange: 14,      // how far away they notice you
+    hearingWithBell: 24,   // Silver bell makes you louder
+    challengeRange: 2.2,   // how close before they start a duel
+    huntSpeed: 3.2,        // metres per second when coming for you
+    roamSpeed: 2.2,
+    roamRadius: 22,        // how far they wander from camp
+    campRadiusMin: 8,      // where they start relative to their orb
+    campRadiusMax: 18,
+    waitMin: 1,            // pause between wanders, seconds
+    waitMax: 4,
+    cooldown: 25,          // seconds before the same villager challenges again
+    bobRate: 9,
+  },
+
+  // ---------- the tap duel ----------
+  duel: {
+    seconds: 10,
+    countdown: 3,
+    tapValue: 0.05,        // bar filled per tap. 1.0 wins, so 20 taps.
+    tapValueWithGrip: 0.065,  // Duelist grip. 16 taps.
+
+    // The opponent's bar fills at (base + perTier x tier) per second.
+    // Tier 1 needs about 4 taps/second to beat; tier 7 about 12.
+    opponentBase: 0.16,
+    opponentPerTier: 0.065,
+
+    // Winning pays (lootBase + tier + 0..lootVariance) fragments,
+    // doubled on a flawless roll. Losing always pays consolation.
+    lootBase: 2,
+    lootVariance: 3,
+    flawlessChance: 0.12,
+    flawlessMultiplier: 2,
+    consolation: 1,
+
+    resultDelay: 500,      // ms before the result card replaces the bars
+  },
+
+  // ---------- the finder ----------
+  finder: {
+    range: 55,             // metres shown on the radar
+    rangeWithLens: 85,     // Long lens. The shop text says "50% farther".
+    revealDistance: 28,    // within this, an orb shows its number and colour
+    sweepSpeed: 1.6,
+  },
+
+  // ---------- the ceremony ----------
+  ceremony: {
+    keeperDistance: 14,    // where the Keeper appears, in front of you
+    riseSeconds: 2,        // orbs lifting into their ring
+    keeperGrowDelay: 2,    // pause before the Keeper scales up
+    keeperGrowSeconds: 2.5,
+    wishPromptAt: 6.5,     // seconds into the ending before the panel opens
+    departSeconds: 4,      // how long the Keeper takes to fly away
+    respawnSeconds: 12,    // wait before the orbs scatter again
+    wishesInOrder: 3,      // reward for collecting 1..7 in order
+    wishesOutOfOrder: 1,
+  },
+
+  // ---------- day and night ----------
+  dayNight: {
+    easeRate: 0.8,         // how quickly night falls
+    hemiDay: 0.95,
+    hemiNightDrop: 0.7,
+    sunDay: 0.9,
+    sunNightDrop: 0.8,
+    lanternBase: 0.2,
+    lanternNightBoost: 1.4,
+  },
+
+  // ---------- the frame loop ----------
+  loop: {
+    maxDelta: 0.05,        // clamps a huge jump after the tab was in background
+  },
+};
+
+// The trader's stock. `cost` is in fragments; everything else is presentation.
+// Kept beside the other tunables because price is the thing you will fiddle with.
+export const ITEMS = [
+  {id:'boots',   name:'Swift boots',     desc:'Walk 40% faster.',                              cost:12, color:0x66d9e8},
+  {id:'lens',    name:'Long lens',       desc:'Finder sees 50% farther.',                      cost:10, color:0x8ce99a},
+  {id:'grip',    name:'Duelist grip',    desc:'Each tap counts more in duels.',                cost:18, color:0xe0553d},
+  {id:'lantern', name:'Brass lantern',   desc:'Carry your own light for the dark.',            cost:8,  color:0xffe066},
+  {id:'hat',     name:'Straw hat',       desc:'A wide hat, worn over the hood.',               cost:6,  color:0xd9b86a},
+  {id:'cloak',   name:'Violet suit',     desc:'A new color for your ninja suit.',              cost:9,  color:0x9b59b6},
+  {id:'charm',   name:'Orbit charm',     desc:'A small ring that circles your sash.',          cost:14, color:0xc9a15a},
+  {id:'bell',    name:'Silver bell',     desc:'Wanderers hear you and seek you from farther.', cost:16, color:0xdddddd},
+];

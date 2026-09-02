@@ -9,14 +9,16 @@ import { owned } from './save.js';
 import { orbs } from './orbs.js';
 import { wanderers } from './wanderers.js';
 import { pickups } from './inventory.js';
+import { CONFIG } from './config.js';
 
 const rc = $('rc').getContext('2d');
 const distEl = $('dist');
 let sweep = 0;
 
 export function drawFinder(dt, fx, fz, rx, rz){
-  const RANGE = owned('lens') ? 85 : 55, REVEAL = 28;
-  sweep += dt * 1.6;
+  const F = CONFIG.finder;
+  const RANGE = owned('lens') ? F.rangeWithLens : F.range, REVEAL = F.revealDistance;
+  sweep += dt * F.sweepSpeed;
   const S = 256, C = S/2, RR = C - 10;
   rc.clearRect(0,0,S,S);
   rc.strokeStyle = 'rgba(143,245,200,0.25)'; rc.lineWidth = 2;

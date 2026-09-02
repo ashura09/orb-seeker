@@ -4,8 +4,9 @@
 // is the list the player collides with, read by main.js each frame.
 import * as THREE from 'three';
 import { scene, lam } from './state.js';
+import { CONFIG } from './config.js';
 
-export const WORLD_R = 150;
+export const WORLD_R = CONFIG.world.radius;
 export const obstacles = [];
 
 // ---------- ground ----------
@@ -23,7 +24,7 @@ export const obstacles = [];
 // 48 x 48 is plenty: the slowest colour wave has a ~57 m period and each cell
 // is ~7 m, so the variation is captured with room to spare. 64 doubled the
 // triangle count for no visible gain.
-const GROUND_SEGS = 48;
+const GROUND_SEGS = CONFIG.world.groundSegments;
 const groundGeo = new THREE.PlaneGeometry((WORLD_R + 20) * 2, (WORLD_R + 20) * 2, GROUND_SEGS, GROUND_SEGS);
 
 // Layered sine waves standing in for noise: cheap, and good enough for broad
@@ -70,7 +71,7 @@ scene.add(ground);
 // The trade: an InstancedMesh is culled all-or-nothing, so every tree is drawn
 // even when behind you. That is a good deal here -- triangles are cheap and
 // draw calls are not.
-const COUNTS = { trees: 90, rocks: 40, pillars: 8 };
+const COUNTS = { trees: CONFIG.world.trees, rocks: CONFIG.world.rocks, pillars: CONFIG.world.pillars };
 
 const trunkGeo = new THREE.CylinderGeometry(0.22, 0.32, 1.6, 6);
 const leafGeo  = new THREE.ConeGeometry(1.2, 3.2, 7);

@@ -6,17 +6,10 @@ import { $, G, hex } from './state.js';
 import { save, persist } from './save.js';
 import { renderPouch, toast, pouchEl } from './ui.js';
 import { emit, EVENTS } from './events.js';
+import { ITEMS } from './config.js';
 
-export const ITEMS = [
-  {id:'boots',   name:'Swift boots',     desc:'Walk 40% faster.',                              cost:12, color:0x66d9e8},
-  {id:'lens',    name:'Long lens',       desc:'Finder sees 50% farther.',                      cost:10, color:0x8ce99a},
-  {id:'grip',    name:'Duelist grip',    desc:'Each tap counts more in duels.',                cost:18, color:0xe0553d},
-  {id:'lantern', name:'Brass lantern',   desc:'Carry your own light for the dark.',            cost:8,  color:0xffe066},
-  {id:'hat',     name:'Straw hat',       desc:'A wide hat, worn over the hood.',               cost:6,  color:0xd9b86a},
-  {id:'cloak',   name:'Violet suit',     desc:'A new color for your ninja suit.',              cost:9,  color:0x9b59b6},
-  {id:'charm',   name:'Orbit charm',     desc:'A small ring that circles your sash.',          cost:14, color:0xc9a15a},
-  {id:'bell',    name:'Silver bell',     desc:'Wanderers hear you and seek you from farther.', cost:16, color:0xdddddd},
-];
+export { ITEMS };
+
 
 // A function declaration, not an arrow const, so that files in an import cycle
 // with this one can still call it safely.

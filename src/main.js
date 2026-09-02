@@ -18,6 +18,7 @@ import { pickups, collectPickup, spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
 import { toast, updateToast, initStats } from './ui.js';
+import { CONFIG } from './config.js';
 import './shop.js';
 
 // Items bought before a reload but never picked up are set down again.
@@ -32,7 +33,7 @@ applyCosmetics();
 // guard that stops a huge jump after the tab has been in the background.
 const timer = new THREE.Timer();
 const camTarget = new THREE.Vector3();
-const SPEED = 7;
+const { player: P, camera: CAM, orbs: ORB, ceremony: CER, dayNight: DN } = CONFIG;
 let bob = 0;
 
 initStats(renderer);
@@ -42,35 +43,35 @@ $('startBtn').addEventListener('click', () => { $('start').classList.add('hidden
 function frame(){
   requestAnimationFrame(frame);
   timer.update();
-  const dt = Math.min(timer.getDelta(), 0.05); G.t += dt;
+  const dt = Math.min(timer.getDelta(), CONFIG.loop.maxDelta); G.t += dt;
   let mx = joy.x, my = joy.y;
   if (keys['w']||keys['arrowup']) my = -1; if (keys['s']||keys['arrowdown']) my = 1;
   if (keys['a']||keys['arrowleft']) mx = -1; if (keys['d']||keys['arrowright']) mx = 1;
-  if (keys['q']) G.camYaw += 2*dt; if (keys['e']) G.camYaw -= 2*dt;
+  if (keys['q']) G.camYaw += CAM.turnSpeed*dt; if (keys['e']) G.camYaw -= CAM.turnSpeed*dt;
   const f = forward(), rx = -f.z, rz = f.x;
 
   // day / night easing
-  G.night += (G.nightTarget - G.night) * Math.min(1, dt*0.8);
+  G.night += (G.nightTarget - G.night) * Math.min(1, dt*DN.easeRate);
   scene.background.copy(DAY).lerp(NIGHT, G.night); scene.fog.color.copy(scene.background);
-  hemi.intensity = 0.95 - 0.7*G.night; sun.intensity = 0.9 - 0.8*G.night;
-  if (cosmetics.lanternLight) cosmetics.lanternLight.intensity = 0.2 + G.night*1.4;
+  hemi.intensity = DN.hemiDay - DN.hemiNightDrop*G.night; sun.intensity = DN.sunDay - DN.sunNightDrop*G.night;
+  if (cosmetics.lanternLight) cosmetics.lanternLight.intensity = DN.lanternBase + G.night*DN.lanternNightBoost;
 
   if (G.state === 'play'){
     const len = Math.hypot(mx, my);
     let moving = false;
     if (len > 0.08){
-      const k = Math.min(len, 1) * (owned('boots') ? 1.4 : 1);
+      const k = Math.min(len, 1) * (owned('boots') ? P.bootsMultiplier : 1);
       const vx = f.x*(-my) + rx*mx, vz = f.z*(-my) + rz*mx, vl = Math.hypot(vx, vz) || 1;
-      player.position.x += vx/vl*SPEED*k*dt; player.position.z += vz/vl*SPEED*k*dt;
-      player.rotation.y = Math.atan2(vx, vz); bob += dt*10*k; moving = true;
+      player.position.x += vx/vl*P.speed*k*dt; player.position.z += vz/vl*P.speed*k*dt;
+      player.rotation.y = Math.atan2(vx, vz); bob += dt*P.bobRate*k; moving = true;
     }
     const pr = Math.hypot(player.position.x, player.position.z);
     if (pr > WORLD_R){ player.position.x *= WORLD_R/pr; player.position.z *= WORLD_R/pr; }
     for (const ob of obstacles){
-      const dx = player.position.x - ob.x, dz = player.position.z - ob.z, d = Math.hypot(dx, dz), min = ob.r + 0.45;
+      const dx = player.position.x - ob.x, dz = player.position.z - ob.z, d = Math.hypot(dx, dz), min = ob.r + P.radius;
       if (d < min && d > 0.0001){ player.position.x = ob.x + dx/d*min; player.position.z = ob.z + dz/d*min; }
     }
-    player.position.y = Math.abs(Math.sin(bob))*0.12;
+    player.position.y = Math.abs(Math.sin(bob))*P.bobHeight;
     // arms swing, tail sways
     armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
     handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
@@ -79,7 +80,7 @@ function frame(){
     for (const o of orbs){
       if (o.found) continue;
       o.mesh.position.y = 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;
-      if (Math.hypot(o.x - player.position.x, o.z - player.position.z) < 1.6) collect(o);
+      if (Math.hypot(o.x - player.position.x, o.z - player.position.z) < ORB.pickupRadius) collect(o);
     }
     for (let i = pickups.length-1; i >= 0; i--){
       const p = pickups[i];
@@ -101,28 +102,28 @@ function frame(){
 
   if (G.state === 'ending'){
     G.endT += dt;
-    const rise = Math.min(G.endT/2, 1);
+    const rise = Math.min(G.endT/CER.riseSeconds, 1);
     ringOrbs.forEach(({m, i}) => { const a = i/7*Math.PI*2 + G.endT*1.2; m.position.set(player.position.x + Math.cos(a)*(1.5+2*rise), 1.5 + 5*rise + Math.sin(G.endT*3+i)*0.2, player.position.z + Math.sin(a)*(1.5+2*rise)); });
-    if (G.endT > 2) keeper.scale.setScalar(0.001 + Math.min((G.endT-2)/2.5, 1));
-    if (G.endT > 6.5){ G.state = 'wish'; $('wish').classList.remove('hidden'); const fi = document.querySelector('.wishInput'); if (fi) fi.focus(); }
+    if (G.endT > CER.keeperGrowDelay) keeper.scale.setScalar(0.001 + Math.min((G.endT-CER.keeperGrowDelay)/CER.keeperGrowSeconds, 1));
+    if (G.endT > CER.wishPromptAt){ G.state = 'wish'; $('wish').classList.remove('hidden'); const fi = document.querySelector('.wishInput'); if (fi) fi.focus(); }
   }
   if (G.state === 'wish') ringOrbs.forEach(({m,i}) => { const a=i/7*Math.PI*2 + G.t*1.2; m.position.set(player.position.x+Math.cos(a)*3.5, 6.5+Math.sin(G.t*3+i)*0.2, player.position.z+Math.sin(a)*3.5); });
   if (G.ceremony && ka.built) animateKeeper(dt);
   if (G.departT >= 0){
     G.departT += dt;
-    const k = Math.min(G.departT/4, 1);
+    const k = Math.min(G.departT/CER.departSeconds, 1);
     keeper.position.y += dt*6*k; keeper.scale.setScalar(1 - k*0.9);
-    if (G.departT >= 4){ scene.remove(keeper); G.departT = -1; G.ceremony = false; G.nightTarget = 0; G.respawnT = 12; $('hint').style.opacity = 0.75; }
+    if (G.departT >= CER.departSeconds){ scene.remove(keeper); G.departT = -1; G.ceremony = false; G.nightTarget = 0; G.respawnT = CER.respawnSeconds; $('hint').style.opacity = 0.75; }
   }
   if (G.respawnT > 0){ G.respawnT -= dt; if (G.respawnT <= 0){ G.respawnT = -1; placeOrbs(); homeWanderers(); toast('The seven orbs have scattered across the valley again', 3); } }
 
   // camera
   const cine = G.state === 'ending' || G.state === 'wish';
-  const dist = cine ? 12 : 6.5, ease = Math.min(1, dt*6);
+  const dist = cine ? CAM.cinematicDistance : CAM.distance, ease = Math.min(1, dt*CAM.ease);
   camera.position.x += ((player.position.x + Math.sin(G.camYaw)*dist) - camera.position.x)*ease;
   camera.position.z += ((player.position.z + Math.cos(G.camYaw)*dist) - camera.position.z)*ease;
-  camera.position.y += ((cine ? 7 : 3.6) - camera.position.y)*ease;
-  camTarget.set(player.position.x, cine ? 6.5 : 1.2, player.position.z); camera.lookAt(camTarget);
+  camera.position.y += ((cine ? CAM.cinematicHeight : CAM.height) - camera.position.y)*ease;
+  camTarget.set(player.position.x, cine ? CAM.cinematicLookAt : CAM.lookAtHeight, player.position.z); camera.lookAt(camTarget);
 
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);

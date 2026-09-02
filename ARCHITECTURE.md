@@ -45,7 +45,7 @@ other. Delete `keeper.js` and `orbs.js` still runs.
 
 | You are adding | It belongs in |
 | --- | --- |
-| A number you will want to tune | `domain/config.js` |
+| A number you will want to tune | `config.js` |
 | A rule about what happens when | `domain/` |
 | Something visible in the 3D scene | `world/` |
 | A panel, button, or readout | `ui/` |
@@ -57,19 +57,32 @@ really two features.
 ## Order of work
 
 1. ~~Event bus — removes all four cycles, no behaviour change~~ **done**
-2. `domain/config.js` — gather the scattered tuning numbers
+2. ~~`config.js` — gather the scattered tuning numbers~~ **done**
 3. Split `state.js` into renderer / materials / shared state
 4. Separate rules from screens, one feature at a time (duel first — clearest seam)
 5. Move files into folders — **last**, once imports already point the right way
 
 Moving folders first just relocates a tangle.
 
+## Balancing the game
+
+Every number worth tuning lives in `src/config.js`, grouped by what it affects:
+world, player, camera, orbs, wanderers, duel, finder, ceremony, dayNight, loop.
+Item prices are the `ITEMS` table in the same file.
+
+Nothing in that file imports anything or does anything — it is only values, so you can
+change one, reload, and see the result without reading any other file.
+
+What deliberately stays out: shapes and proportions (the dragon's neck, the monkey's
+ears) and colours. Those are art, not balance, and they live beside the code that
+builds them.
+
 ## Current layering
 
 With the bus in place the graph sorts itself, no folders required yet:
 
 ```
-0   events, save, state          depend on nothing
+0   config, events, save, state   depend on nothing
 1   input, player, ui, world
 2   orbs, shop
 3   inventory, wanderers

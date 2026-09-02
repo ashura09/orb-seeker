@@ -12,6 +12,7 @@ import { toast } from './ui.js';
 import { orbs, orbGeo } from './orbs.js';
 import { spawnPickup } from './inventory.js';
 import { on, EVENTS } from './events.js';
+import { CONFIG } from './config.js';
 
 export const keeper = new THREE.Group();
 export const ka = {wings:[], tail:[], neck:[], eyes:[], sparks:null, ring:null, built:false};
@@ -96,10 +97,10 @@ export function beginEnding(){
   orbs.forEach((o, i) => { const m = new THREE.Mesh(orbGeo, lam(o.color, 0.9)); m.add(pointLight(o.color, 1.5, 12)); scene.add(m); ringOrbs.push({m, i}); });
   buildKeeper();
   const f = forward();
-  keeper.position.set(player.position.x + f.x*14, 0, player.position.z + f.z*14);
+  keeper.position.set(player.position.x + f.x*CONFIG.ceremony.keeperDistance, 0, player.position.z + f.z*CONFIG.ceremony.keeperDistance);
   keeper.lookAt(player.position.x, 0, player.position.z);
   keeper.scale.setScalar(0.001); scene.add(keeper);
-  const n = G.orderKept ? 3 : 1;
+  const n = G.orderKept ? CONFIG.ceremony.wishesInOrder : CONFIG.ceremony.wishesOutOfOrder;
   $('wishIntro').textContent = G.orderKept ? 'Seven orbs, gathered in perfect order. The Keeper grants three wishes.' : 'You have gathered all seven orbs. Speak your wish.';
   $('wishBtn').textContent = n === 1 ? 'Make the wish' : 'Make the wishes';
   $('wishAsk').style.display = 'block'; $('wishDone').style.display = 'none';

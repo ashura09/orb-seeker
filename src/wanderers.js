@@ -9,6 +9,7 @@ import { owned } from './save.js';
 import { orbs } from './orbs.js';
 import { WORLD_R } from './world.js';
 import { emit, EVENTS } from './events.js';
+import { CONFIG } from './config.js';
 
 // Each villager has a build, a skin tone, headwear and a prop that says what
 // they do for a living — so you can tell who is walking toward you from across
@@ -140,22 +141,24 @@ export const wanderers = WANDERERS.map((w, i) => {
 });
 
 // opponent bar fill per second, by tier. Tier 1 ≈ 4 taps/s to beat, tier 7 ≈ 12 taps/s.
-export const tierRate = n => 0.16 + n*0.065;
+export const tierRate = n => CONFIG.duel.opponentBase + n*CONFIG.duel.opponentPerTier;
 
 export function homeWanderers(){
   wanderers.forEach((w, i) => {
     w.hx = orbs[i].x; w.hz = orbs[i].z;
-    const a = Math.random()*Math.PI*2, r = 8 + Math.random()*10;
+    const W = CONFIG.wanderers;
+    const a = Math.random()*Math.PI*2, r = W.campRadiusMin + Math.random()*(W.campRadiusMax - W.campRadiusMin);
     w.g.position.set(w.hx + Math.cos(a)*r, 0, w.hz + Math.sin(a)*r); pickTarget(w);
   });
 }
 
 export function pickTarget(w){
   // roam within about 22 m of camp
-  const a = Math.random()*Math.PI*2, r = Math.random()*22;
+  const W = CONFIG.wanderers;
+  const a = Math.random()*Math.PI*2, r = Math.random()*W.roamRadius;
   w.tx = Math.max(-WORLD_R+5, Math.min(WORLD_R-5, w.hx + Math.cos(a)*r));
   w.tz = Math.max(-WORLD_R+5, Math.min(WORLD_R-5, w.hz + Math.sin(a)*r));
-  w.wait = 1 + Math.random()*3;
+  w.wait = W.waitMin + Math.random()*(W.waitMax - W.waitMin);
 }
 homeWanderers();
 
@@ -169,7 +172,8 @@ function animateLimbs(w, moving){
 }
 
 export function updateWanderers(dt){
-  const hear = owned('bell') ? 24 : 14;
+  const W = CONFIG.wanderers;
+  const hear = owned('bell') ? W.hearingWithBell : W.hearingRange;
   for (const w of wanderers){
     w.cooldown = Math.max(0, w.cooldown - dt);
     const pdx = player.position.x - w.g.position.x, pdz = player.position.z - w.g.position.z, pd = Math.hypot(pdx, pdz);
@@ -177,11 +181,11 @@ export function updateWanderers(dt){
     if (hunting){ w.tx = player.position.x; w.tz = player.position.z; w.wait = 0; }
     const dx = w.tx - w.g.position.x, dz = w.tz - w.g.position.z, d = Math.hypot(dx, dz);
     if (d > 0.5){
-      const sp = hunting ? 3.2 : 2.2;
+      const sp = hunting ? W.huntSpeed : W.roamSpeed;
       w.g.position.x += dx/d*sp*dt; w.g.position.z += dz/d*sp*dt; w.g.rotation.y = Math.atan2(dx, dz);
-      w.bob += dt*9; w.g.position.y = Math.abs(Math.sin(w.bob))*0.1;
+      w.bob += dt*W.bobRate; w.g.position.y = Math.abs(Math.sin(w.bob))*0.1;
       animateLimbs(w, true);
     } else { w.wait -= dt; if (w.wait <= 0) pickTarget(w); animateLimbs(w, false); }
-    if (G.state === 'play' && hunting && pd < 2.2) emit(EVENTS.DUEL_CHALLENGE, w);
+    if (G.state === 'play' && hunting && pd < W.challengeRange) emit(EVENTS.DUEL_CHALLENGE, w);
   }
 }
