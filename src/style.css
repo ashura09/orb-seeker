@@ -85,3 +85,8 @@
   .wishrow .meta{font-size:12px;opacity:.65}
   .closebtn{margin-top:14px}
   @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+
+  /* stats overlay, shown only with ?stats in the URL */
+  #stats{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);
+    text-align:center;font:bold 13px ui-monospace,Menlo,Consolas,monospace;color:#8ff5c8;
+    text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;z-index:10}

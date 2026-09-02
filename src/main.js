@@ -10,14 +10,14 @@ import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from '.
 import { save, owned } from './save.js';
 import { WORLD_R, obstacles } from './world.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics } from './player.js';
-import { orbs, collect, placeOrbs } from './orbs.js';
+import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy } from './input.js';
 import { updateWanderers, homeWanderers } from './wanderers.js';
 import { duel, updateDuel } from './duel.js';
 import { pickups, collectPickup, spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
-import { toast, updateToast } from './ui.js';
+import { toast, updateToast, initStats } from './ui.js';
 import './shop.js';
 
 // Items bought before a reload but never picked up are set down again.
@@ -34,6 +34,8 @@ const timer = new THREE.Timer();
 const camTarget = new THREE.Vector3();
 const SPEED = 7;
 let bob = 0;
+
+initStats(renderer);
 
 $('startBtn').addEventListener('click', () => { $('start').classList.add('hidden'); G.state = 'play'; });
 
@@ -86,6 +88,7 @@ function frame(){
     }
     updateWanderers(dt);
   }
+  updateOrbLights();
   tailSegs.forEach((s, i) => { const k = i+1; s.position.set(Math.sin(G.t*3 - k*0.6)*0.06*k, 0.35 + k*0.06 + Math.sin(G.t*2 + k)*0.02, -0.38 - k*0.09); });
   if (cosmetics.charm) cosmetics.charm.rotation.z += dt*1.5;
 

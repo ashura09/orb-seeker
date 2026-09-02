@@ -100,8 +100,16 @@
 <script type="module" src="/src/main.js"></script>
 
 <script>
-  // offline + home-screen support; silently skipped when opened as a plain file
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  // Offline + home-screen support. Silently skipped when opened as a plain file.
+  //
+  // Deliberately NOT registered on localhost. The service worker caches
+  // aggressively and will happily serve you the previous version of your own
+  // code while you are editing it -- it survives restarting the dev server and
+  // ordinary reloads, so edits look like they are doing nothing. Skipping it in
+  // development removes that trap entirely; the deployed site still gets full
+  // offline support.
+  const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !isLocal) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
 </script>

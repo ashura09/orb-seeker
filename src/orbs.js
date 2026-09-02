@@ -9,11 +9,57 @@ export const ORB_COLORS = [0xff6b6b, 0xffa94d, 0xffe066, 0x8ce99a, 0x66d9e8, 0x7
 export const orbGeo = new THREE.SphereGeometry(0.55, 18, 14);
 export const orbs = [];
 
+// ---------- orb lighting ----------
+//
+// Each orb used to carry its own PointLight, so seven lights were always in the
+// scene. Three.js is a forward renderer: EVERY lit pixel loops over EVERY light
+// in the scene, and the ground fills the whole screen. That was seven lighting
+// calculations per pixel per frame -- the single most expensive thing in the
+// game on a phone.
+//
+// The lights only reach 9 metres, so an orb 40 m away lit nothing at all while
+// still being paid for on every pixel. Instead we keep a small fixed pool and
+// each frame lend them to the nearest orbs. Visually identical; a third of the
+// per-pixel cost.
+//
+// The pool is FIXED in size and never added to or removed from the scene. That
+// matters: changing the number of lights makes Three recompile every shader,
+// which is a visible stutter on a phone -- and the old code did exactly that
+// every time you collected an orb.
+const LIT_ORBS = 3;
+const orbLights = [];
+for (let i=0;i<LIT_ORBS;i++){
+  const l = pointLight(0xffffff, 0, 9);
+  l.visible = false;
+  scene.add(l);
+  orbLights.push(l);
+}
+
+// Called once per frame from main.js.
+export function updateOrbLights(){
+  const near = orbs
+    .filter(o => !o.found)
+    .map(o => ({o, d: Math.hypot(o.x - player.position.x, o.z - player.position.z)}))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, LIT_ORBS);
+  orbLights.forEach((l, i) => {
+    const hit = near[i];
+    if (hit && hit.d < 40){
+      l.visible = true;
+      l.color.setHex(hit.o.color);
+      l.intensity = 1.2;
+      l.position.set(hit.o.x, hit.o.mesh.position.y, hit.o.z);
+    } else {
+      l.visible = false;
+      l.intensity = 0;
+    }
+  });
+}
+
 for (let i=0;i<7;i++){
   const c = ORB_COLORS[i];
   const mesh = new THREE.Mesh(orbGeo, lam(c, 0.6));
   mesh.add(new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 10), glow(c, 0.18)));
-  mesh.add(pointLight(c, 1.2, 9));
   const tc = document.createElement('canvas'); tc.width = tc.height = 128; const tx = tc.getContext('2d');
   tx.fillStyle = '#f6efdf'; tx.beginPath(); tx.arc(64,64,54,0,Math.PI*2); tx.fill();
   tx.lineWidth = 8; tx.strokeStyle = hex(c); tx.stroke();
