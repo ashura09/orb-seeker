@@ -64,6 +64,22 @@ really two features.
 
 Moving folders first just relocates a tangle.
 
+## Balancing the game live
+
+Open the game with `?tune` on the URL and a panel appears with a slider for every
+value in `config.js`:
+
+    http://localhost:5173/?tune
+    https://ashura09.github.io/orb-seeker/?tune      (works on your phone)
+
+Drag and the game responds immediately. "Copy what I changed" gives you a short
+list of just the values you moved, to edit into `config.js` by hand -- which
+keeps the comments there. Sliders marked with a circular arrow are read once at
+startup, so those need a reload.
+
+The panel is a dynamic import, so lil-gui is a separate 9 KB chunk that players
+who never use `?tune` never download.
+
 ## Balancing the game
 
 Every number worth tuning lives in `src/config.js`, grouped by what it affects:

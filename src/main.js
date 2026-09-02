@@ -40,6 +40,13 @@ let bob = 0;
 
 initStats(renderer);
 
+// The tuning panel, only when asked for with ?tune on the URL. A dynamic import
+// means Vite splits lil-gui into its own chunk, so players who never open the
+// panel never download it.
+if (new URLSearchParams(location.search).has('tune')){
+  import('./tuner.js').then(m => m.initTuner()).catch(err => console.error('tuner failed to load:', err));
+}
+
 // ---------- the valley remembers ----------
 //
 // save.wishes has held every sentence the player ever typed, stamped with the
