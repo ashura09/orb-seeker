@@ -31,6 +31,7 @@ export const EVENTS = {
   WISHES_ALL_COLLECTED:  'wishes:all-collected',  // last wish token picked up
   CRAWL_TOGGLE:          'player:crawl-toggle',   // the player asked to crawl or stand
   WHISTLE:               'player:whistle',        // the player made a noise on purpose
+  LOADOUT_CHANGED:       'loadout:changed',       // something put on or taken off (payload: item id)
 };
 
 const listeners = new Map();

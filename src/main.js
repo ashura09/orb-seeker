@@ -7,7 +7,8 @@ import * as THREE from 'three';
 import './style.css';
 
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
-import { save, owned } from './save.js';
+import { save } from './save.js';
+import { worn } from './loadout.js';
 import { WORLD_R, obstacles, buildWorld, surfaceHeightAt, isInWater } from './world.js';
 import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
@@ -145,7 +146,9 @@ function frame(){
   // ending against it.
   scene.fog.color.copy(DAY).lerp(NIGHT, G.night);
   setNightLevel(G.night);
-  if (cosmetics.lanternLight) cosmetics.lanternLight.intensity = DN.lanternBase + G.night*DN.lanternNightBoost;
+  // Gated on `visible`, not just on existence: the lantern is built once and
+  // hidden when unworn, and a lantern you took off must not still glow.
+  if (cosmetics.lantern?.visible) cosmetics.lanternLight.intensity = DN.lanternBase + G.night*DN.lanternNightBoost;
 
   // the sun and its shadow box travel with you
   followPlayer(player.position.x, player.position.y, player.position.z);
@@ -165,7 +168,7 @@ function frame(){
       // you only look at -- and it gives the wetland a cost as well as a look.
       const wading = isInWater(player.position.x, player.position.z);
       const k = Math.min(len, 1)
-        * (owned('boots') ? P.bootsMultiplier : 1)
+        * (worn('boots') ? P.bootsMultiplier : 1)
         * (G.crawling ? P.crawlSpeedMultiplier : 1)
         * (wading ? CONFIG.water.wadeSpeed : 1);
       const vx = f.x*(-my) + rx*mx, vz = f.z*(-my) + rz*mx, vl = Math.hypot(vx, vz) || 1;

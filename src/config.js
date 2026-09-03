@@ -253,6 +253,13 @@ export const CONFIG = {
     lanternNightBoost: 1.4,
   },
 
+  // ---------- what you can wear at once ----------
+  // slots: 0 means no limit -- own eight things, wear all eight. Set it to 3 or
+  // 4 and the shop stops being a checklist and starts being a decision: boots
+  // OR lens, the bell that draws villagers to you OR the quiet of going without.
+  // Everything needed for that is already here; the number is the whole switch.
+  loadout: { slots: 0 },
+
   // ---------- the frame loop ----------
   loop: {
     maxDelta: 0.05,        // clamps a huge jump after the tab was in background

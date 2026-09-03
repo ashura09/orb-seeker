@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { scene, lam, G } from './state.js';
 import { player } from './player.js';
-import { owned } from './save.js';
+import { worn } from './loadout.js';
 import { orbs } from './orbs.js';
 import { WORLD_R, surfaceHeightAt } from './world.js';
 import { emit, EVENTS } from './events.js';
@@ -177,7 +177,7 @@ export function updateWanderers(dt){
   const W = CONFIG.wanderers;
   // How far you carry. Crawling multiplies the base so it still stacks with the
   // Silver bell; whistling overrides both for as long as the noise lasts.
-  let hear = owned('bell') ? W.hearingWithBell : W.hearingRange;
+  let hear = worn('bell') ? W.hearingWithBell : W.hearingRange;
   if (G.crawling) hear *= W.crawlHearingMultiplier;
   if (G.whistleT > 0) hear = Math.max(hear, W.whistleRange);
   for (const w of wanderers){

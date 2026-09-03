@@ -4,7 +4,9 @@
 // `torso` is exported too because wanderers.js reuses its geometry.
 import * as THREE from 'three';
 import { scene, lam, glow, pointLight } from './state.js';
-import { owned } from './save.js';
+import { worn } from './loadout.js';
+// aliased: setCrawlPose already has a parameter called `on`.
+import { on as onEvent, EVENTS } from './events.js';
 
 export const player = new THREE.Group();
 
@@ -13,7 +15,8 @@ export const player = new THREE.Group();
 // `player` goes in here, so it all rises together and the proportions hold.
 const body = new THREE.Group(); body.position.y = 0.30; player.add(body);
 
-const suitMat = lam(0x2b2d5c), furMat = lam(0x7a4f2b), faceMat = lam(0xd9a878);
+const SUIT_BASE = 0x2b2d5c, SUIT_CLOAK = 0x5b2c83;
+const suitMat = lam(SUIT_BASE), furMat = lam(0x7a4f2b), faceMat = lam(0xd9a878);
 export const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.85, 10), suitMat); torso.position.y = 0.55;
 const sash  = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 18), lam(0xe0553d)); sash.rotation.x = Math.PI/2; sash.position.y = 0.42;
 const headM = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), furMat); headM.position.y = 1.32;
@@ -70,25 +73,56 @@ export function setCrawlPose(on){
   legR.rotation.z = on ?  0.35 : 0;
 }
 
-// cosmetics from items (attached once collected)
+// ---------- cosmetics ----------
+//
+// BUILDING AND SHOWING ARE SEPARATE STEPS, and that separation is the whole
+// reason you can now take things off. The old version of this function could
+// only ever ADD: every branch read `if (owned(x) && !cosmetics.x) build it`,
+// so once a hat existed there was no line anywhere that could remove it.
+//
+// Now the parts are built once, on the first call, and then simply shown or
+// hidden to match what you are wearing. Meshes are cheap to keep around and
+// expensive to rebuild, so hiding beats destroying -- and it makes this
+// function safe to call as often as we like, with the same result every time.
 export const cosmetics = {};
-export function applyCosmetics(){
-  if (owned('cloak')) suitMat.color.set(0x5b2c83);
-  if (owned('hat') && !cosmetics.hat){
-    const h = new THREE.Group();
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), lam(0xd9b86a)); brim.position.y = 1.62;
-    const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), lam(0xcfa955)); top.position.y = 1.78;
-    h.add(brim, top); body.add(h); cosmetics.hat = h;
-  }
-  if (owned('lantern') && !cosmetics.lantern){
-    const g = new THREE.Group();
-    const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.22, 8), lam(0xc9a15a));
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glow(0xffe066));
-    const light = pointLight(0xffd27a, 0, 9); light.position.y = 0.3;
-    g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); body.add(g); cosmetics.lantern = g; cosmetics.lanternLight = light;
-  }
-  if (owned('charm') && !cosmetics.charm){
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 30), glow(0xc9a15a)); ring.rotation.x = Math.PI/2; ring.position.y = 0.5;
-    body.add(ring); cosmetics.charm = ring;
-  }
+
+function buildCosmetics(){
+  if (cosmetics.built) return;
+  cosmetics.built = true;
+
+  const h = new THREE.Group();
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), lam(0xd9b86a)); brim.position.y = 1.62;
+  const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), lam(0xcfa955)); top.position.y = 1.78;
+  h.add(brim, top); body.add(h); cosmetics.hat = h;
+
+  const g = new THREE.Group();
+  const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.22, 8), lam(0xc9a15a));
+  const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glow(0xffe066));
+  const light = pointLight(0xffd27a, 0, 9); light.position.y = 0.3;
+  g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); body.add(g);
+  cosmetics.lantern = g; cosmetics.lanternLight = light;
+
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 30), glow(0xc9a15a));
+  ring.rotation.x = Math.PI/2; ring.position.y = 0.5;
+  body.add(ring); cosmetics.charm = ring;
 }
+
+/**
+ * Make the monkey look like whatever you currently have on. Called at startup,
+ * on pickup, and -- via the bus -- every time you wear or remove something.
+ *
+ * Note it asks `worn`, not `owned`. Owning a hat you have taken off must not
+ * put it back on your head.
+ */
+export function applyCosmetics(){
+  buildCosmetics();
+  suitMat.color.set(worn('cloak') ? SUIT_CLOAK : SUIT_BASE);
+  cosmetics.hat.visible     = worn('hat');
+  cosmetics.lantern.visible = worn('lantern');
+  cosmetics.charm.visible   = worn('charm');
+}
+
+// The loadout does not know this file exists; it just announces the change.
+// Hiding a group also hides the light inside it -- three.js skips invisible
+// objects and everything under them -- so an unworn lantern costs nothing.
+onEvent(EVENTS.LOADOUT_CHANGED, applyCosmetics);

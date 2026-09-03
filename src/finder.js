@@ -5,7 +5,7 @@
 // diamonds, pickups as small squares.
 import { $, hex } from './state.js';
 import { player } from './player.js';
-import { owned } from './save.js';
+import { worn } from './loadout.js';
 import { orbs } from './orbs.js';
 import { wanderers } from './wanderers.js';
 import { pickups } from './inventory.js';
@@ -17,7 +17,7 @@ let sweep = 0;
 
 export function drawFinder(dt, fx, fz, rx, rz){
   const F = CONFIG.finder;
-  const RANGE = owned('lens') ? F.rangeWithLens : F.range, REVEAL = F.revealDistance;
+  const RANGE = worn('lens') ? F.rangeWithLens : F.range, REVEAL = F.revealDistance;
   sweep += dt * F.sweepSpeed;
   const S = 256, C = S/2, RR = C - 10;
   rc.clearRect(0,0,S,S);

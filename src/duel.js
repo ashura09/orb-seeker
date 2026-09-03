@@ -3,7 +3,8 @@
 // Fill your bar before the wanderer fills theirs. Their speed comes from the
 // tier of the orb they camp near (see wanderers.js).
 import { $, G } from './state.js';
-import { save, owned } from './save.js';
+import { save } from './save.js';
+import { worn } from './loadout.js';
 import { addFragments } from './ui.js';
 import { joy, stickEl } from './input.js';
 import { tierRate, pickTarget } from './wanderers.js';
@@ -41,7 +42,7 @@ export function renderDuel(){
 
 export function tap(){
   if (G.state !== 'duel' || duel.over || duel.waiting || duel.ready > 0) return;
-  duel.you += owned('grip') ? D.tapValueWithGrip : D.tapValue;
+  duel.you += worn('grip') ? D.tapValueWithGrip : D.tapValue;
   if (navigator.vibrate) navigator.vibrate(8);
   renderDuel(); if (duel.you >= 1) endDuel(true);
 }
