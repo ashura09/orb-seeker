@@ -64,6 +64,42 @@ really two features.
 
 Moving folders first just relocates a tangle.
 
+## Owning is not wearing
+
+These were one fact, and that is exactly why there was no way to take anything off:
+
+```js
+save.items[id] === 'owned'    // meant BOTH "you have it" AND "it is active"
+```
+
+Every effect asked `owned('boots')`, so owning the boots made you fast forever. They are
+two facts now:
+
+| | means | changes when |
+| --- | --- | --- |
+| `owned(id)` — `save.js` | you have it | you pick it up. Permanent. |
+| `worn(id)` — `loadout.js` | it is on you | you choose, any time |
+
+**Effects ask `worn`. Listings ask `owned`.** The shop showing "already bought" and the
+satchel showing what you have to choose from are listings. Everything else — speed, finder
+range, duel taps, how far villagers hear you, and every cosmetic — asks `worn`.
+
+`loadout.js` exists as a separate file from `save.js` because *remembering* and *deciding*
+change for different reasons. "You may only wear four things" is a game rule, not storage.
+It announces changes on the bus rather than pushing them, so `player.js` redresses the
+monkey without anything importing anything.
+
+That split has a practical payoff: the rules run with no browser at all. `npm test` loads
+`loadout.js` under a twelve-line fake `localStorage` and checks seventeen cases, including
+what happens when the slot limit is lowered under a save that is already over it.
+
+### Making it a decision
+
+`CONFIG.loadout.slots` is `0`, meaning no limit — own eight, wear eight. Set it to `3` and
+the shop stops being a checklist: boots *or* lens, the bell that draws villagers to you *or*
+the quiet of going without. The refusal path, the message and the slot counter are already
+built and tested. The number is the whole switch.
+
 ## Balancing the game
 
 Every number worth tuning lives in `src/config.js`, grouped by what it affects:
@@ -104,7 +140,8 @@ Both flags can be combined.
     events    the publish/subscribe bus that keeps the graph acyclic
     rng       seeded randomness, so a whole valley rebuilds from one number
     props     the glTF models: loaded, recoloured, scaled, merged for instancing
-    save      load and save to browser storage
+    save      load and save to browser storage -- remembers, never judges
+    loadout   the rules about what you may wear, and what wearing means
     state     renderer, scene, camera, lights, and the shared G object
     world     terrain height, regions, scenery placement, the horizon
     sky       the gradient dome, the sun, and shadow setup
@@ -124,11 +161,11 @@ Both flags can be combined.
 
 ## Current layering
 
-The graph sorts itself, no folders required yet. **Zero cycles** across 20 modules:
+The graph sorts itself, no folders required yet. **Zero cycles** across 21 modules:
 
 ```
 0   config, events, props, rng, save, voice     depend on nothing
-1   state, tuner
+1   loadout, state, tuner
 2   bloom, input, player, sky, ui, world
 3   orbs, shop
 4   inventory, wanderers

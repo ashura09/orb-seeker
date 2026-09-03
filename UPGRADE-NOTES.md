@@ -189,3 +189,16 @@ was dead. **Load the page before believing a change works.**
 Frame rate looked halved and it was not: the browser throttles `requestAnimationFrame`
 in tabs that are not in front, and several copies of the game were open at once.
 Measure with one tab, fronted.
+
+## Sharing the link never shares your progress
+
+Worth knowing before someone asks. `save.js` writes to `localStorage`, which is scoped to
+the origin **and to the device**, and the game makes no network calls at all -- no `fetch`,
+no socket, no server. So:
+
+- Whoever opens your link starts with an empty save. They cannot see or inherit your items.
+- Your own phone and laptop keep *separate* saves, same URL, same person.
+- Clearing site data wipes yours, and nothing can restore it.
+
+Shared or cross-device progress would need accounts and a server. There are none, by design.
+
