@@ -41,21 +41,14 @@ export function echoToast(msg, secs = 5){
   toastEl.classList.add('echo');
 }
 
-// ---------- crawl and whistle buttons ----------
-// They only announce intent; main.js decides what the game does about it.
-const crawlBtn = $('crawlBtn'), whistleBtn = $('whistleBtn');
-crawlBtn.addEventListener('click', () => emit(EVENTS.CRAWL_TOGGLE));
-whistleBtn.addEventListener('click', () => emit(EVENTS.WHISTLE));
-
-export function setCrawlButton(on){
-  crawlBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  crawlBtn.textContent = on ? 'Stand' : 'Crawl';
-}
-
-// Greyed out while the whistle is on cooldown, so the button tells the truth.
-export function setWhistleReady(ready){
-  whistleBtn.disabled = !ready;
-}
+// Crawl and whistle had permanent on-screen buttons. They were removed: they
+// occupied the bottom-right corner of a phone screen full time, and by the
+// player's own account they were never used -- nothing in the game ever asks
+// you to be quiet or to make noise on purpose, so there was no moment to reach
+// for them. The MECHANICS are untouched (crawling is still slower and quieter,
+// whistling still carries), and the C and V keys still fire them; only the
+// buttons are gone. If a reason to crawl ever appears, this is where the
+// control comes back -- ideally offered when it is needed rather than always.
 
 export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');
 
