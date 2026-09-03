@@ -18,14 +18,19 @@ import { CONFIG } from './config.js';
 // Changing these does nothing until you reload, so they are marked instead of
 // quietly appearing to do nothing.
 const NEEDS_RELOAD = new Set([
-  'world.radius', 'world.trees', 'world.rocks', 'world.pillars', 'world.groundSegments',
-  'orbs.litAtOnce', 'orbs.lightRange',
+  'world.radius',
+  'world.trees',
+  'world.rocks',
+  'world.pillars',
+  'world.groundSegments',
+  'orbs.litAtOnce',
+  'orbs.lightRange',
 ]);
 
 // Sensible slider ranges, derived from the starting value. A number that starts
 // at 0.05 wants a different scale from one that starts at 150.
-function rangeFor(key, v){
-  if (key.toLowerCase().includes('chance') || (v > 0 && v <= 1 && !Number.isInteger(v))){
+function rangeFor(key, v) {
+  if (key.toLowerCase().includes('chance') || (v > 0 && v <= 1 && !Number.isInteger(v))) {
     return [0, 1, 0.005];
   }
   if (v < 0) return [v * 3, Math.abs(v) * 3, Math.abs(v) / 100];
@@ -40,10 +45,10 @@ function rangeFor(key, v){
 // changed, so you edit those few lines in config.js by hand and KEEP ALL THE
 // COMMENTS there. Pasting a whole regenerated file over config.js would throw
 // every explanation away, which is a poor trade for saving a minute.
-function changedValues(startingValues){
+function changedValues(startingValues) {
   const rows = [];
-  for (const [group, values] of Object.entries(CONFIG)){
-    for (const [key, value] of Object.entries(values)){
+  for (const [group, values] of Object.entries(CONFIG)) {
+    for (const [key, value] of Object.entries(values)) {
       const was = startingValues[group] ? startingValues[group][key] : undefined;
       if (typeof value === 'object' || value === was) continue;
       rows.push({ path: group + '.' + key, was, now: value });
@@ -52,17 +57,21 @@ function changedValues(startingValues){
   return rows;
 }
 
-function diffText(rows){
+function diffText(rows) {
   if (!rows.length) return '// nothing changed yet';
-  const width = Math.max(...rows.map(r => r.path.length));
-  const header = '// ' + rows.length + ' value' + (rows.length === 1 ? '' : 's')
-    + ' changed -- edit these in src/config.js';
-  const lines = rows.map(r => '//   ' + r.path.padEnd(width) + '  ' + r.was + '  ->  ' + r.now);
+  const width = Math.max(...rows.map((r) => r.path.length));
+  const header =
+    '// ' +
+    rows.length +
+    ' value' +
+    (rows.length === 1 ? '' : 's') +
+    ' changed -- edit these in src/config.js';
+  const lines = rows.map((r) => '//   ' + r.path.padEnd(width) + '  ' + r.was + '  ->  ' + r.now);
   return [header, ...lines].join('\n');
 }
 
 // The whole file, for when you have changed a great deal. Loses the comments.
-function configToSource(){
+function configToSource() {
   const groups = Object.entries(CONFIG).map(([group, values]) => {
     const lines = Object.entries(values).map(([k, v]) => {
       const printed = typeof v === 'number' ? +v.toFixed(5) : JSON.stringify(v);
@@ -73,7 +82,7 @@ function configToSource(){
   return 'export const CONFIG = {\n' + groups.join('\n\n') + '\n};\n';
 }
 
-async function copyOut(text, label){
+async function copyOut(text, label) {
   try {
     await navigator.clipboard.writeText(text);
     console.log(label + ' copied to the clipboard:\n\n' + text);
@@ -84,26 +93,26 @@ async function copyOut(text, label){
   }
 }
 
-export function initTuner(){
+export function initTuner() {
   const gui = new GUI({ title: 'Orb Seeker — tuning', width: 320 });
 
   // A deep copy taken before anything is touched, so "what changed" and
   // "reset" both have something honest to compare against.
   const startingValues = JSON.parse(JSON.stringify(CONFIG));
 
-  for (const [group, values] of Object.entries(CONFIG)){
+  for (const [group, values] of Object.entries(CONFIG)) {
     const folder = gui.addFolder(group);
     let reloadNote = false;
 
-    for (const [key, value] of Object.entries(values)){
+    for (const [key, value] of Object.entries(values)) {
       if (Array.isArray(value) || value === null || typeof value === 'object') continue;
 
-      if (typeof value === 'boolean'){
+      if (typeof value === 'boolean') {
         folder.add(values, key);
-      } else if (typeof value === 'number'){
+      } else if (typeof value === 'number') {
         const [min, max, step] = rangeFor(key, value);
         const controller = folder.add(values, key, min, max, step);
-        if (NEEDS_RELOAD.has(group + '.' + key)){
+        if (NEEDS_RELOAD.has(group + '.' + key)) {
           controller.name(key + ' ⟳');
           reloadNote = true;
         }
@@ -118,10 +127,10 @@ export function initTuner(){
     'Copy what I changed': () => copyOut(diffText(changedValues(startingValues)), 'Changes'),
     'Copy whole config': () => copyOut(configToSource(), 'Full config (no comments)'),
     'Reset to loaded values': () => {
-      for (const [group, values] of Object.entries(startingValues)){
+      for (const [group, values] of Object.entries(startingValues)) {
         Object.assign(CONFIG[group], values);
       }
-      gui.controllersRecursive().forEach(c => c.updateDisplay());
+      gui.controllersRecursive().forEach((c) => c.updateDisplay());
     },
   };
   gui.add(actions, 'Copy what I changed');

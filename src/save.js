@@ -27,7 +27,15 @@
 // what you are allowed to wear live in loadout.js.
 export const SAVE_KEY = 'orbseeker.save.v2';
 
-export const save = {fragments:0, wins:0, items:{}, wishes:[], cycles:0, worn:null, lowGraphics:false};
+export const save = {
+  fragments: 0,
+  wins: 0,
+  items: {},
+  wishes: [],
+  cycles: 0,
+  worn: null,
+  lowGraphics: false,
+};
 
 // A save that cannot be read is a new game, which is survivable. A save that
 // cannot be WRITTEN loses everything since the last good write, which is not --
@@ -45,11 +53,11 @@ try {
 // owning an item meant wearing it. Those players start out wearing everything
 // they own, so nothing they collected appears to have been taken away.
 // `worn` is null only on such a save (or a brand new one, where it is empty).
-if (!Array.isArray(save.worn)){
-  save.worn = Object.keys(save.items).filter(id => save.items[id] === 'owned');
+if (!Array.isArray(save.worn)) {
+  save.worn = Object.keys(save.items).filter((id) => save.items[id] === 'owned');
 }
 
-export function persist(){
+export function persist() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   } catch (err) {
@@ -58,4 +66,4 @@ export function persist(){
 }
 
 /** Do you have it at all? Permanent once picked up. Ask this for shop/satchel listings. */
-export const owned = id => save.items[id] === 'owned';
+export const owned = (id) => save.items[id] === 'owned';

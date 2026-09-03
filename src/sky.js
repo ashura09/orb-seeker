@@ -17,23 +17,33 @@ import { CONFIG } from './config.js';
 const S = CONFIG.sky;
 
 // horizon and zenith, for day and for night
-const DAY_LOW   = new THREE.Color(S.dayHorizon);
-const DAY_HIGH  = new THREE.Color(S.dayZenith);
+const DAY_LOW = new THREE.Color(S.dayHorizon);
+const DAY_HIGH = new THREE.Color(S.dayZenith);
 const NIGHT_LOW = new THREE.Color(S.nightHorizon);
-const NIGHT_HIGH= new THREE.Color(S.nightZenith);
+const NIGHT_HIGH = new THREE.Color(S.nightZenith);
 
 const domeGeo = new THREE.SphereGeometry(S.radius, 24, 16);
-domeGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(domeGeo.attributes.position.count * 3), 3));
+domeGeo.setAttribute(
+  'color',
+  new THREE.BufferAttribute(new Float32Array(domeGeo.attributes.position.count * 3), 3),
+);
 
 // BackSide so we see the inside; fog off so the dome is not washed flat by the
 // same haze that gives the ground its depth.
-const domeMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false });
+const domeMat = new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  side: THREE.BackSide,
+  fog: false,
+  depthWrite: false,
+});
 const dome = new THREE.Mesh(domeGeo, domeMat);
 dome.frustumCulled = false;
-dome.renderOrder = -1;         // drawn first, everything else sits in front
+dome.renderOrder = -1; // drawn first, everything else sits in front
 scene.add(dome);
 
-const low = new THREE.Color(), high = new THREE.Color(), out = new THREE.Color();
+const low = new THREE.Color(),
+  high = new THREE.Color(),
+  out = new THREE.Color();
 
 /**
  * Repaints the dome for a given time of night (0 = day, 1 = night).
@@ -42,13 +52,13 @@ const low = new THREE.Color(), high = new THREE.Color(), out = new THREE.Color()
  * every vertex -- doing it every frame for a value that changes twice a
  * gathering would be wasteful.
  */
-export function paintSky(night){
+export function paintSky(night) {
   const pos = domeGeo.attributes.position;
   const col = domeGeo.attributes.color;
   low.copy(DAY_LOW).lerp(NIGHT_LOW, night);
   high.copy(DAY_HIGH).lerp(NIGHT_HIGH, night);
 
-  for (let i = 0; i < pos.count; i++){
+  for (let i = 0; i < pos.count; i++) {
     // 0 at the horizon, 1 straight up. Curved so the gradient tightens near the
     // horizon, which is how the real one behaves.
     const t = Math.max(0, pos.getY(i) / S.radius);
@@ -70,7 +80,7 @@ export function paintSky(night){
 // The map is built ONCE, from the day sky. Rebuilding it as night falls would
 // mean re-rendering and re-blurring a cube map every frame; instead the night
 // simply receives less of it, through scene.environmentIntensity.
-export function buildEnvironment(){
+export function buildEnvironment() {
   const pmrem = new THREE.PMREMGenerator(renderer);
 
   // The same gradient as the dome, but with the lower half turned toward the
@@ -78,14 +88,18 @@ export function buildEnvironment(){
   // light coming back UP off the grass.
   const R = 50;
   const g = new THREE.SphereGeometry(R, 24, 16);
-  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
-  const pos = g.attributes.position, col = g.attributes.color;
+  g.setAttribute(
+    'color',
+    new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3),
+  );
+  const pos = g.attributes.position,
+    col = g.attributes.color;
   const bounce = new THREE.Color(S.envGround);
   const c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++){
+  for (let i = 0; i < pos.count; i++) {
     const t = pos.getY(i) / R;
     if (t >= 0) c.copy(DAY_LOW).lerp(DAY_HIGH, Math.pow(t, S.falloff));
-    else        c.copy(DAY_LOW).lerp(bounce, Math.min(1, -t * 2));
+    else c.copy(DAY_LOW).lerp(bounce, Math.min(1, -t * 2));
     col.setXYZ(i, c.r, c.g, c.b);
   }
 
@@ -96,7 +110,9 @@ export function buildEnvironment(){
   scene.environment = pmrem.fromScene(envScene).texture;
   scene.environmentIntensity = CONFIG.render.envIntensity;
 
-  pmrem.dispose(); g.dispose(); m.dispose();
+  pmrem.dispose();
+  g.dispose();
+  m.dispose();
 }
 
 // ---------- the sun ----------
@@ -109,7 +125,7 @@ export function buildEnvironment(){
 // distance where nobody would notice.
 const SUN_OFFSET = new THREE.Vector3(S.sunOffsetX, S.sunOffsetY, S.sunOffsetZ);
 
-export function setupShadows(){
+export function setupShadows() {
   if (!CONFIG.shadows.enabled) return;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -119,7 +135,10 @@ export function setupShadows(){
 
   const cam = sun.shadow.camera;
   const half = CONFIG.shadows.range;
-  cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
+  cam.left = -half;
+  cam.right = half;
+  cam.top = half;
+  cam.bottom = -half;
   cam.near = 1;
   cam.far = SUN_OFFSET.length() * 2 + half * 2;
   cam.updateProjectionMatrix();
@@ -140,15 +159,17 @@ export function setupShadows(){
  * a visible hitch — which is why graphics.js only ever drops quality once rather
  * than flipping back and forth.
  */
-export function setShadowsEnabled(on){
+export function setShadowsEnabled(on) {
   if (renderer.shadowMap.enabled === on) return;
   renderer.shadowMap.enabled = on;
   sun.castShadow = on;
-  scene.traverse(o => { if (o.material) o.material.needsUpdate = true; });
+  scene.traverse((o) => {
+    if (o.material) o.material.needsUpdate = true;
+  });
 }
 
 /** Keeps the sun, its shadow box and the dome centred on the player. */
-export function followPlayer(x, y, z){
+export function followPlayer(x, y, z) {
   sun.position.set(x + SUN_OFFSET.x, y + SUN_OFFSET.y, z + SUN_OFFSET.z);
   sun.target.position.set(x, y, z);
   sun.target.updateMatrixWorld();
@@ -156,10 +177,10 @@ export function followPlayer(x, y, z){
 }
 
 /** Dims the sun and warms the fill as night comes on. */
-export function setNightLevel(night){
+export function setNightLevel(night) {
   const L = CONFIG.dayNight;
-  hemi.intensity    = L.hemiDay - L.hemiNightDrop * night;
-  sun.intensity     = L.sunDay  - L.sunNightDrop  * night;
+  hemi.intensity = L.hemiDay - L.hemiNightDrop * night;
+  sun.intensity = L.sunDay - L.sunNightDrop * night;
   ambient.intensity = L.ambientDay - L.ambientNightDrop * night;
 
   // The environment map is a DAY sky, so at night the world must simply receive

@@ -24,25 +24,25 @@ import { CONFIG } from './config.js';
 //    converts back on output -- so the colours you wrote still look like
 //    themselves. Turning it off makes the whole game markedly darker.
 
-export const $ = id => document.getElementById(id);
-export const hex = c => '#'+c.toString(16).padStart(6,'0');
+export const $ = (id) => document.getElementById(id);
+export const hex = (c) => '#' + c.toString(16).padStart(6, '0');
 
 // The shared mutable state. `state` is the game mode the original tracked:
 // start | play | duel | shop | satchel | ending | wish
 export const G = {
   state: 'start',
-  t: 0,            // seconds since load, used by every animation
-  camYaw: 0,       // camera angle around the player, written by input.js
-  camPitch: 0,     // camera elevation; set from config on first frame
-  camDist: CONFIG.camera.distance,  // live zoom; pinch and the wheel move it
-  lowGraphics: false,   // set by graphics.js when the phone cannot keep up
-  propBudget: CONFIG.world.props,   // effective scenery count; low mode lowers it
+  t: 0, // seconds since load, used by every animation
+  camYaw: 0, // camera angle around the player, written by input.js
+  camPitch: 0, // camera elevation; set from config on first frame
+  camDist: CONFIG.camera.distance, // live zoom; pinch and the wheel move it
+  lowGraphics: false, // set by graphics.js when the phone cannot keep up
+  propBudget: CONFIG.world.props, // effective scenery count; low mode lowers it
   crawling: false, // quieter and slower
   airborne: false, // off the ground, so gravity is running
-  vy: 0,           // vertical speed while airborne, metres per second
-  airY: 0,         // world height while airborne; the ground is not in charge
-  whistleT: 0,     // seconds of noise still carrying
-  whistleCd: 0,    // seconds until you can whistle again
+  vy: 0, // vertical speed while airborne, metres per second
+  airY: 0, // world height while airborne; the ground is not in charge
+  whistleT: 0, // seconds of noise still carrying
+  whistleCd: 0, // seconds until you can whistle again
 
   // The number the whole valley is generated from. Change it and the forest,
   // the highland, the wetland and every tree move somewhere else. A new one is
@@ -51,19 +51,19 @@ export const G = {
   // landscape. Without it every reload re-rolls the world and two screenshots
   // are never comparable -- which makes tuning how anything looks guesswork.
   worldSeed: Number(new URLSearchParams(location.search).get('seed')) || randomSeed(),
-  found: 0,        // orbs collected this cycle
+  found: 0, // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
-  night: 0,        // 0 = day, 1 = night; eased every frame
+  night: 0, // 0 = day, 1 = night; eased every frame
   nightTarget: 0,
   ceremony: false, // is the Keeper present?
-  endT: 0,         // seconds into the ending sequence
-  departT: -1,     // >= 0 while the Keeper is flying away
-  respawnT: -1,    // counts down to the orbs scattering again
+  endT: 0, // seconds into the ending sequence
+  departT: -1, // >= 0 while the Keeper is flying away
+  respawnT: -1, // counts down to the orbs scattering again
 };
 
 // ---------- renderer / scene ----------
 export const canvas = $('c');
-export const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+export const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 
@@ -79,7 +79,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = CONFIG.render.exposure;
 
 export const scene = new THREE.Scene();
-export const DAY = new THREE.Color(0x8fc7ff), NIGHT = new THREE.Color(0x0a0f2a);
+export const DAY = new THREE.Color(0x8fc7ff),
+  NIGHT = new THREE.Color(0x0a0f2a);
 scene.background = DAY.clone();
 // Fog used to close in at 130 m, which meant the valley was always ringed by
 // haze and felt boxed in. Pushed out so the horizon is visible through it.
@@ -89,7 +90,7 @@ scene.fog = new THREE.Fog(DAY.clone(), CONFIG.fog.near, CONFIG.fog.far);
 // the ground flicker showed. The camera never gets closer than ~6 m to anything
 // it needs to draw, so raising near costs nothing and buys a 5x better ratio.
 // far plane must clear the furthest hill or the horizon gets sliced off
-export const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.5, 2600);
+export const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.5, 2600);
 // Sky fill and bounce. The ground colour was a dark green, which meant any
 // slope facing away from the sun fell to nearly black -- fine on a flat disc
 // with no hills, badly wrong once the valley had them. A lighter bounce colour
@@ -113,10 +114,20 @@ scene.add(hemi, sun, ambient);
 // down catches ground bounce. That variation is most of what reads as "real".
 //
 // It costs more per pixel than Lambert. That is the trade being made here.
-export const mat = (c, e=0) => new THREE.MeshStandardMaterial(
-  e ? {color:c, emissive:c, emissiveIntensity:e, roughness:CONFIG.render.roughness, metalness:0}
-    : {color:c, roughness:CONFIG.render.roughness, metalness:0});
-export const glow = (c, op=1) => new THREE.MeshBasicMaterial({color:c, transparent:op<1, opacity:op});
+export const mat = (c, e = 0) =>
+  new THREE.MeshStandardMaterial(
+    e
+      ? {
+          color: c,
+          emissive: c,
+          emissiveIntensity: e,
+          roughness: CONFIG.render.roughness,
+          metalness: 0,
+        }
+      : { color: c, roughness: CONFIG.render.roughness, metalness: 0 },
+  );
+export const glow = (c, op = 1) =>
+  new THREE.MeshBasicMaterial({ color: c, transparent: op < 1, opacity: op });
 
 // 2. Point lights: r128 defaulted to decay = 1 with a simple falloff that
 //    reached zero at the light's distance. r155+ defaults to decay = 2 with a
@@ -124,11 +135,13 @@ export const glow = (c, op=1) => new THREE.MeshBasicMaterial({color:c, transpare
 //    game dimmer and tighter. decay = 0 restores the bounded, soft falloff the
 //    original had. Every point light in the game is made through here, so this
 //    is the one place to change it.
-export function pointLight(color, intensity, distance){
+export function pointLight(color, intensity, distance) {
   const l = new THREE.PointLight(color, intensity, distance);
   l.decay = 0;
   return l;
 }
 
 // Which way the camera is facing, on the ground plane.
-export function forward(){ return {x:-Math.sin(G.camYaw), z:-Math.cos(G.camYaw)}; }
+export function forward() {
+  return { x: -Math.sin(G.camYaw), z: -Math.cos(G.camYaw) };
+}

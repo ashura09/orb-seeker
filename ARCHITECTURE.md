@@ -15,13 +15,13 @@ domain/     Rules and numbers. No three.js, no DOM. Runs without a browser.
 platform/   renderer, loop, input, storage, events. Knows nothing about this game.
 ```
 
-A layer may use anything beneath it. Two files on the *same* layer never import each
+A layer may use anything beneath it. Two files on the _same_ layer never import each
 other — they talk through the event bus.
 
 ## The test
 
-Pick a file and ask: *could I delete the layer above it, and would this file still make
-sense?* If `orbs.js` breaks when you delete the dragon, the boundary is in the wrong place.
+Pick a file and ask: _could I delete the layer above it, and would this file still make
+sense?_ If `orbs.js` breaks when you delete the dragon, the boundary is in the wrong place.
 
 ## Why the bus
 
@@ -34,7 +34,7 @@ duel <-> wanderers      inventory <-> keeper
 inventory <-> shop      keeper <-> orbs
 ```
 
-All four are the same mistake: a module reaching *into* another to announce that something
+All four are the same mistake: a module reaching _into_ another to announce that something
 happened. `orbs.js` counts to seven and calls the dragon itself, so it has to know the
 dragon exists.
 
@@ -43,13 +43,13 @@ other. Delete `keeper.js` and `orbs.js` still runs.
 
 ## Where things go when you add a feature
 
-| You are adding | It belongs in |
-| --- | --- |
-| A number you will want to tune | `config.js` |
-| A rule about what happens when | `domain/` |
-| Something visible in the 3D scene | `world/` |
-| A panel, button, or readout | `ui/` |
-| Something with no game knowledge at all | `platform/` |
+| You are adding                          | It belongs in |
+| --------------------------------------- | ------------- |
+| A number you will want to tune          | `config.js`   |
+| A rule about what happens when          | `domain/`     |
+| Something visible in the 3D scene       | `world/`      |
+| A panel, button, or readout             | `ui/`         |
+| Something with no game knowledge at all | `platform/`   |
 
 If a change needs edits in three layers at once, that is usually a sign the feature is
 really two features.
@@ -69,22 +69,22 @@ Moving folders first just relocates a tangle.
 These were one fact, and that is exactly why there was no way to take anything off:
 
 ```js
-save.items[id] === 'owned'    // meant BOTH "you have it" AND "it is active"
+save.items[id] === 'owned'; // meant BOTH "you have it" AND "it is active"
 ```
 
 Every effect asked `owned('boots')`, so owning the boots made you fast forever. They are
 two facts now:
 
-| | means | changes when |
-| --- | --- | --- |
-| `owned(id)` — `save.js` | you have it | you pick it up. Permanent. |
-| `worn(id)` — `loadout.js` | it is on you | you choose, any time |
+|                           | means        | changes when               |
+| ------------------------- | ------------ | -------------------------- |
+| `owned(id)` — `save.js`   | you have it  | you pick it up. Permanent. |
+| `worn(id)` — `loadout.js` | it is on you | you choose, any time       |
 
 **Effects ask `worn`. Listings ask `owned`.** The shop showing "already bought" and the
 satchel showing what you have to choose from are listings. Everything else — speed, finder
 range, duel taps, how far villagers hear you, and every cosmetic — asks `worn`.
 
-`loadout.js` exists as a separate file from `save.js` because *remembering* and *deciding*
+`loadout.js` exists as a separate file from `save.js` because _remembering_ and _deciding_
 change for different reasons. "You may only wear four things" is a game rule, not storage.
 It announces changes on the bus rather than pushing them, so `player.js` redresses the
 monkey without anything importing anything.
@@ -96,7 +96,7 @@ what happens when the slot limit is lowered under a save that is already over it
 ### Making it a decision
 
 `CONFIG.loadout.slots` is `0`, meaning no limit — own eight, wear eight. Set it to `3` and
-the shop stops being a checklist: boots *or* lens, the bell that draws villagers to you *or*
+the shop stops being a checklist: boots _or_ lens, the bell that draws villagers to you _or_
 the quiet of going without. The refusal path, the message and the slot counter are already
 built and tested. The number is the whole switch.
 

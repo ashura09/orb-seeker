@@ -3,20 +3,40 @@ import { $ } from './state.js';
 import { save, persist } from './save.js';
 import { emit, EVENTS } from './events.js';
 
-export const pouchEl = $('pouch'), fragEl = $('fragCount');
-export function renderPouch(){ fragEl.textContent = save.fragments; }
-export function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
-export function addFragments(n){ save.fragments += n; persist(); renderPouch(); bump(pouchEl); }
+export const pouchEl = $('pouch'),
+  fragEl = $('fragCount');
+export function renderPouch() {
+  fragEl.textContent = save.fragments;
+}
+export function bump(el) {
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+export function addFragments(n) {
+  save.fragments += n;
+  persist();
+  renderPouch();
+  bump(pouchEl);
+}
 renderPouch();
 
 export const toastEl = $('toast');
 let toastT = 0;
-export function toast(msg, secs=2.2){ toastEl.classList.remove('echo'); toastEl.textContent = msg; toastEl.style.opacity = 1; toastT = secs; }
+export function toast(msg, secs = 2.2) {
+  toastEl.classList.remove('echo');
+  toastEl.textContent = msg;
+  toastEl.style.opacity = 1;
+  toastT = secs;
+}
 
 // Counts the current toast down; called once per frame from main.js.
 // (In the original this was two lines inline in the frame loop.)
-export function updateToast(dt){
-  if (toastT > 0){ toastT -= dt; if (toastT <= 0) toastEl.style.opacity = 0; }
+export function updateToast(dt) {
+  if (toastT > 0) {
+    toastT -= dt;
+    if (toastT <= 0) toastEl.style.opacity = 0;
+  }
 }
 
 // ---------- the order chain ----------
@@ -28,15 +48,19 @@ orderTag.id = 'orderTag';
 orderTag.className = 'none';
 $('counter').appendChild(orderTag);
 
-export function showOrder(kept, found){
-  if (found === 0){ orderTag.className = 'none'; orderTag.textContent = ''; return; }
+export function showOrder(kept, found) {
+  if (found === 0) {
+    orderTag.className = 'none';
+    orderTag.textContent = '';
+    return;
+  }
   orderTag.className = kept ? 'kept' : 'broken';
   orderTag.textContent = kept ? 'in order' : 'order broken';
 }
 
 // A toast in the Keeper's register rather than the HUD's -- used for old wishes
 // resurfacing, which should feel like a memory, not a notification.
-export function echoToast(msg, secs = 5){
+export function echoToast(msg, secs = 5) {
   toast(msg, secs);
   toastEl.classList.add('echo');
 }
@@ -52,9 +76,14 @@ export function echoToast(msg, secs = 5){
 
 // Jump is on pointerdown, not click: a click waits for the finger to lift, which
 // on a phone is a jump that happens after you wanted it.
-$('jumpBtn').addEventListener('pointerdown', e => { e.preventDefault(); emit(EVENTS.JUMP); });
+$('jumpBtn').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  emit(EVENTS.JUMP);
+});
 
-export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');
+export const ordinal = (n) =>
+  n +
+  (['th', 'st', 'nd', 'rd'][((n % 100) - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
 
 // ---------- stats overlay ----------
 // Off by default. Add ?stats to the URL to switch it on, e.g.
@@ -62,23 +91,26 @@ export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','
 //   https://ashura09.github.io/orb-seeker/?stats
 // Shows frames per second, draw calls and triangles. Draw calls are the number
 // the phone cares about most: each one is a separate instruction to the GPU.
-export function initStats(renderer){
+export function initStats(renderer) {
   // URLSearchParams rather than a regex: no escaping to get wrong.
   if (!new URLSearchParams(location.search).has('stats')) return;
   const el = document.createElement('div');
   el.id = 'stats';
   document.body.appendChild(el);
-  let frames = 0, last = performance.now(), worst = 999;
-  (function tick(){
+  let frames = 0,
+    last = performance.now(),
+    worst = 999;
+  (function tick() {
     requestAnimationFrame(tick);
     frames++;
     const now = performance.now();
-    if (now - last >= 500){
-      const fps = Math.round(frames * 1000 / (now - last));
+    if (now - last >= 500) {
+      const fps = Math.round((frames * 1000) / (now - last));
       if (fps < worst) worst = fps;
-      frames = 0; last = now;
+      frames = 0;
+      last = now;
       const r = renderer.info.render;
-      el.textContent = `${fps} fps (low ${worst})  ${r.calls} calls  ${(r.triangles/1000).toFixed(1)}k tris`;
+      el.textContent = `${fps} fps (low ${worst})  ${r.calls} calls  ${(r.triangles / 1000).toFixed(1)}k tris`;
     }
   })();
 }

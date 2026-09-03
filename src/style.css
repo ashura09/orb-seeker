@@ -2,133 +2,571 @@
    Moved verbatim from the <style> block in the original single-file index.html.
    Imported by src/main.js so Vite bundles it. */
 
-  :root{
-    --brass:#c9a15a; --brass-dark:#7d5f2d; --face:#0c3a3a; --mint:#8ff5c8; --cream:#f6efdf; --ink:#1b1a17;
-    --top:calc(env(safe-area-inset-top,0px) + 14px);
+:root {
+  --brass: #c9a15a;
+  --brass-dark: #7d5f2d;
+  --face: #0c3a3a;
+  --mint: #8ff5c8;
+  --cream: #f6efdf;
+  --ink: #1b1a17;
+  --top: calc(env(safe-area-inset-top, 0px) + 14px);
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #8fc7ff;
+  font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  color: var(--cream);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+canvas#c {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* HUD */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+#finder {
+  position: absolute;
+  top: var(--top);
+  right: 14px;
+  width: 138px;
+  height: 138px;
+  border-radius: 50%;
+  background: var(--face);
+  border: 6px solid var(--brass);
+  box-shadow:
+    0 0 0 2px var(--brass-dark),
+    inset 0 0 18px rgba(0, 0, 0, 0.6),
+    0 6px 14px rgba(0, 0, 0, 0.35);
+}
+#finder canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+#dist {
+  position: absolute;
+  top: calc(var(--top) + 144px);
+  right: 14px;
+  width: 150px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.85;
+}
+#counter {
+  position: absolute;
+  top: calc(var(--top) + 2px);
+  left: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+#counter i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  border: 2px solid rgba(0, 0, 0, 0.28);
+  transition:
+    transform 0.25s,
+    background 0.25s;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#counter i.on {
+  background: var(--c);
+  border-color: #fff;
+  box-shadow: 0 0 10px var(--c);
+  transform: scale(1.15);
+  color: var(--ink);
+}
+.hudbtn {
+  position: absolute;
+  left: 14px;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  background: var(--face);
+  color: var(--mint);
+  border: 3px solid var(--brass);
+  font: inherit;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px var(--brass-dark),
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+#pouch {
+  top: calc(var(--top) + 42px);
+}
+#satchelBtn {
+  top: calc(var(--top) + 92px);
+}
+.gem {
+  width: 14px;
+  height: 14px;
+  background: var(--mint);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+.bump {
+  animation: bump 0.35s;
+}
+@keyframes bump {
+  50% {
+    transform: scale(1.15);
   }
-  html,body{margin:0;height:100%;overflow:hidden;background:#8fc7ff;
-    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--cream);
-    touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-  canvas#c{display:block;width:100%;height:100%}
+}
+#hint {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink);
+  opacity: 0.75;
+  transition: opacity 0.5s;
+}
+#toast {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 21px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s;
+  padding: 0 20px;
+}
 
-  /* HUD */
-  #hud{position:fixed;inset:0;pointer-events:none}
-  #finder{position:absolute;top:var(--top);right:14px;width:138px;height:138px;border-radius:50%;
-    background:var(--face);border:6px solid var(--brass);
-    box-shadow:0 0 0 2px var(--brass-dark),inset 0 0 18px rgba(0,0,0,.6),0 6px 14px rgba(0,0,0,.35)}
-  #finder canvas{width:100%;height:100%;border-radius:50%;display:block}
-  #dist{position:absolute;top:calc(var(--top) + 144px);right:14px;width:150px;text-align:center;font-size:13px;color:var(--ink);opacity:.85}
-  #counter{position:absolute;top:calc(var(--top) + 2px);left:16px;display:flex;gap:6px;align-items:center}
-  #counter i{width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.18);border:2px solid rgba(0,0,0,.28);
-    transition:transform .25s,background .25s;font-style:normal;font-size:12px;font-weight:bold;color:rgba(0,0,0,.45);
-    display:flex;align-items:center;justify-content:center}
-  #counter i.on{background:var(--c);border-color:#fff;box-shadow:0 0 10px var(--c);transform:scale(1.15);color:var(--ink)}
-  .hudbtn{position:absolute;left:14px;pointer-events:auto;display:flex;align-items:center;gap:8px;padding:7px 14px 7px 10px;
-    border-radius:999px;background:var(--face);color:var(--mint);border:3px solid var(--brass);font:inherit;font-weight:bold;font-size:15px;
-    cursor:pointer;box-shadow:0 0 0 2px var(--brass-dark),0 4px 10px rgba(0,0,0,.3)}
-  #pouch{top:calc(var(--top) + 42px)}
-  #satchelBtn{top:calc(var(--top) + 92px)}
-  .gem{width:14px;height:14px;background:var(--mint);transform:rotate(45deg);border-radius:2px}
-  .bump{animation:bump .35s}
-  @keyframes bump{50%{transform:scale(1.15)}}
-  #hint{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);left:0;right:0;text-align:center;font-size:14px;color:var(--ink);opacity:.75;transition:opacity .5s}
-  #toast{position:absolute;top:30%;left:0;right:0;text-align:center;font-size:21px;font-weight:bold;color:#fff;
-    text-shadow:0 2px 12px rgba(0,0,0,.5);opacity:0;transition:opacity .3s;padding:0 20px}
+#stick {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  display: none;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+#knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  transform: translate(-50%, -50%);
+}
 
-  #stick{position:fixed;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.55);
-    display:none;pointer-events:none;transform:translate(-50%,-50%)}
-  #knob{position:absolute;left:50%;top:50%;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.75);transform:translate(-50%,-50%)}
+/* overlays */
+.panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  background: rgba(10, 14, 32, 0.55);
+  backdrop-filter: blur(3px);
+}
+.panel.hidden {
+  display: none;
+}
+.card {
+  max-width: 340px;
+  width: 100%;
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--cream);
+  color: var(--ink);
+  border-radius: 18px;
+  padding: 24px 22px;
+  border: 5px solid var(--brass);
+  box-shadow:
+    0 0 0 2px var(--brass-dark),
+    0 20px 50px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+.card h1 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+.card p {
+  margin: 0 0 16px;
+  line-height: 1.45;
+  font-size: 16px;
+}
+.card button {
+  font: inherit;
+  font-size: 17px;
+  font-weight: bold;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--face);
+  color: var(--mint);
+  cursor: pointer;
+}
+.card button:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 3px;
+}
+.card button.quiet {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--brass);
+}
+.card input {
+  font: inherit;
+  font-size: 17px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--brass);
+  background: #fff;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+.granted {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--face);
+  margin: 6px 0 4px;
+}
+.wishtext {
+  font-style: italic;
+  font-size: 17px;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
 
-  /* overlays */
-  .panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
-    background:rgba(10,14,32,.55);backdrop-filter:blur(3px)}
-  .panel.hidden{display:none}
-  .card{max-width:340px;width:100%;max-height:86vh;overflow:auto;background:var(--cream);color:var(--ink);border-radius:18px;
-    padding:24px 22px;border:5px solid var(--brass);box-shadow:0 0 0 2px var(--brass-dark),0 20px 50px rgba(0,0,0,.4);box-sizing:border-box}
-  .card h1{margin:0 0 8px;font-size:26px;letter-spacing:.5px}
-  .card p{margin:0 0 16px;line-height:1.45;font-size:16px}
-  .card button{font:inherit;font-size:17px;font-weight:bold;padding:12px 26px;border-radius:999px;border:0;background:var(--face);color:var(--mint);cursor:pointer}
-  .card button:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
-  .card button.quiet{background:transparent;color:var(--ink);border:2px solid var(--brass)}
-  .card input{font:inherit;font-size:17px;width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:2px solid var(--brass);background:#fff;margin-bottom:12px;color:var(--ink)}
-  .granted{font-size:24px;font-weight:bold;color:var(--face);margin:6px 0 4px}
-  .wishtext{font-style:italic;font-size:17px;margin-bottom:18px;line-height:1.5}
+/* duel */
+/* what the villager actually says, in their own voice */
+.who {
+  font-size: 16px;
+  margin: 0 0 6px;
+  font-style: italic;
+  line-height: 1.45;
+}
+/* the mechanical explanation, kept quieter than the character */
+.rules {
+  font-size: 13px;
+  margin: 0 0 12px;
+  opacity: 0.62;
+  line-height: 1.4;
+}
+/* their line after the duel is decided */
+.say {
+  font-style: italic;
+  font-size: 15px;
+  opacity: 0.8;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+.bar {
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  margin: 6px 0 2px;
+  border: 2px solid var(--brass);
+}
+.bar b {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--face);
+  transition: width 0.08s linear;
+}
+.bar.them b {
+  background: #e0553d;
+}
+.barlabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+#tapzone {
+  margin: 16px 0 8px;
+  height: 150px;
+  border-radius: 16px;
+  background: var(--face);
+  color: var(--mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: bold;
+  border: 4px solid var(--brass);
+  cursor: pointer;
+}
+#tapzone:active {
+  transform: scale(0.97);
+}
+#timer {
+  font-size: 34px;
+  font-weight: bold;
+  color: var(--face);
+  margin-bottom: 4px;
+}
+#duelResult {
+  display: none;
+}
+#duelResult .big {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 0 0 6px;
+  color: var(--face);
+}
+#duelResult .loot {
+  font-size: 19px;
+  margin-bottom: 16px;
+}
 
-  /* duel */
-  /* what the villager actually says, in their own voice */
-  .who{font-size:16px;margin:0 0 6px;font-style:italic;line-height:1.45}
-  /* the mechanical explanation, kept quieter than the character */
-  .rules{font-size:13px;margin:0 0 12px;opacity:.62;line-height:1.4}
-  /* their line after the duel is decided */
-  .say{font-style:italic;font-size:15px;opacity:.8;margin:0 0 10px;line-height:1.45}
-  .bar{height:22px;border-radius:11px;background:rgba(0,0,0,.12);overflow:hidden;margin:6px 0 2px;border:2px solid var(--brass)}
-  .bar b{display:block;height:100%;width:0;background:var(--face);transition:width .08s linear}
-  .bar.them b{background:#e0553d}
-  .barlabel{display:flex;justify-content:space-between;font-size:14px}
-  #tapzone{margin:16px 0 8px;height:150px;border-radius:16px;background:var(--face);color:var(--mint);display:flex;align-items:center;justify-content:center;
-    font-size:26px;font-weight:bold;border:4px solid var(--brass);cursor:pointer}
-  #tapzone:active{transform:scale(.97)}
-  #timer{font-size:34px;font-weight:bold;color:var(--face);margin-bottom:4px}
-  #duelResult{display:none}
-  #duelResult .big{font-size:30px;font-weight:bold;margin:0 0 6px;color:var(--face)}
-  #duelResult .loot{font-size:19px;margin-bottom:16px}
-
-  /* shop + satchel */
-  .item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:11px 0;border-top:2px solid rgba(125,95,45,.25)}
-  .item:first-child{border-top:0}
-  .item .name{font-weight:bold}
-  .item .desc{font-size:14px;opacity:.8}
-  .item button{padding:8px 14px;font-size:15px;white-space:nowrap}
-  .item button[disabled]{opacity:.45;cursor:default}
-  .item.isworn .name::after{content:' · worn';font-weight:normal;opacity:.65;font-size:13px}
-  .item.isworn .swatch{box-shadow:0 0 0 2px var(--face)}
-  /* The map wants to be as big as the screen allows, so its card is wider than
+/* shop + satchel */
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  padding: 11px 0;
+  border-top: 2px solid rgba(125, 95, 45, 0.25);
+}
+.item:first-child {
+  border-top: 0;
+}
+.item .name {
+  font-weight: bold;
+}
+.item .desc {
+  font-size: 14px;
+  opacity: 0.8;
+}
+.item button {
+  padding: 8px 14px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.item button[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.item.isworn .name::after {
+  content: ' · worn';
+  font-weight: normal;
+  opacity: 0.65;
+  font-size: 13px;
+}
+.item.isworn .swatch {
+  box-shadow: 0 0 0 2px var(--face);
+}
+/* The map wants to be as big as the screen allows, so its card is wider than
      the others. box-sizing matters: without it the 3px border is added ON TOP
      of width:100% and the card grows a scrollbar. */
-  #map .card{max-width:min(94vw,600px);width:100%}
-  /* One button, bottom right, where the looking thumb already rests. Crawl and
+#map .card {
+  max-width: min(94vw, 600px);
+  width: 100%;
+}
+/* One button, bottom right, where the looking thumb already rests. Crawl and
      whistle lost theirs because nothing in the game ever asked for them; this
      one is pressed constantly, so it earns the space. */
-  .actbtn{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 54px);
-    pointer-events:auto;padding:12px 22px;border-radius:999px;touch-action:manipulation;
-    background:var(--face);color:var(--mint);border:3px solid var(--brass);font:inherit;font-weight:bold;
-    font-size:16px;cursor:pointer;box-shadow:0 0 0 2px var(--brass-dark),0 4px 10px rgba(0,0,0,.3)}
-  .actbtn:active{background:var(--mint);color:var(--face)}
-  .actbtn:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
-  #mapc{display:block;box-sizing:border-box;width:100%;max-width:min(72vh,560px);aspect-ratio:1;
-    margin:6px auto 2px;border-radius:10px;border:3px solid var(--brass);background:#14180f}
-  .mapnote{font-size:13px;opacity:.75;text-align:center;margin:6px 2px 0}
-  #finder{cursor:pointer}
-  .slotline{font-size:14px;opacity:.75;padding:8px 0 2px}
-  .item .owned{font-weight:bold;color:var(--face);white-space:nowrap;font-size:14px}
-  .swatch{width:26px;height:26px;border-radius:8px;flex:none;border:2px solid rgba(0,0,0,.2)}
-  .row{display:flex;align-items:center;gap:12px;flex:1}
-  .section{font-weight:bold;text-align:left;margin:14px 0 4px;font-size:15px;color:var(--brass-dark)}
-  .empty{text-align:left;font-size:14px;opacity:.7;padding:6px 0}
-  .wishrow{text-align:left;padding:9px 0;border-top:2px solid rgba(125,95,45,.25);display:flex;gap:10px;align-items:flex-start}
-  .wishrow .star{color:var(--brass);font-size:18px;line-height:1.2}
-  .wishrow .meta{font-size:12px;opacity:.65}
-  .closebtn{margin-top:14px}
-  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+.actbtn {
+  position: absolute;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 54px);
+  pointer-events: auto;
+  padding: 12px 22px;
+  border-radius: 999px;
+  touch-action: manipulation;
+  background: var(--face);
+  color: var(--mint);
+  border: 3px solid var(--brass);
+  font: inherit;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px var(--brass-dark),
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.actbtn:active {
+  background: var(--mint);
+  color: var(--face);
+}
+.actbtn:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 3px;
+}
+#mapc {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: min(72vh, 560px);
+  aspect-ratio: 1;
+  margin: 6px auto 2px;
+  border-radius: 10px;
+  border: 3px solid var(--brass);
+  background: #14180f;
+}
+.mapnote {
+  font-size: 13px;
+  opacity: 0.75;
+  text-align: center;
+  margin: 6px 2px 0;
+}
+#finder {
+  cursor: pointer;
+}
+.slotline {
+  font-size: 14px;
+  opacity: 0.75;
+  padding: 8px 0 2px;
+}
+.item .owned {
+  font-weight: bold;
+  color: var(--face);
+  white-space: nowrap;
+  font-size: 14px;
+}
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex: none;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.section {
+  font-weight: bold;
+  text-align: left;
+  margin: 14px 0 4px;
+  font-size: 15px;
+  color: var(--brass-dark);
+}
+.empty {
+  text-align: left;
+  font-size: 14px;
+  opacity: 0.7;
+  padding: 6px 0;
+}
+.wishrow {
+  text-align: left;
+  padding: 9px 0;
+  border-top: 2px solid rgba(125, 95, 45, 0.25);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.wishrow .star {
+  color: var(--brass);
+  font-size: 18px;
+  line-height: 1.2;
+}
+.wishrow .meta {
+  font-size: 12px;
+  opacity: 0.65;
+}
+.closebtn {
+  margin-top: 14px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 
-  /* stats overlay, shown only with ?stats in the URL */
-  #stats{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);
-    text-align:center;font:bold 13px ui-monospace,Menlo,Consolas,monospace;color:#8ff5c8;
-    text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;z-index:10}
+/* stats overlay, shown only with ?stats in the URL */
+#stats {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+  text-align: center;
+  font:
+    bold 13px ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  color: #8ff5c8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  z-index: 10;
+}
 
-
-  /* the order chain, beside the seven counter dots. Breaking the order drops
+/* the order chain, beside the seven counter dots. Breaking the order drops
      your reward from three wishes to one, so it should be visible while it
      still matters -- not just a toast that fades. */
-  /* order:2 puts this after the seven dots. ui.js loads before orbs.js -- it is
+/* order:2 puts this after the seven dots. ui.js loads before orbs.js -- it is
      lower in the module graph -- so the tag element is appended to #counter
      first and would otherwise sit to the LEFT of the dots. #counter is a
      flexbox, so ordering it in CSS is simpler than fighting the load order. */
-  #orderTag{order:2;margin-left:8px;font-size:11px;font-weight:bold;letter-spacing:.04em;
-    padding:2px 8px;border-radius:999px;white-space:nowrap;transition:opacity .3s}
-  #orderTag.kept{color:#0c3a3a;background:rgba(143,245,200,.85);border:1px solid rgba(12,58,58,.25)}
-  #orderTag.broken{color:#fff;background:rgba(224,85,61,.85);border:1px solid rgba(0,0,0,.2)}
-  #orderTag.none{opacity:0}
+#orderTag {
+  order: 2;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+#orderTag.kept {
+  color: #0c3a3a;
+  background: rgba(143, 245, 200, 0.85);
+  border: 1px solid rgba(12, 58, 58, 0.25);
+}
+#orderTag.broken {
+  color: #fff;
+  background: rgba(224, 85, 61, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+#orderTag.none {
+  opacity: 0;
+}
 
-  /* an old wish resurfacing at the start of a gathering */
-  #toast.echo{font-style:italic;font-size:18px;font-weight:normal}
+/* an old wish resurfacing at the start of a gathering */
+#toast.echo {
+  font-style: italic;
+  font-size: 18px;
+  font-weight: normal;
+}

@@ -13,38 +13,88 @@ export const player = new THREE.Group();
 // The upper body is a group of its own, lifted clear of the ground so the legs
 // below have somewhere to be. Everything that used to be added straight to
 // `player` goes in here, so it all rises together and the proportions hold.
-const body = new THREE.Group(); body.position.y = 0.30; player.add(body);
+const body = new THREE.Group();
+body.position.y = 0.3;
+player.add(body);
 
-const SUIT_BASE = 0x2b2d5c, SUIT_CLOAK = 0x5b2c83;
-const suitMat = mat(SUIT_BASE), furMat = mat(0x7a4f2b), faceMat = mat(0xd9a878);
-export const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.85, 10), suitMat); torso.position.y = 0.55;
-const sash  = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 18), mat(0xe0553d)); sash.rotation.x = Math.PI/2; sash.position.y = 0.42;
-const headM = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), furMat); headM.position.y = 1.32;
-const hood  = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 12, 0, Math.PI*2, 0, Math.PI*0.62), suitMat); hood.position.y = 1.33;
-const face  = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), faceMat); face.scale.set(1, 0.85, 0.6); face.position.set(0, 1.26, 0.22);
-const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), faceMat); muzzle.position.set(0, 1.19, 0.36);
-const eyeGeo = new THREE.SphereGeometry(0.045, 8, 8), eyeMat = mat(0x1b1a17);
-const eyeL = new THREE.Mesh(eyeGeo, eyeMat), eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-eyeL.position.set(-0.09, 1.31, 0.42); eyeR.position.set(0.09, 1.31, 0.42);
+const SUIT_BASE = 0x2b2d5c,
+  SUIT_CLOAK = 0x5b2c83;
+const suitMat = mat(SUIT_BASE),
+  furMat = mat(0x7a4f2b),
+  faceMat = mat(0xd9a878);
+export const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.85, 10), suitMat);
+torso.position.y = 0.55;
+const sash = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 18), mat(0xe0553d));
+sash.rotation.x = Math.PI / 2;
+sash.position.y = 0.42;
+const headM = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), furMat);
+headM.position.y = 1.32;
+const hood = new THREE.Mesh(
+  new THREE.SphereGeometry(0.36, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.62),
+  suitMat,
+);
+hood.position.y = 1.33;
+const face = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), faceMat);
+face.scale.set(1, 0.85, 0.6);
+face.position.set(0, 1.26, 0.22);
+const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), faceMat);
+muzzle.position.set(0, 1.19, 0.36);
+const eyeGeo = new THREE.SphereGeometry(0.045, 8, 8),
+  eyeMat = mat(0x1b1a17);
+const eyeL = new THREE.Mesh(eyeGeo, eyeMat),
+  eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+eyeL.position.set(-0.09, 1.31, 0.42);
+eyeR.position.set(0.09, 1.31, 0.42);
 const earGeo = new THREE.SphereGeometry(0.11, 10, 8);
-const earL = new THREE.Mesh(earGeo, furMat), earR = new THREE.Mesh(earGeo, furMat);
-earL.position.set(-0.36, 1.36, 0.02); earR.position.set(0.36, 1.36, 0.02);
-const band = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.035, 6, 20), mat(0xe0553d)); band.rotation.x = Math.PI/2; band.position.y = 1.44;
-const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.03), mat(0xe0553d)); scarfTail.position.set(0.12, 1.2, -0.36); scarfTail.rotation.z = 0.3;
+const earL = new THREE.Mesh(earGeo, furMat),
+  earR = new THREE.Mesh(earGeo, furMat);
+earL.position.set(-0.36, 1.36, 0.02);
+earR.position.set(0.36, 1.36, 0.02);
+const band = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.035, 6, 20), mat(0xe0553d));
+band.rotation.x = Math.PI / 2;
+band.position.y = 1.44;
+const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.03), mat(0xe0553d));
+scarfTail.position.set(0.12, 1.2, -0.36);
+scarfTail.rotation.z = 0.3;
 const armGeo = new THREE.CylinderGeometry(0.08, 0.09, 0.6, 8);
-export const armL = new THREE.Mesh(armGeo, suitMat), armR = new THREE.Mesh(armGeo, suitMat);
-armL.position.set(-0.42, 0.6, 0); armR.position.set(0.42, 0.6, 0);
+export const armL = new THREE.Mesh(armGeo, suitMat),
+  armR = new THREE.Mesh(armGeo, suitMat);
+armL.position.set(-0.42, 0.6, 0);
+armR.position.set(0.42, 0.6, 0);
 const handGeo = new THREE.SphereGeometry(0.09, 8, 8);
-export const handL = new THREE.Mesh(handGeo, furMat), handR = new THREE.Mesh(handGeo, furMat);
-handL.position.set(-0.42, 0.28, 0); handR.position.set(0.42, 0.28, 0);
+export const handL = new THREE.Mesh(handGeo, furMat),
+  handR = new THREE.Mesh(handGeo, furMat);
+handL.position.set(-0.42, 0.28, 0);
+handR.position.set(0.42, 0.28, 0);
 export const tailSegs = [];
-for (let i=0;i<6;i++){ const s = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i*0.006, 8, 6), furMat); body.add(s); tailSegs.push(s); }
-body.add(torso, sash, headM, hood, face, muzzle, eyeL, eyeR, earL, earR, band, scarfTail, armL, armR, handL, handR);
+for (let i = 0; i < 6; i++) {
+  const s = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i * 0.006, 8, 6), furMat);
+  body.add(s);
+  tailSegs.push(s);
+}
+body.add(
+  torso,
+  sash,
+  headM,
+  hood,
+  face,
+  muzzle,
+  eyeL,
+  eyeR,
+  earL,
+  earR,
+  band,
+  scarfTail,
+  armL,
+  armR,
+  handL,
+  handR,
+);
 // ---------- legs ----------
 // Each leg is a Group placed at the hip, with the thigh and foot hanging below
 // it. Rotating the group swings the whole leg from the hip, which is what you
 // want; rotating the cylinder itself would pivot it around its middle.
-function makeLeg(side){
+function makeLeg(side) {
   const g = new THREE.Group();
   g.position.set(side * 0.15, 0.46, 0);
   const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.11, 0.44, 8), suitMat);
@@ -55,9 +105,15 @@ function makeLeg(side){
   player.add(g);
   return g;
 }
-export const legL = makeLeg(-1), legR = makeLeg(1);
+export const legL = makeLeg(-1),
+  legR = makeLeg(1);
 
-player.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+player.traverse((o) => {
+  if (o.isMesh) {
+    o.castShadow = true;
+    o.receiveShadow = true;
+  }
+});
 scene.add(player);
 
 // ---------- crawling ----------
@@ -66,15 +122,15 @@ scene.add(player);
 // you from closer) and main.js (you move slower).
 // The walk cycle swings the legs on rotation.x, so the crawl splays them on
 // rotation.z instead and the two never fight each other.
-export function setCrawlPose(on){
-  body.position.y = on ? 0.02 : 0.30;
+export function setCrawlPose(on) {
+  body.position.y = on ? 0.02 : 0.3;
   body.rotation.x = on ? 1.15 : 0;
   legL.rotation.z = on ? -0.35 : 0;
-  legR.rotation.z = on ?  0.35 : 0;
+  legR.rotation.z = on ? 0.35 : 0;
 }
 
 /** Legs tucked and arms up while off the ground, so a jump reads as a jump. */
-export function setAirPose(on){
+export function setAirPose(on) {
   legL.rotation.x = on ? -0.7 : 0;
   legR.rotation.x = on ? -0.4 : 0;
   armL.rotation.x = on ? -1.5 : 0;
@@ -94,25 +150,35 @@ export function setAirPose(on){
 // function safe to call as often as we like, with the same result every time.
 export const cosmetics = {};
 
-function buildCosmetics(){
+function buildCosmetics() {
   if (cosmetics.built) return;
   cosmetics.built = true;
 
   const h = new THREE.Group();
-  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), mat(0xd9b86a)); brim.position.y = 1.62;
-  const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), mat(0xcfa955)); top.position.y = 1.78;
-  h.add(brim, top); body.add(h); cosmetics.hat = h;
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 16), mat(0xd9b86a));
+  brim.position.y = 1.62;
+  const top = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.32, 16), mat(0xcfa955));
+  top.position.y = 1.78;
+  h.add(brim, top);
+  body.add(h);
+  cosmetics.hat = h;
 
   const g = new THREE.Group();
   const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.22, 8), mat(0xc9a15a));
   const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glow(0xffe066));
-  const light = pointLight(0xffd27a, 0, 9); light.position.y = 0.3;
-  g.add(cage, flame, light); g.position.set(0.55, 0.22, 0.12); body.add(g);
-  cosmetics.lantern = g; cosmetics.lanternLight = light;
+  const light = pointLight(0xffd27a, 0, 9);
+  light.position.y = 0.3;
+  g.add(cage, flame, light);
+  g.position.set(0.55, 0.22, 0.12);
+  body.add(g);
+  cosmetics.lantern = g;
+  cosmetics.lanternLight = light;
 
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 6, 30), glow(0xc9a15a));
-  ring.rotation.x = Math.PI/2; ring.position.y = 0.5;
-  body.add(ring); cosmetics.charm = ring;
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.5;
+  body.add(ring);
+  cosmetics.charm = ring;
 }
 
 /**
@@ -122,12 +188,12 @@ function buildCosmetics(){
  * Note it asks `worn`, not `owned`. Owning a hat you have taken off must not
  * put it back on your head.
  */
-export function applyCosmetics(){
+export function applyCosmetics() {
   buildCosmetics();
   suitMat.color.set(worn('cloak') ? SUIT_CLOAK : SUIT_BASE);
-  cosmetics.hat.visible     = worn('hat');
+  cosmetics.hat.visible = worn('hat');
   cosmetics.lantern.visible = worn('lantern');
-  cosmetics.charm.visible   = worn('charm');
+  cosmetics.charm.visible = worn('charm');
 }
 
 // The loadout does not know this file exists; it just announces the change.

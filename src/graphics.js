@@ -27,7 +27,7 @@ export function setLowGraphics(on) {
   setShadowsEnabled(!on);
   setBloomEnabled(!on);
 
-  applyPropBudget();   // takes effect the next time the valley is rebuilt
+  applyPropBudget(); // takes effect the next time the valley is rebuilt
 
   if (save.lowGraphics !== on) {
     save.lowGraphics = on;

@@ -11,30 +11,30 @@ everything else passes — write it down before fixing, so it does not get lost.
 
 ## The two-minute pass
 
-| # | Step | Passes if |
-| --- | --- | --- |
-| 1 | **Move.** Left thumb on the joystick, walk in a circle. Right thumb to look around. | The monkey walks and turns, the camera follows smoothly, and it does not clip inside a tree. |
-| 2 | **Zoom.** Pinch out, then in. | The view pulls back and pushes in, and the zoom you chose is still there after you let go. |
-| 3 | **Jump.** Tap Jump next to a rock or a log. | He leaves the ground, clears the low thing, and lands without sticking. |
-| 4 | **Map.** Tap the radar. | The map opens, shows only ground you have walked, and closes again. |
-| 5 | **Collect.** Walk into an orb. | Counter goes up, the dot lights, a message appears, the phone buzzes. |
-| 6 | **Duel.** Let a villager catch you and tap through it. | Their line appears, the bars fill, a result shows, and fragments are added. |
-| 7 | **Buy.** Open the trader, buy the cheapest item, then walk over the crate. | Fragments go down, the crate appears, picking it up shows the item in the satchel. |
-| 8 | **Wear.** In the satchel, take something off and put it back on. | The monkey visibly changes both times. |
-| 9 | **Ceremony.** Gather all seven orbs, make a wish, pick up the token. | The Keeper arrives, the wish is accepted, the token can be collected. |
-| 10 | **Reload, and save persists.** Fully close the tab, reopen the link. | Fragments, items, worn items and wishes are all still there. |
-| 11 | **Install to home screen.** iPhone: Share → Add to Home Screen. Android: menu → Install app. Open from the icon. | It opens fullscreen with no browser bar, and the game plays. |
-| 12 | **Background it.** Switch apps for ten seconds, come back. | It resumes where it was, without lurching forward, and the battery is not noticeably warmer. |
+| #   | Step                                                                                                             | Passes if                                                                                    |
+| --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | **Move.** Left thumb on the joystick, walk in a circle. Right thumb to look around.                              | The monkey walks and turns, the camera follows smoothly, and it does not clip inside a tree. |
+| 2   | **Zoom.** Pinch out, then in.                                                                                    | The view pulls back and pushes in, and the zoom you chose is still there after you let go.   |
+| 3   | **Jump.** Tap Jump next to a rock or a log.                                                                      | He leaves the ground, clears the low thing, and lands without sticking.                      |
+| 4   | **Map.** Tap the radar.                                                                                          | The map opens, shows only ground you have walked, and closes again.                          |
+| 5   | **Collect.** Walk into an orb.                                                                                   | Counter goes up, the dot lights, a message appears, the phone buzzes.                        |
+| 6   | **Duel.** Let a villager catch you and tap through it.                                                           | Their line appears, the bars fill, a result shows, and fragments are added.                  |
+| 7   | **Buy.** Open the trader, buy the cheapest item, then walk over the crate.                                       | Fragments go down, the crate appears, picking it up shows the item in the satchel.           |
+| 8   | **Wear.** In the satchel, take something off and put it back on.                                                 | The monkey visibly changes both times.                                                       |
+| 9   | **Ceremony.** Gather all seven orbs, make a wish, pick up the token.                                             | The Keeper arrives, the wish is accepted, the token can be collected.                        |
+| 10  | **Reload, and save persists.** Fully close the tab, reopen the link.                                             | Fragments, items, worn items and wishes are all still there.                                 |
+| 11  | **Install to home screen.** iPhone: Share → Add to Home Screen. Android: menu → Install app. Open from the icon. | It opens fullscreen with no browser bar, and the game plays.                                 |
+| 12  | **Background it.** Switch apps for ten seconds, come back.                                                       | It resumes where it was, without lurching forward, and the battery is not noticeably warmer. |
 
 ## Performance check (do this one on the oldest phone you can find)
 
 Add `?stats` to the link. Walk to somewhere busy — a stand of trees near the cliffs.
 
-| Reading | Budget | Notes |
-| --- | ---: | --- |
-| Triangles | under **300k** | The single biggest lever is `CONFIG.world.props`. |
-| Draw calls | under **150** | Currently ~184 at normal quality; see the note below. |
-| FPS | at or above **45** | Below this for five seconds and the game drops to low graphics on its own. |
+| Reading    |             Budget | Notes                                                                      |
+| ---------- | -----------------: | -------------------------------------------------------------------------- |
+| Triangles  |     under **300k** | The single biggest lever is `CONFIG.world.props`.                          |
+| Draw calls |      under **150** | Currently ~184 at normal quality; see the note below.                      |
+| FPS        | at or above **45** | Below this for five seconds and the game drops to low graphics on its own. |
 
 **Known exception:** draw calls sit at about 184 at normal quality, over the 150
 budget. The cause is measured and understood — the player and the seven villagers

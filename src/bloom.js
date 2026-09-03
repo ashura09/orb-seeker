@@ -20,7 +20,7 @@ import { CONFIG } from './config.js';
 
 let composer = null;
 
-export function setupBloom(){
+export function setupBloom() {
   if (!CONFIG.bloom.enabled) return false;
 
   composer = new EffectComposer(renderer);
@@ -54,11 +54,13 @@ export function setupBloom(){
 // Low graphics turns the composer off without tearing it down, so it can come
 // back if the setting is ever raised again.
 let bypass = false;
-export function setBloomEnabled(on){ bypass = !on; }
+export function setBloomEnabled(on) {
+  bypass = !on;
+}
 
 /** Draws the frame, through the composer when bloom is on. */
-export function render(){
-  if (composer && !bypass){
+export function render() {
+  if (composer && !bypass) {
     renderer.info.reset();
     composer.render();
   } else {
@@ -70,6 +72,6 @@ export function render(){
   }
 }
 
-export function resize(width, height){
+export function resize(width, height) {
   if (composer) composer.setSize(width, height);
 }

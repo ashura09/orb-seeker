@@ -35,45 +35,63 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 // Several files under one kind means the valley gets variety for free: world.js
 // asks for a "conifer" and gets one of three.
 const CATALOGUE = {
-  conifer:   { files: ['tree_pineTallA_detailed', 'tree_pineTallC_detailed', 'tree_pineDefaultA'], size: 7.0, radius: 0.5 },
-  broadleaf: { files: ['tree_default', 'tree_oak', 'tree_detailed'],                               size: 5.5, radius: 0.55 },
-  deadTree:  { files: ['tree_thin', 'stump_oldTall'],                                              size: 4.5, radius: 0.35 },
-  stump:     { files: ['stump_old', 'stump_round'],                                                size: 1.0, radius: 0.45 },
-  boulder:   { files: ['rock_largeA', 'rock_largeB', 'stone_largeC'],                              size: 2.8, radius: 1.1 },
-  rock:      { files: ['rock_smallA', 'rock_smallC', 'stone_smallB'],                              size: 1.1, radius: 0.45 },
-  reeds:     { files: ['grass_leafsLarge', 'grass_large'],                                         size: 1.6, radius: 0 },
-  shrub:     { files: ['plant_bush', 'plant_bushLarge'],                                           size: 1.4, radius: 0 },
-  fern:      { files: ['plant_bushSmall', 'grass_leafs'],                                          size: 0.9, radius: 0 },
-  flower:    { files: ['flower_redA', 'flower_purpleA'],                                           size: 0.5, radius: 0 },
-  mushroom:  { files: ['mushroom_redGroup'],                                                       size: 0.5, radius: 0 },
-  fallenLog: { files: ['log'],                                                                     size: 2.2, radius: 0.5 },
-  lily:      { files: ['lily_large'],                                                              size: 0.9, radius: 0 },
-  column:    { files: ['statue_column', 'statue_columnDamaged', 'statue_obelisk'],                 size: 4.2, radius: 0.7 },
+  conifer: {
+    files: ['tree_pineTallA_detailed', 'tree_pineTallC_detailed', 'tree_pineDefaultA'],
+    size: 7.0,
+    radius: 0.5,
+  },
+  broadleaf: { files: ['tree_default', 'tree_oak', 'tree_detailed'], size: 5.5, radius: 0.55 },
+  deadTree: { files: ['tree_thin', 'stump_oldTall'], size: 4.5, radius: 0.35 },
+  stump: { files: ['stump_old', 'stump_round'], size: 1.0, radius: 0.45 },
+  boulder: { files: ['rock_largeA', 'rock_largeB', 'stone_largeC'], size: 2.8, radius: 1.1 },
+  rock: { files: ['rock_smallA', 'rock_smallC', 'stone_smallB'], size: 1.1, radius: 0.45 },
+  reeds: { files: ['grass_leafsLarge', 'grass_large'], size: 1.6, radius: 0 },
+  shrub: { files: ['plant_bush', 'plant_bushLarge'], size: 1.4, radius: 0 },
+  fern: { files: ['plant_bushSmall', 'grass_leafs'], size: 0.9, radius: 0 },
+  flower: { files: ['flower_redA', 'flower_purpleA'], size: 0.5, radius: 0 },
+  mushroom: { files: ['mushroom_redGroup'], size: 0.5, radius: 0 },
+  fallenLog: { files: ['log'], size: 2.2, radius: 0.5 },
+  lily: { files: ['lily_large'], size: 0.9, radius: 0 },
+  column: {
+    files: ['statue_column', 'statue_columnDamaged', 'statue_obelisk'],
+    size: 4.2,
+    radius: 0.7,
+  },
 
   // ground cover -- the cheap stuff that fills a landscape out
-  grassTuft: { files: ['grass', 'grass_leafs'],                                                    size: 0.7, radius: 0 },
-  bamboo:    { files: ['crops_bambooStageB', 'crops_bambooStageA'],                                size: 2.6, radius: 0 },
+  grassTuft: { files: ['grass', 'grass_leafs'], size: 0.7, radius: 0 },
+  bamboo: { files: ['crops_bambooStageB', 'crops_bambooStageA'], size: 2.6, radius: 0 },
 
   // cliffs -- what turns the highland from a hummock into a plateau you walk around
   // `sink` buries a prop's base below the surface. A 7 m cliff block sitting
   // exactly ON a steep slope leaves a visible gap under its downhill edge;
   // pushing it into the hill hides that without anyone noticing the block is
   // partly buried.
-  cliff:     { files: ['cliff_large_rock', 'cliff_block_rock', 'cliff_blockHalf_rock',
-                       'cliff_blockDiagonal_rock', 'cliff_rock'],                 size: 7.0, radius: 2.6, sink: 2.2 },
-  cliffCave: { files: ['cliff_cave_rock'],                                        size: 7.0, radius: 2.6, sink: 2.0 },
+  cliff: {
+    files: [
+      'cliff_large_rock',
+      'cliff_block_rock',
+      'cliff_blockHalf_rock',
+      'cliff_blockDiagonal_rock',
+      'cliff_rock',
+    ],
+    size: 7.0,
+    radius: 2.6,
+    sink: 2.2,
+  },
+  cliffCave: { files: ['cliff_cave_rock'], size: 7.0, radius: 2.6, sink: 2.0 },
 
   // landmark pieces
-  tent:       { files: ['tent_detailedOpen', 'tent_smallClosed'],                                  size: 3.0, radius: 1.0 },
-  campfire:   { files: ['campfire_stones', 'campfire_logs'],                                       size: 1.6, radius: 0.5 },
-  fence:      { files: ['fence_simple', 'fence_bend'],                                             size: 2.2, radius: 0 },
-  gate:       { files: ['fence_gate'],                                                             size: 2.4, radius: 0 },
-  bridge:     { files: ['bridge_center_wood'],                                                     size: 5.0, radius: 0 },
-  bridgeSide: { files: ['bridge_side_wood'],                                                       size: 5.0, radius: 0 },
-  canoe:      { files: ['canoe'],                                                                  size: 3.4, radius: 0.6 },
-  statueRing: { files: ['statue_ring'],                                                            size: 3.6, radius: 0.9 },
-  statueHead: { files: ['statue_head'],                                                            size: 2.4, radius: 0.8 },
-  statueBlock:{ files: ['statue_block'],                                                           size: 2.2, radius: 0.8 },
+  tent: { files: ['tent_detailedOpen', 'tent_smallClosed'], size: 3.0, radius: 1.0 },
+  campfire: { files: ['campfire_stones', 'campfire_logs'], size: 1.6, radius: 0.5 },
+  fence: { files: ['fence_simple', 'fence_bend'], size: 2.2, radius: 0 },
+  gate: { files: ['fence_gate'], size: 2.4, radius: 0 },
+  bridge: { files: ['bridge_center_wood'], size: 5.0, radius: 0 },
+  bridgeSide: { files: ['bridge_side_wood'], size: 5.0, radius: 0 },
+  canoe: { files: ['canoe'], size: 3.4, radius: 0.6 },
+  statueRing: { files: ['statue_ring'], size: 3.6, radius: 0.9 },
+  statueHead: { files: ['statue_head'], size: 2.4, radius: 0.8 },
+  statueBlock: { files: ['statue_block'], size: 2.2, radius: 0.8 },
 };
 
 // ---------- palette ----------
@@ -89,23 +107,27 @@ const PALETTE = {
   // Kept deliberately far apart in tone. Mapping every green to nearly the same
   // value made the whole valley read as one flat mass; foliage needs a lighter
   // canopy and a darker underside to have any shape at all.
-  leafsGreen:   0x63b04a,   // canopy, lighter than the ground
-  leafsDark:    0x2f6b34,   // shaded foliage and undersides
-  grass:        0x7cbf5a,   // the tufts on rocks and logs
-  woodBark:     0x6b4a2a,   // was orange
+  leafsGreen: 0x63b04a, // canopy, lighter than the ground
+  leafsDark: 0x2f6b34, // shaded foliage and undersides
+  grass: 0x7cbf5a, // the tufts on rocks and logs
+  woodBark: 0x6b4a2a, // was orange
   woodBarkDark: 0x55381f,
-  woodInner:    0xc9a882,
-  dirt:         0x7a6142,   // was bright orange
-  stone:        0x9aa3ab,   // matches the game's rock grey
-  stoneDark:    0x767c84,
-  _defaultMat:  0xa8a8a8,
+  woodInner: 0xc9a882,
+  dirt: 0x7a6142, // was bright orange
+  stone: 0x9aa3ab, // matches the game's rock grey
+  stoneDark: 0x767c84,
+  _defaultMat: 0xa8a8a8,
   // colorRed and colorPurple are the flowers, and are left alone on purpose.
 };
 
 // kind -> array of prepared geometries, one per variant. Filled by loadProps().
 export const PROPS = {};
-export const PROP_RADIUS = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.radius]));
-export const PROP_SINK   = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.sink || 0]));
+export const PROP_RADIUS = Object.fromEntries(
+  Object.entries(CATALOGUE).map(([k, v]) => [k, v.radius]),
+);
+export const PROP_SINK = Object.fromEntries(
+  Object.entries(CATALOGUE).map(([k, v]) => [k, v.sink || 0]),
+);
 
 // kind -> how tall it actually stands, in metres, at scale 1. Measured from the
 // prepared geometry rather than taken from `size`, because `size` is the LONGEST
@@ -114,7 +136,11 @@ export const PROP_SINK   = Object.fromEntries(Object.entries(CATALOGUE).map(([k,
 export const PROP_HEIGHT = {};
 
 // One material for every prop: the colour rides in the vertices.
-export const PROP_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: CONFIG.render.roughness, metalness: 0 });
+export const PROP_MATERIAL = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: CONFIG.render.roughness,
+  metalness: 0,
+});
 
 /**
  * Flattens a loaded glTF scene into one geometry with baked vertex colours.
@@ -123,16 +149,16 @@ export const PROP_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true
  * converted into the renderer's working colour space, so they are copied
  * straight across rather than reinterpreted.
  */
-function flatten(root){
+function flatten(root) {
   const pieces = [];
   root.updateWorldMatrix(true, true);
-  root.traverse(node => {
+  root.traverse((node) => {
     if (!node.isMesh) return;
     const geo = node.geometry.clone();
     geo.applyMatrix4(node.matrixWorld);
 
     // strip anything we do not use, so merging never fails on mismatched sets
-    for (const name of Object.keys(geo.attributes)){
+    for (const name of Object.keys(geo.attributes)) {
       if (name !== 'position' && name !== 'normal') geo.deleteAttribute(name);
     }
     if (!geo.attributes.normal) geo.computeVertexNormals();
@@ -151,12 +177,19 @@ function flatten(root){
     // sRGB for us. Anything not remapped keeps the model's own colour, which
     // needs the same reinterpretation for the reason above.
     const name = node.material?.name;
-    const c = PALETTE[name] !== undefined
-      ? new THREE.Color(PALETTE[name])
-      : new THREE.Color().copy(node.material?.color ?? new THREE.Color(0xffffff)).convertSRGBToLinear();
+    const c =
+      PALETTE[name] !== undefined
+        ? new THREE.Color(PALETTE[name])
+        : new THREE.Color()
+            .copy(node.material?.color ?? new THREE.Color(0xffffff))
+            .convertSRGBToLinear();
     const n = geo.attributes.position.count;
     const colors = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++){ colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b; }
+    for (let i = 0; i < n; i++) {
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+    }
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     pieces.push(geo);
   });
@@ -165,15 +198,11 @@ function flatten(root){
 }
 
 /** Scales a geometry so its longest axis matches `size`, base on the ground. */
-function normalise(geo, size){
+function normalise(geo, size) {
   geo.computeBoundingBox();
   const box = geo.boundingBox;
-  const longest = Math.max(
-    box.max.x - box.min.x,
-    box.max.y - box.min.y,
-    box.max.z - box.min.z,
-  );
-  if (longest > 0){
+  const longest = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+  if (longest > 0) {
     const s = size / longest;
     geo.scale(s, s, s);
     geo.computeBoundingBox();
@@ -192,21 +221,22 @@ let loaded = false;
  * A model that fails to load is skipped with a warning rather than taking the
  * whole valley down with it.
  */
-export async function loadProps(){
+export async function loadProps() {
   if (loaded) return PROPS;
   const loader = new GLTFLoader();
 
   const jobs = [];
-  for (const [kind, entry] of Object.entries(CATALOGUE)){
+  for (const [kind, entry] of Object.entries(CATALOGUE)) {
     PROPS[kind] = [];
-    for (const file of entry.files){
+    for (const file of entry.files) {
       jobs.push(
-        loader.loadAsync(`models/${file}.glb`)
-          .then(gltf => {
+        loader
+          .loadAsync(`models/${file}.glb`)
+          .then((gltf) => {
             const geo = flatten(gltf.scene);
             if (geo) PROPS[kind].push(normalise(geo, entry.size));
           })
-          .catch(err => console.warn(`could not load models/${file}.glb`, err))
+          .catch((err) => console.warn(`could not load models/${file}.glb`, err)),
       );
     }
   }
@@ -214,14 +244,14 @@ export async function loadProps(){
 
   // Drop any kind that ended up with nothing, so world.js never asks for a
   // geometry that is not there.
-  for (const kind of Object.keys(PROPS)){
+  for (const kind of Object.keys(PROPS)) {
     if (!PROPS[kind].length) delete PROPS[kind];
   }
 
   // The tallest variant of each kind, so nothing is under-estimated.
-  for (const [kind, geos] of Object.entries(PROPS)){
+  for (const [kind, geos] of Object.entries(PROPS)) {
     let h = 0;
-    for (const g of geos){
+    for (const g of geos) {
       g.computeBoundingBox();
       h = Math.max(h, g.boundingBox.max.y - g.boundingBox.min.y);
     }

@@ -25,14 +25,14 @@
 // Event names live here rather than as loose strings, so a typo is a crash you
 // can see instead of a listener that silently never fires.
 export const EVENTS = {
-  ORBS_ALL_FOUND:        'orbs:all-found',        // the seventh orb was collected
-  DUEL_CHALLENGE:        'duel:challenge',        // a villager caught you  (payload: the villager)
-  ITEM_BOUGHT:           'shop:item-bought',      // paid for at the cart   (payload: item id)
-  WISHES_ALL_COLLECTED:  'wishes:all-collected',  // last wish token picked up
-  CRAWL_TOGGLE:          'player:crawl-toggle',   // the player asked to crawl or stand
-  WHISTLE:               'player:whistle',        // the player made a noise on purpose
-  LOADOUT_CHANGED:       'loadout:changed',       // something put on or taken off (payload: item id)
-  JUMP:                  'player:jump',           // the player asked to jump
+  ORBS_ALL_FOUND: 'orbs:all-found', // the seventh orb was collected
+  DUEL_CHALLENGE: 'duel:challenge', // a villager caught you  (payload: the villager)
+  ITEM_BOUGHT: 'shop:item-bought', // paid for at the cart   (payload: item id)
+  WISHES_ALL_COLLECTED: 'wishes:all-collected', // last wish token picked up
+  CRAWL_TOGGLE: 'player:crawl-toggle', // the player asked to crawl or stand
+  WHISTLE: 'player:whistle', // the player made a noise on purpose
+  LOADOUT_CHANGED: 'loadout:changed', // something put on or taken off (payload: item id)
+  JUMP: 'player:jump', // the player asked to jump
 };
 
 const listeners = new Map();
@@ -40,13 +40,13 @@ const listeners = new Map();
 /**
  * Listen for an event. Returns a function that removes the listener again.
  */
-export function on(name, fn){
+export function on(name, fn) {
   if (!listeners.has(name)) listeners.set(name, new Set());
   listeners.get(name).add(fn);
   return () => off(name, fn);
 }
 
-export function off(name, fn){
+export function off(name, fn) {
   listeners.get(name)?.delete(fn);
 }
 
@@ -57,10 +57,10 @@ export function off(name, fn){
  * or unsubscribes during the event cannot corrupt the loop it is inside.
  * One listener throwing must not stop the others, so each is guarded.
  */
-export function emit(name, payload){
+export function emit(name, payload) {
   const set = listeners.get(name);
   if (!set || set.size === 0) return;
-  for (const fn of [...set]){
+  for (const fn of [...set]) {
     try {
       fn(payload);
     } catch (err) {

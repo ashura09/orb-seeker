@@ -25,7 +25,7 @@ Groundwork only: no change to how the game looks or plays, except where noted.
   `wanderers.js` into `rules.js`. Behaviour is identical; the random draws happen in
   the same order as before.
 - Save read and write failures are reported to the console instead of being silently
-  swallowed. Telling the *player* is still pending sign-off — see AUDIT item 6.
+  swallowed. Telling the _player_ is still pending sign-off — see AUDIT item 6.
 
 **Removed**
 

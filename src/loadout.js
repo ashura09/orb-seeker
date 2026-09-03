@@ -31,14 +31,14 @@ export const slots = () => CONFIG.loadout.slots;
  * name something you no longer have, and wearing what you do not own should be
  * impossible rather than merely unlikely.
  */
-export const worn = id => owned(id) && save.worn.includes(id);
+export const worn = (id) => owned(id) && save.worn.includes(id);
 
 /** What you have on, ignoring any stale ids. */
 export const wornItems = () => save.worn.filter(owned);
 export const wornCount = () => wornItems().length;
 
 /** Slots still free, or Infinity when unlimited. */
-export function slotsFree(){
+export function slotsFree() {
   const n = slots();
   return n > 0 ? Math.max(0, n - wornCount()) : Infinity;
 }
@@ -50,27 +50,31 @@ export function slotsFree(){
  * WHY it refused. A UI that can only see "no" has to invent an explanation,
  * and invented explanations drift out of step with the rule.
  */
-export function setWorn(id, on){
-  if (!owned(id)) return {ok:false, worn:false, reason:'You do not have that.'};
+export function setWorn(id, on) {
+  if (!owned(id)) return { ok: false, worn: false, reason: 'You do not have that.' };
   const already = worn(id);
 
-  if (on && !already){
-    if (slotsFree() <= 0){
-      return {ok:false, worn:false, reason:`You can only carry ${slots()}. Take something off first.`};
+  if (on && !already) {
+    if (slotsFree() <= 0) {
+      return {
+        ok: false,
+        worn: false,
+        reason: `You can only carry ${slots()}. Take something off first.`,
+      };
     }
     save.worn.push(id);
-  } else if (!on && already){
-    save.worn = save.worn.filter(x => x !== id);
+  } else if (!on && already) {
+    save.worn = save.worn.filter((x) => x !== id);
   } else {
-    return {ok:true, worn:already, reason:''};   // already in the asked-for state
+    return { ok: true, worn: already, reason: '' }; // already in the asked-for state
   }
 
   persist();
   emit(EVENTS.LOADOUT_CHANGED, id);
-  return {ok:true, worn:on, reason:''};
+  return { ok: true, worn: on, reason: '' };
 }
 
-export const toggleWorn = id => setWorn(id, !worn(id));
+export const toggleWorn = (id) => setWorn(id, !worn(id));
 
 /**
  * Called when an item is picked up. Wearing it straight away is the friendly
@@ -79,6 +83,6 @@ export const toggleWorn = id => setWorn(id, !worn(id));
  * equipping at all. The return value tells the caller whether it went on, so
  * the pickup message can say so.
  */
-export function wearIfRoom(id){
+export function wearIfRoom(id) {
   return setWorn(id, true).worn;
 }

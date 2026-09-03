@@ -49,30 +49,55 @@ export let worldVersion = 0;
 //   landmark  one built thing at its centre, so there is somewhere to walk TO
 //             that is not an orb
 const REGIONS = [
-  { name: 'meadow',   lift:   1, radius: 74, edge: 0.35,
+  {
+    name: 'meadow',
+    lift: 1,
+    radius: 74,
+    edge: 0.35,
     ground: [0x55984a, 0x6ab558],
     props: { broadleaf: 1.0, shrub: 0.8, flower: 2.0, grassTuft: 2.5, rock: 0.3 },
-    landmark: 'field' },
+    landmark: 'field',
+  },
 
-  { name: 'forest',   lift:   4, radius: 70, edge: 0.5,
+  {
+    name: 'forest',
+    lift: 4,
+    radius: 70,
+    edge: 0.5,
     ground: [0x2c6b38, 0x3a7d45],
     props: { conifer: 4.0, fern: 3.0, mushroom: 1.2, stump: 0.6, fallenLog: 0.5, shrub: 0.8 },
-    landmark: 'camp' },
+    landmark: 'camp',
+  },
 
-  { name: 'highland', lift:  17, radius: 62, edge: 0.86,   // steep sides: a plateau
+  {
+    name: 'highland',
+    lift: 17,
+    radius: 62,
+    edge: 0.86, // steep sides: a plateau
     ground: [0x8a8f76, 0x9ba190],
     props: { boulder: 2.4, rock: 2.0, shrub: 0.4, grassTuft: 0.5 },
-    landmark: 'ruin' },
+    landmark: 'ruin',
+  },
 
-  { name: 'wetland',  lift:  -7, radius: 68, edge: 0.55,   // a basin that holds water
+  {
+    name: 'wetland',
+    lift: -7,
+    radius: 68,
+    edge: 0.55, // a basin that holds water
     ground: [0x4a8f6a, 0x5aa47c],
     props: { reeds: 4.0, bamboo: 1.2, lily: 0.6, fern: 0.8, broadleaf: 0.25 },
-    landmark: 'landing' },
+    landmark: 'landing',
+  },
 
-  { name: 'burn',     lift:   0, radius: 66, edge: 0.4,
+  {
+    name: 'burn',
+    lift: 0,
+    radius: 66,
+    edge: 0.4,
     ground: [0x6b5f45, 0x7d6f52],
     props: { deadTree: 2.2, stump: 1.8, fallenLog: 0.7, rock: 0.5 },
-    landmark: 'marker' },
+    landmark: 'marker',
+  },
 ];
 
 // What each landmark is made of: [kind, x, z, rotation, scale] around the
@@ -80,31 +105,48 @@ const REGIONS = [
 // toward, and they are why the kit's tents, fences and bridges are here at all.
 const LANDMARKS = {
   field: [
-    ['fence', -6, -4, 0, 1], ['fence', -3, -4, 0, 1], ['fence', 0, -4, 0, 1],
-    ['fence', 3, -4, 0, 1],  ['gate', 6, -4, 0, 1],
-    ['fence', -6, 5, 0, 1],  ['fence', -3, 5, 0, 1], ['fence', 0, 5, 0, 1],
-    ['shrub', -2, 0, 0.4, 1.4], ['shrub', 3, 1.5, 1.1, 1.2],
+    ['fence', -6, -4, 0, 1],
+    ['fence', -3, -4, 0, 1],
+    ['fence', 0, -4, 0, 1],
+    ['fence', 3, -4, 0, 1],
+    ['gate', 6, -4, 0, 1],
+    ['fence', -6, 5, 0, 1],
+    ['fence', -3, 5, 0, 1],
+    ['fence', 0, 5, 0, 1],
+    ['shrub', -2, 0, 0.4, 1.4],
+    ['shrub', 3, 1.5, 1.1, 1.2],
   ],
   camp: [
-    ['tent', -2.5, 0, 0.5, 1.3], ['tent', 2.5, 1, -0.9, 1.1],
+    ['tent', -2.5, 0, 0.5, 1.3],
+    ['tent', 2.5, 1, -0.9, 1.1],
     ['campfire', 0, 2.5, 0, 1.1],
-    ['fallenLog', -2, 4, 0.3, 1.2], ['fallenLog', 2.5, 4, -0.4, 1.2],
+    ['fallenLog', -2, 4, 0.3, 1.2],
+    ['fallenLog', 2.5, 4, -0.4, 1.2],
   ],
   ruin: [
-    ['column', -6, 0, 0, 1], ['column', 6, 0, 0, 1],
-    ['column', 0, -6, 0, 1], ['column', 0, 6, 0, 1],
-    ['column', -4.3, -4.3, 0, 0.9], ['column', 4.3, 4.3, 0, 0.9],
-    ['statueRing', 0, 0, 0, 1.4], ['statueHead', -2, 3, 0.7, 1],
+    ['column', -6, 0, 0, 1],
+    ['column', 6, 0, 0, 1],
+    ['column', 0, -6, 0, 1],
+    ['column', 0, 6, 0, 1],
+    ['column', -4.3, -4.3, 0, 0.9],
+    ['column', 4.3, 4.3, 0, 0.9],
+    ['statueRing', 0, 0, 0, 1.4],
+    ['statueHead', -2, 3, 0.7, 1],
   ],
   landing: [
-    ['bridge', 0, 0, 0, 1.6], ['bridgeSide', -2.2, 0, 0, 1.6], ['bridgeSide', 2.2, 0, 0, 1.6],
+    ['bridge', 0, 0, 0, 1.6],
+    ['bridgeSide', -2.2, 0, 0, 1.6],
+    ['bridgeSide', 2.2, 0, 0, 1.6],
     ['canoe', 4, 3, 0.8, 1.2],
-    ['reeds', -3, 2, 0, 1.4], ['reeds', 3, -2, 0, 1.4],
+    ['reeds', -3, 2, 0, 1.4],
+    ['reeds', 3, -2, 0, 1.4],
   ],
   marker: [
     ['statueBlock', 0, 0, 0, 1.2],
-    ['deadTree', -4, 2, 0, 1.1], ['deadTree', 4, -2, 0, 0.9],
-    ['stump', -2, -3, 0, 1.3], ['stump', 3, 3, 0, 1.2],
+    ['deadTree', -4, 2, 0, 1.1],
+    ['deadTree', 4, -2, 0, 0.9],
+    ['stump', -2, -3, 0, 1.3],
+    ['stump', 3, 3, 0, 1.2],
   ],
 };
 
@@ -113,15 +155,25 @@ let centres = [];
 /** Which region a point belongs to, plus a blend toward its neighbour. */
 const DEFAULT_REGION = { name: 'meadow', lift: 0, ground: [0x55984a, 0x6ab558], props: {} };
 
-export function regionAt(x, z){
+export function regionAt(x, z) {
   // The world is built only once the models have loaded, so this can be asked
   // before there are any regions. Answer sensibly rather than throwing.
   if (!centres.length) return { region: DEFAULT_REGION, neighbour: DEFAULT_REGION, blend: 0 };
-  let best = 0, bestD = Infinity, second = 0, secondD = Infinity;
-  for (let i = 0; i < centres.length; i++){
+  let best = 0,
+    bestD = Infinity,
+    second = 0,
+    secondD = Infinity;
+  for (let i = 0; i < centres.length; i++) {
     const d = Math.hypot(x - centres[i].x, z - centres[i].z);
-    if (d < bestD){ secondD = bestD; second = best; bestD = d; best = i; }
-    else if (d < secondD){ secondD = d; second = i; }
+    if (d < bestD) {
+      secondD = bestD;
+      second = best;
+      bestD = d;
+      best = i;
+    } else if (d < secondD) {
+      secondD = d;
+      second = i;
+    }
   }
   const blend = secondD === Infinity ? 0 : bestD / (bestD + secondD);
   return { region: centres[best].region, neighbour: centres[second].region, blend };
@@ -133,9 +185,11 @@ let noiseOffset = 0;
 
 // Two octaves is enough for rolling ground: one for the broad shape of the
 // valley floor, one for the bumps you actually walk over.
-function terrainNoise(x, z){
-  return noise.noise(x * 0.008 + noiseOffset, z * 0.008, 0) * 1.0
-       + noise.noise(x * 0.028 + noiseOffset, z * 0.028, 5.3) * 0.35;
+function terrainNoise(x, z) {
+  return (
+    noise.noise(x * 0.008 + noiseOffset, z * 0.008, 0) * 1.0 +
+    noise.noise(x * 0.028 + noiseOffset, z * 0.028, 5.3) * 0.35
+  );
 }
 
 /**
@@ -148,7 +202,7 @@ function terrainNoise(x, z){
  */
 // Smooth 0..1 ramp. Used for region edges, because a linear blend gives a swell
 // and a smoothstep gives something with a defined lip you can see and walk up.
-function smooth01(t){
+function smooth01(t) {
   t = Math.min(1, Math.max(0, t));
   return t * t * (3 - 2 * t);
 }
@@ -162,7 +216,7 @@ function smooth01(t){
  * Three things add up: rolling noise, the region plateaus and basins, and the
  * rim far out that stops the world ending at a visible line.
  */
-export function heightAt(x, z){
+export function heightAt(x, z) {
   const T = CONFIG.terrain;
   let h = terrainNoise(x, z) * T.amplitude;
 
@@ -173,15 +227,19 @@ export function heightAt(x, z){
   // it quickly, which is what turns the highland into a plateau with sides
   // rather than a gentle hummock. Weighted average, so overlapping regions
   // blend instead of stacking into a tower.
-  let wsum = 0, lsum = 0;
-  for (const c of centres){
+  let wsum = 0,
+    lsum = 0;
+  for (const c of centres) {
     const r = c.region.radius;
     const d = Math.hypot(x - c.x, z - c.z);
-    const inner = r * (0.25 + 0.65 * c.region.edge);   // held at full lift
+    const inner = r * (0.25 + 0.65 * c.region.edge); // held at full lift
     const w = 1 - smooth01((d - inner) / Math.max(1, r * 1.15 - inner));
-    if (w > 0){ wsum += w; lsum += c.region.lift * w; }
+    if (w > 0) {
+      wsum += w;
+      lsum += c.region.lift * w;
+    }
   }
-  if (wsum > 0) h += lsum / wsum * Math.min(1, wsum);
+  if (wsum > 0) h += (lsum / wsum) * Math.min(1, wsum);
 
   // ----- the rim, far beyond where you can walk -----
   const rr = Math.hypot(x, z);
@@ -194,12 +252,28 @@ export function heightAt(x, z){
 // ---------- ground ----------
 const GROUND_SEGS = CONFIG.world.groundSegments;
 const GROUND_HALF = WORLD_R + CONFIG.terrain.skirt;
-const groundGeo = new THREE.PlaneGeometry(GROUND_HALF * 2, GROUND_HALF * 2, GROUND_SEGS, GROUND_SEGS);
-groundGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(groundGeo.attributes.position.count * 3), 3));
+const groundGeo = new THREE.PlaneGeometry(
+  GROUND_HALF * 2,
+  GROUND_HALF * 2,
+  GROUND_SEGS,
+  GROUND_SEGS,
+);
+groundGeo.setAttribute(
+  'color',
+  new THREE.BufferAttribute(new Float32Array(groundGeo.attributes.position.count * 3), 3),
+);
 
-const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, map: makeGroundDetail() }));
+const ground = new THREE.Mesh(
+  groundGeo,
+  new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.95,
+    metalness: 0,
+    map: makeGroundDetail(),
+  }),
+);
 ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;   // casts nothing -- there is nothing beneath it
+ground.receiveShadow = true; // casts nothing -- there is nothing beneath it
 scene.add(ground);
 
 // ---------- standing on the ground you can actually SEE ----------
@@ -226,34 +300,39 @@ const GROUND_CELL = (GROUND_HALF * 2) / GROUND_SEGS;
  * and this picks the same one and interpolates across it, so the answer is the
  * mesh's own surface rather than an approximation of it.
  */
-export function surfaceHeightAt(x, z){
+export function surfaceHeightAt(x, z) {
   const gx = (x + GROUND_HALF) / GROUND_CELL;
   const gz = (z + GROUND_HALF) / GROUND_CELL;
-  const i = Math.floor(gx), j = Math.floor(gz);
+  const i = Math.floor(gx),
+    j = Math.floor(gz);
 
   // outside the mesh entirely: fall back to the smooth function
   if (i < 0 || j < 0 || i >= GROUND_SEGS || j >= GROUND_SEGS) return heightAt(x, z);
 
-  const fx = gx - i, fz = gz - j;
-  const x0 = i * GROUND_CELL - GROUND_HALF, x1 = x0 + GROUND_CELL;
-  const z0 = j * GROUND_CELL - GROUND_HALF, z1 = z0 + GROUND_CELL;
+  const fx = gx - i,
+    fz = gz - j;
+  const x0 = i * GROUND_CELL - GROUND_HALF,
+    x1 = x0 + GROUND_CELL;
+  const z0 = j * GROUND_CELL - GROUND_HALF,
+    z1 = z0 + GROUND_CELL;
 
-  const ha = heightAt(x0, z0);   // a
-  const hb = heightAt(x0, z1);   // b
-  const hc = heightAt(x1, z1);   // c
-  const hd = heightAt(x1, z0);   // d
+  const ha = heightAt(x0, z0); // a
+  const hb = heightAt(x0, z1); // b
+  const hc = heightAt(x1, z1); // c
+  const hd = heightAt(x1, z0); // d
 
   // the diagonal runs from b to d, so fx + fz <= 1 is the a-b-d triangle
-  return (fx + fz <= 1)
+  return fx + fz <= 1
     ? ha + (hd - ha) * fx + (hb - ha) * fz
     : hc + (hb - hc) * (1 - fx) + (hd - hc) * (1 - fz);
 }
 
 // Fine mottling so a region is not a flat wash of one colour.
-function mottle(x, z){
-  const n = 0.5
-    + 0.26 * Math.sin(x * 0.050) * Math.cos(z * 0.043)
-    + 0.16 * Math.sin(x * 0.110 + 1.7) * Math.cos(z * 0.090 - 0.4);
+function mottle(x, z) {
+  const n =
+    0.5 +
+    0.26 * Math.sin(x * 0.05) * Math.cos(z * 0.043) +
+    0.16 * Math.sin(x * 0.11 + 1.7) * Math.cos(z * 0.09 - 0.4);
   return Math.min(1, Math.max(0, n));
 }
 
@@ -267,8 +346,9 @@ function mottle(x, z){
 // The pattern is built from SINE WAVES AT WHOLE-NUMBER FREQUENCIES, which makes
 // it seamless by construction -- each wave completes a whole number of cycles
 // across the tile, so the left edge meets the right exactly. No seam to hide.
-function makeGroundDetail(){
-  const D = CONFIG.detail, S = 256;
+function makeGroundDetail() {
+  const D = CONFIG.detail,
+    S = 256;
 
   // Seamless value noise. The lattice coordinates WRAP at each octave's own
   // period, so the tile's left edge meets its right exactly and there is no
@@ -286,28 +366,37 @@ function makeGroundDetail(){
     return n - Math.floor(n);
   };
   const vnoise = (x, y, period, seed) => {
-    const xi = Math.floor(x), yi = Math.floor(y);
-    const xf = x - xi, yf = y - yi;
-    const u = xf*xf*(3 - 2*xf), v = yf*yf*(3 - 2*yf);   // smoothstep, so no creases
-    const a = hash(xi,   yi,   period, seed), b = hash(xi+1, yi,   period, seed);
-    const c = hash(xi,   yi+1, period, seed), d = hash(xi+1, yi+1, period, seed);
-    return (a*(1-u) + b*u)*(1-v) + (c*(1-u) + d*u)*v;
+    const xi = Math.floor(x),
+      yi = Math.floor(y);
+    const xf = x - xi,
+      yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf),
+      v = yf * yf * (3 - 2 * yf); // smoothstep, so no creases
+    const a = hash(xi, yi, period, seed),
+      b = hash(xi + 1, yi, period, seed);
+    const c = hash(xi, yi + 1, period, seed),
+      d = hash(xi + 1, yi + 1, period, seed);
+    return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
   };
 
-  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
   const ctx = cv.getContext('2d');
   const img = ctx.createImageData(S, S);
-  for (let y = 0; y < S; y++){
-    for (let x = 0; x < S; x++){
-      const fx = x / S, fy = y / S;
-      const n = 0.5 * vnoise(fx*8,  fy*8,  8,  1)
-              + 0.3 * vnoise(fx*17, fy*17, 17, 2)
-              + 0.2 * vnoise(fx*33, fy*33, 33, 3);
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const fx = x / S,
+        fy = y / S;
+      const n =
+        0.5 * vnoise(fx * 8, fy * 8, 8, 1) +
+        0.3 * vnoise(fx * 17, fy * 17, 17, 2) +
+        0.2 * vnoise(fx * 33, fy * 33, 33, 3);
       // Kept near white: this is a MULTIPLIER over the region colours, so a mid
       // grey would simply halve the brightness of the whole valley.
       const g = Math.round(255 * (1 - D.detailDepth * (1 - Math.min(1, Math.max(0, n)))));
-      const i = (y*S + x) * 4;
-      img.data[i] = img.data[i+1] = img.data[i+2] = g; img.data[i+3] = 255;
+      const i = (y * S + x) * 4;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = g;
+      img.data[i + 3] = 255;
     }
   }
   ctx.putImageData(img, 0, 0);
@@ -320,13 +409,15 @@ function makeGroundDetail(){
   return tex;
 }
 
-const colA = new THREE.Color(), colB = new THREE.Color(), colOut = new THREE.Color();
+const colA = new THREE.Color(),
+  colB = new THREE.Color(),
+  colOut = new THREE.Color();
 const colRock = new THREE.Color();
 
-function shapeGround(){
+function shapeGround() {
   const pos = groundGeo.attributes.position;
   const col = groundGeo.attributes.color;
-  for (let i = 0; i < pos.count; i++){
+  for (let i = 0; i < pos.count; i++) {
     // MIND THE SIGN. The plane is still unrotated here: it lies in local XY and
     // gets rotated -90 degrees about X to lie flat. That rotation maps local +y
     // to world -z, so the world coordinate of this vertex is (x, height, -y).
@@ -336,7 +427,8 @@ function shapeGround(){
     // true one. Everything was placed up to 9 m off the visible surface: props
     // floated or sank, and walking onto high ground dropped you through the
     // floor.
-    const x = pos.getX(i), z = -pos.getY(i);
+    const x = pos.getX(i),
+      z = -pos.getY(i);
     pos.setZ(i, heightAt(x, z));
 
     // same corrected z: the ground colours were mirrored too, which is why the
@@ -354,21 +446,22 @@ function shapeGround(){
     // not computed until after this loop.
     const D = CONFIG.detail;
     const e = 2.0;
-    const grad = Math.hypot(heightAt(x+e, z) - heightAt(x-e, z),
-                            heightAt(x, z+e) - heightAt(x, z-e)) / (2*e);
+    const grad =
+      Math.hypot(heightAt(x + e, z) - heightAt(x - e, z), heightAt(x, z + e) - heightAt(x, z - e)) /
+      (2 * e);
     const slope = Math.min(1, grad / D.slopeFull);
     colOut.lerp(colRock.setHex(D.rockColor), slope * D.rockOnSlopes);
 
     // High ground bleaches in the light; low ground sits damp and dark.
     const h = pos.getZ(i);
-    if (h > 6)  colOut.lerp(colA.setRGB(1, 1, 0.96), Math.min(1, (h - 6) / 14) * D.dryHigh);
-    if (h < 1)  colOut.multiplyScalar(1 - Math.min(1, (1 - h) / 6) * D.wetLow);
+    if (h > 6) colOut.lerp(colA.setRGB(1, 1, 0.96), Math.min(1, (h - 6) / 14) * D.dryHigh);
+    if (h < 1) colOut.multiplyScalar(1 - Math.min(1, (1 - h) / 6) * D.wetLow);
 
     col.setXYZ(i, colOut.r, colOut.g, colOut.b);
   }
   pos.needsUpdate = true;
   col.needsUpdate = true;
-  groundGeo.computeVertexNormals();   // so the light catches the slopes
+  groundGeo.computeVertexNormals(); // so the light catches the slopes
 }
 
 // ---------- the horizon ----------
@@ -379,14 +472,17 @@ function shapeGround(){
 const hillGeo = new THREE.ConeGeometry(1, 1, 7);
 let hills = null;
 
-function buildHorizon(rng){
+function buildHorizon(rng) {
   const T = CONFIG.terrain;
-  if (hills){ scene.remove(hills); hills.geometry.dispose(); }
+  if (hills) {
+    scene.remove(hills);
+    hills.geometry.dispose();
+  }
   const count = T.hillCount;
   hills = new THREE.InstancedMesh(hillGeo, mat(0x6f8570), count);
   hills.frustumCulled = false;
   const d = new THREE.Object3D();
-  for (let i = 0; i < count; i++){
+  for (let i = 0; i < count; i++) {
     const a = (i / count) * Math.PI * 2 + rng() * 0.35;
     const r = T.hillNear + rng() * (T.hillFar - T.hillNear);
     const h = T.hillMin + rng() * (T.hillMax - T.hillMin);
@@ -394,7 +490,8 @@ function buildHorizon(rng){
     // Planted ON the far ground, which is itself 90 m up by then, with the base
     // sunk a little so they grow out of the mountains rather than sitting on
     // top of them like hats.
-    const hx = Math.cos(a) * r, hz = Math.sin(a) * r;
+    const hx = Math.cos(a) * r,
+      hz = Math.sin(a) * r;
     d.position.set(hx, heightAt(hx, hz) + h * 0.5 - h * 0.28, hz);
     d.rotation.set(0, rng() * Math.PI, 0);
     d.scale.set(w, h, w);
@@ -422,7 +519,7 @@ const tint = new THREE.Color();
  * looking down over the top of it. Walking past boulders therefore yanked the
  * camera in and released it again, every few seconds.
  */
-function addObstacle(kind, x, z, s){
+function addObstacle(kind, x, z, s) {
   const r = (PROP_RADIUS[kind] || 0) * s;
   if (r <= 0) return;
   const h = (PROP_HEIGHT[kind] || 2) * s - (PROP_SINK[kind] || 0) * s;
@@ -431,7 +528,7 @@ function addObstacle(kind, x, z, s){
 
 // A cheap deterministic hash in 0..1. Not for cryptography -- for deciding that
 // THIS tree is a shade lighter than the one beside it, the same way every time.
-function hash01(a, b){
+function hash01(a, b) {
   const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
   return n - Math.floor(n);
 }
@@ -446,9 +543,12 @@ function hash01(a, b){
 // pick up the sky from the environment map, which is what makes a flat sheet
 // read as water rather than as blue paint.
 const waterMat = new THREE.MeshStandardMaterial({
-  color: 0x3f8fbf, transparent: true, opacity: 0.78,
-  roughness: 0.18, metalness: 0.05,
-  depthWrite: false,          // reeds and lilies read through the surface
+  color: 0x3f8fbf,
+  transparent: true,
+  opacity: 0.78,
+  roughness: 0.18,
+  metalness: 0.05,
+  depthWrite: false, // reeds and lilies read through the surface
 });
 const water = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.water.radius, 48), waterMat);
 water.rotation.x = -Math.PI / 2;
@@ -459,9 +559,11 @@ scene.add(water);
 // how far it reaches -- which is decided by the basin, not by config alone.
 export let waterLevel = -999;
 export let waterRadius = 0;
-export function isInWater(x, z){
-  return Math.hypot(x - water.position.x, z - water.position.z) < waterRadius
-      && surfaceHeightAt(x, z) < waterLevel;
+export function isInWater(x, z) {
+  return (
+    Math.hypot(x - water.position.x, z - water.position.z) < waterRadius &&
+    surfaceHeightAt(x, z) < waterLevel
+  );
 }
 
 /**
@@ -474,18 +576,18 @@ export function isInWater(x, z){
  * One mesh per (kind, variant): three shapes of pine cost three draw calls, not
  * one per tree.
  */
-function buildInstances(placements){
+function buildInstances(placements) {
   for (const m of propMeshes) scene.remove(m);
   propMeshes = [];
 
-  for (const [kind, list] of Object.entries(placements)){
+  for (const [kind, list] of Object.entries(placements)) {
     if (!list.length) continue;
     const byVariant = new Map();
-    for (const p of list){
+    for (const p of list) {
       if (!byVariant.has(p.variant)) byVariant.set(p.variant, []);
       byVariant.get(p.variant).push(p);
     }
-    for (const [variant, group] of byVariant){
+    for (const [variant, group] of byVariant) {
       const geo = PROPS[kind]?.[variant];
       if (!geo) continue;
       const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
@@ -520,14 +622,14 @@ function buildInstances(placements){
 }
 
 /** Builds, or rebuilds, the entire valley from one seed. */
-export function buildWorld(seed){
+export function buildWorld(seed) {
   const rng = makeRng(seed);
   obstacles.length = 0;
-  noiseOffset = (seed % 1000) * 0.37;   // a different landscape shape each time
+  noiseOffset = (seed % 1000) * 0.37; // a different landscape shape each time
 
   // ----- where the regions sit -----
   const order = REGIONS.map((_, i) => i);
-  for (let i = order.length - 1; i > 0; i--){
+  for (let i = order.length - 1; i > 0; i--) {
     const j = (rng() * (i + 1)) | 0;
     [order[i], order[j]] = [order[j], order[i]];
   }
@@ -535,11 +637,16 @@ export function buildWorld(seed){
     const a = (i / order.length) * Math.PI * 2 + rng() * 0.9;
     // Pulled inward: at 0.25-0.70 of the radius the regions ringed the valley
     // and left its middle -- where you start -- outside all of them.
-    const r = WORLD_R * (0.16 + rng() * 0.40);
+    const r = WORLD_R * (0.16 + rng() * 0.4);
     return { x: Math.cos(a) * r, z: Math.sin(a) * r, region: REGIONS[regionIndex] };
   });
 
-  places = centres.map(c => ({ x: c.x, z: c.z, name: c.region.name, landmark: c.region.landmark }));
+  places = centres.map((c) => ({
+    x: c.x,
+    z: c.z,
+    name: c.region.name,
+    landmark: c.region.landmark,
+  }));
   worldVersion++;
 
   shapeGround();
@@ -559,10 +666,14 @@ export function buildWorld(seed){
   // first sight of the valley is a tree trunk, and the camera jammed against
   // your back trying to get out of it.
   const clearings = [{ x: 0, z: 0, r: 14 }];
-  for (let i = 0; i < C.clearings; i++){
-    const a = rng() * Math.PI * 2, d = Math.sqrt(rng()) * (WORLD_R - 30);
-    clearings.push({ x: Math.cos(a) * d, z: Math.sin(a) * d,
-                     r: C.clearingRadius * (0.6 + rng() * 0.9) });
+  for (let i = 0; i < C.clearings; i++) {
+    const a = rng() * Math.PI * 2,
+      d = Math.sqrt(rng()) * (WORLD_R - 30);
+    clearings.push({
+      x: Math.cos(a) * d,
+      z: Math.sin(a) * d,
+      r: C.clearingRadius * (0.6 + rng() * 0.9),
+    });
   }
 
   // PATHS. A route from each landmark to the next, kept clear of scenery, so
@@ -571,20 +682,22 @@ export function buildWorld(seed){
   // 4.7 m per quad), so a path is a corridor rather than a colour -- which is
   // legible exactly where it matters, through the dense stands.
   const paths = [];
-  for (let i = 0; i < centres.length; i++){
-    const p = centres[i], q = centres[(i + 1) % centres.length];
+  for (let i = 0; i < centres.length; i++) {
+    const p = centres[i],
+      q = centres[(i + 1) % centres.length];
     paths.push({ ax: p.x, az: p.z, bx: q.x, bz: q.z });
   }
 
   const distToPath = (x, z, p) => {
-    const dx = p.bx - p.ax, dz = p.bz - p.az;
-    const len2 = dx*dx + dz*dz || 1;
-    const t = Math.max(0, Math.min(1, ((x - p.ax)*dx + (z - p.az)*dz) / len2));
-    return Math.hypot(x - (p.ax + dx*t), z - (p.az + dz*t));
+    const dx = p.bx - p.ax,
+      dz = p.bz - p.az;
+    const len2 = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - p.ax) * dx + (z - p.az) * dz) / len2));
+    return Math.hypot(x - (p.ax + dx * t), z - (p.az + dz * t));
   };
 
-  const inClearing = (x, z) => clearings.some(c => Math.hypot(x - c.x, z - c.z) < c.r);
-  const onPath     = (x, z) => paths.some(p => distToPath(x, z, p) < C.pathWidth);
+  const inClearing = (x, z) => clearings.some((c) => Math.hypot(x - c.x, z - c.z) < c.r);
+  const onPath = (x, z) => paths.some((p) => distToPath(x, z, p) < C.pathWidth);
 
   // A clearing in a real wood is free of TREES, not of grass -- and a footpath
   // has flowers along its edges. Excluding everything left bare green expanses
@@ -595,11 +708,15 @@ export function buildWorld(seed){
   // STANDS. Things grow in clumps because they seed near each other. A handful
   // of clump centres per region, and most props are placed inside one.
   const stands = [];
-  for (const c of centres){
-    for (let i = 0; i < C.standsPerRegion; i++){
-      const a = rng() * Math.PI * 2, d = Math.sqrt(rng()) * c.region.radius * 0.8;
-      stands.push({ x: c.x + Math.cos(a) * d, z: c.z + Math.sin(a) * d,
-                    r: C.standRadius * (0.55 + rng() * 0.9) });
+  for (const c of centres) {
+    for (let i = 0; i < C.standsPerRegion; i++) {
+      const a = rng() * Math.PI * 2,
+        d = Math.sqrt(rng()) * c.region.radius * 0.8;
+      stands.push({
+        x: c.x + Math.cos(a) * d,
+        z: c.z + Math.sin(a) * d,
+        r: C.standRadius * (0.55 + rng() * 0.9),
+      });
     }
   }
 
@@ -609,10 +726,14 @@ export function buildWorld(seed){
   // maximal. Thinning by that made the very spot you spawn on the emptiest
   // ground in the valley.
   const regionReach = (x, z) => {
-    let d = Infinity, best = centres[0];
-    for (const c of centres){
+    let d = Infinity,
+      best = centres[0];
+    for (const c of centres) {
       const dd = Math.hypot(x - c.x, z - c.z);
-      if (dd < d){ d = dd; best = c; }
+      if (dd < d) {
+        d = dd;
+        best = c;
+      }
     }
     return d / (best.region.radius * 1.15);
   };
@@ -622,24 +743,28 @@ export function buildWorld(seed){
   const CANOPY = new Set(['conifer', 'broadleaf', 'deadTree', 'boulder']);
 
   // ----- decide what stands where -----
-  const placements = {};                      // kind -> [{x, z, s, rot}]
+  const placements = {}; // kind -> [{x, z, s, rot}]
   for (const kind of Object.keys(PROPS)) placements[kind] = [];
 
-  const total = G.propBudget ?? CONFIG.world.props;   // low graphics lowers this
-  let placed = 0, guard = 0;
-  while (guard++ < total * 300 && placed < total){
+  const total = G.propBudget ?? CONFIG.world.props; // low graphics lowers this
+  let placed = 0,
+    guard = 0;
+  while (guard++ < total * 300 && placed < total) {
     let x, z;
-    if (stands.length && rng() < C.standShare){
+    if (stands.length && rng() < C.standShare) {
       const st = stands[(rng() * stands.length) | 0];
       const a = rng() * Math.PI * 2;
       // sqrt spreads points EVENLY over a disc. Without it they pile up in the
       // middle, and every stand grows a dense core with a thin edge -- which is
       // the same mistake the old whole-world scatter made, just smaller.
       const d = Math.sqrt(rng()) * st.r;
-      x = st.x + Math.cos(a) * d; z = st.z + Math.sin(a) * d;
+      x = st.x + Math.cos(a) * d;
+      z = st.z + Math.sin(a) * d;
     } else {
-      const a = rng() * Math.PI * 2, d = 6 + Math.sqrt(rng()) * (WORLD_R - 16);
-      x = Math.cos(a) * d; z = Math.sin(a) * d;
+      const a = rng() * Math.PI * 2,
+        d = 6 + Math.sqrt(rng()) * (WORLD_R - 16);
+      x = Math.cos(a) * d;
+      z = Math.sin(a) * d;
     }
     if (Math.hypot(x, z) > WORLD_R - 4) continue;
 
@@ -651,19 +776,25 @@ export function buildWorld(seed){
     // roulette across this region's own vocabulary
     const entries = Object.entries(region.props);
     const sum = entries.reduce((n, [, w]) => n + w, 0);
-    let pick = rng() * sum, kind = entries[0][0];
-    for (const [k, w] of entries){ if ((pick -= w) <= 0){ kind = k; break; } }
+    let pick = rng() * sum,
+      kind = entries[0][0];
+    for (const [k, w] of entries) {
+      if ((pick -= w) <= 0) {
+        kind = k;
+        break;
+      }
+    }
 
     const variants = PROPS[kind];
-    if (!variants || !variants.length) continue;          // that model failed to load
+    if (!variants || !variants.length) continue; // that model failed to load
     const variant = (rng() * variants.length) | 0;
 
     // The clearing rules depend on WHAT this is, so they are applied after the
     // kind is known rather than before.
-    if (GROUND_COVER.has(kind)){
-      if (onPath(x, z) && rng() < 0.75) continue;      // worn thin underfoot
+    if (GROUND_COVER.has(kind)) {
+      if (onPath(x, z) && rng() < 0.75) continue; // worn thin underfoot
     } else {
-      if (inClearing(x, z) || onPath(x, z)) continue;  // nothing tall in the open
+      if (inClearing(x, z) || onPath(x, z)) continue; // nothing tall in the open
     }
 
     const giant = CANOPY.has(kind) && rng() < C.giantChance;
@@ -679,19 +810,21 @@ export function buildWorld(seed){
   // The highland's sides drop about 17 m over 20 m of ground. Ringing that lip
   // with cliff blocks turns a steep grass slope into something that reads as
   // rock, which is what makes it a plateau rather than a hill.
-  const highland = centres.find(c => c.region.name === 'highland');
-  if (highland && PROPS.cliff){
+  const highland = centres.find((c) => c.region.name === 'highland');
+  if (highland && PROPS.cliff) {
     const R = highland.region.radius;
     const ring = CONFIG.world.cliffRing;
-    for (let i = 0; i < ring; i++){
+    for (let i = 0; i < ring; i++) {
       const a = (i / ring) * Math.PI * 2 + rng() * 0.12;
       const d = R * (0.92 + rng() * 0.16);
-      const x = highland.x + Math.cos(a) * d, z = highland.z + Math.sin(a) * d;
+      const x = highland.x + Math.cos(a) * d,
+        z = highland.z + Math.sin(a) * d;
       if (Math.hypot(x, z) > WORLD_R - 4) continue;
-      const kind = (rng() < 0.12 && PROPS.cliffCave) ? 'cliffCave' : 'cliff';
+      const kind = rng() < 0.12 && PROPS.cliffCave ? 'cliffCave' : 'cliff';
       const variants = PROPS[kind];
       placements[kind].push({
-        x, z,
+        x,
+        z,
         s: 0.85 + rng() * 0.6,
         variant: (rng() * variants.length) | 0,
         rot: a + Math.PI / 2 + (rng() - 0.5) * 0.5,
@@ -701,18 +834,24 @@ export function buildWorld(seed){
   }
 
   // ----- one landmark per region -----
-  for (const c of centres){
+  for (const c of centres) {
     const parts = LANDMARKS[c.region.landmark];
     if (!parts) continue;
     const spin = rng() * Math.PI * 2;
-    for (const [kind, ox, oz, rot, sc] of parts){
+    for (const [kind, ox, oz, rot, sc] of parts) {
       const variants = PROPS[kind];
       if (!variants || !variants.length) continue;
       // rotate the whole arrangement so it is not identically oriented each time
       const x = c.x + ox * Math.cos(spin) - oz * Math.sin(spin);
       const z = c.z + ox * Math.sin(spin) + oz * Math.cos(spin);
       if (Math.hypot(x, z) > WORLD_R - 3) continue;
-      placements[kind].push({ x, z, s: sc, variant: (rng() * variants.length) | 0, rot: rot + spin });
+      placements[kind].push({
+        x,
+        z,
+        s: sc,
+        variant: (rng() * variants.length) | 0,
+        rot: rot + spin,
+      });
       addObstacle(kind, x, z, sc);
     }
   }
@@ -734,7 +873,7 @@ export function buildWorld(seed){
   // draw no water at all rather than a sheet hanging in the air.
   //
   // `depth` in config is now a maximum rather than a promise.
-  const wetland = centres.find(c => c.region.name === 'wetland') || centres[0];
+  const wetland = centres.find((c) => c.region.name === 'wetland') || centres[0];
   const W = CONFIG.water;
 
   // FIRST, find where the water would actually go. The region's nominal centre
@@ -742,38 +881,49 @@ export function buildWorld(seed){
   // tilts the wetland so the ground keeps falling away on one side. Filling
   // from the centre of a slope is what produced a sheet hanging in open air.
   // So sweep the region for its genuine low point and pour from there.
-  let cx = wetland.x, cz = wetland.z, low = surfaceHeightAt(cx, cz);
+  let cx = wetland.x,
+    cz = wetland.z,
+    low = surfaceHeightAt(cx, cz);
   const search = wetland.region.radius * 0.8;
-  for (let dx = -search; dx <= search; dx += 4){
-    for (let dz = -search; dz <= search; dz += 4){
-      if (dx*dx + dz*dz > search*search) continue;
-      const x = wetland.x + dx, z = wetland.z + dz;
+  for (let dx = -search; dx <= search; dx += 4) {
+    for (let dz = -search; dz <= search; dz += 4) {
+      if (dx * dx + dz * dz > search * search) continue;
+      const x = wetland.x + dx,
+        z = wetland.z + dz;
       const h = surfaceHeightAt(x, z);
-      if (h < low){ low = h; cx = x; cz = z; }
+      if (h < low) {
+        low = h;
+        cx = x;
+        cz = z;
+      }
     }
   }
 
   // The lowest ground on a ring is that shoreline's lip. Fill above it and the
   // lake would drain out over the edge -- which on screen means a sheet with
   // nothing beneath its rim.
-  const lipAt = r => {
+  const lipAt = (r) => {
     let lip = Infinity;
-    for (let a = 0; a < Math.PI*2; a += Math.PI/48){
-      lip = Math.min(lip, surfaceHeightAt(cx + Math.cos(a)*r, cz + Math.sin(a)*r));
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 48) {
+      lip = Math.min(lip, surfaceHeightAt(cx + Math.cos(a) * r, cz + Math.sin(a) * r));
     }
-    return lip - 0.05;   // a hair under, for the ground between samples
+    return lip - 0.05; // a hair under, for the ground between samples
   };
 
   // Widest shore first, pulling in until the basin is deep enough to be worth
   // drawing. If none is, draw no water rather than water in the air.
   waterRadius = 0;
-  for (let r = W.radius; r >= W.minRadius; r -= 2){
+  for (let r = W.radius; r >= W.minRadius; r -= 2) {
     const level = Math.min(low + W.depth, lipAt(r));
-    if (level - low >= W.minDepth){ waterRadius = r; waterLevel = level; break; }
+    if (level - low >= W.minDepth) {
+      waterRadius = r;
+      waterLevel = level;
+      break;
+    }
   }
 
   water.visible = waterRadius > 0;
-  if (water.visible){
+  if (water.visible) {
     // The geometry is built once at CONFIG.water.radius, so the chosen shore is
     // a scale rather than a rebuilt mesh.
     water.scale.setScalar(waterRadius / W.radius);

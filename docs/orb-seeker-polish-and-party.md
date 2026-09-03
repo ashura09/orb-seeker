@@ -103,13 +103,13 @@ Ask of every screen: can a new player tell in one second what's interactive? Rul
 
 # Part 2 — Rooms for a 9-year-old and her friends
 
-The model: **the valley becomes a place her group visits together.** One player opens it, gets a short room code or link, friends join from their phones in seconds, they play for 15 minutes, they leave. Jackbox and skribbl.io proved this loop; you have an advantage they don't — a world to be *in* together, not just a quiz screen.
+The model: **the valley becomes a place her group visits together.** One player opens it, gets a short room code or link, friends join from their phones in seconds, they play for 15 minutes, they leave. Jackbox and skribbl.io proved this loop; you have an advantage they don't — a world to be _in_ together, not just a quiz screen.
 
 ## 2.1 What playing together looks like
 
 Start with presence, then add games:
 
-- **Just being there**: see each other as monkeys (each picks a suit color and a name from a list), emote wheel with 6 emotes (wave, laugh, dance, heart, "come here!", sleep). For kids, running around together and spamming the dance emote *is* the game for the first twenty minutes. Don't underestimate it.
+- **Just being there**: see each other as monkeys (each picks a suit color and a name from a list), emote wheel with 6 emotes (wave, laugh, dance, heart, "come here!", sleep). For kids, running around together and spamming the dance emote _is_ the game for the first twenty minutes. Don't underestimate it.
 - **Orb race**: same seven orbs, first to each one claims it; most orbs summons the dragon and makes the wish for the group.
 - **Co-op gathering**: the orbs only respond when two players stand together — forces teamwork, great for friend groups.
 - **PvP tap duel**: your duel, pointed at two humans. Winner takes a fragment pot. This will be the schoolyard favorite; it's Mario Party energy.
@@ -141,7 +141,7 @@ Real-time multiplayer is the hardest thing you'll have built so far — not impo
 - What you sync is small: each player's position, suit color, emote, and game-mode events. Positions 10–15 times a second with interpolation between updates is plenty for a cozy game.
 - Latency reality: fine for racing to orbs and tap duels (each player taps their own bar); avoid designs needing frame-perfect contact between players.
 
-Path of least regret: **Milestone A** — two monkeys see each other move (Playroom, one evening with help). **Milestone B** — emotes + name pick + host "gather" button. **Milestone C** — orb race mode. **Milestone D** — PvP duel. Ship A to her group immediately; watching four kids just *find each other* in the valley will teach you what to build next better than any plan.
+Path of least regret: **Milestone A** — two monkeys see each other move (Playroom, one evening with help). **Milestone B** — emotes + name pick + host "gather" button. **Milestone C** — orb race mode. **Milestone D** — PvP duel. Ship A to her group immediately; watching four kids just _find each other_ in the valley will teach you what to build next better than any plan.
 
 ---
 

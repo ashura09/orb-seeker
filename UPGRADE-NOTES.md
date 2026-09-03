@@ -28,7 +28,7 @@ in both directions, the colours you authored still look like themselves.
 **What we tried first, and why it was wrong.** The instinct for a
 "keep it identical" refactor is to switch colour management off and set
 `renderer.outputColorSpace = THREE.LinearSRGBColorSpace` to recreate r128
-exactly. Doing that makes the whole game *markedly darker* — the sky goes from
+exactly. Doing that makes the whole game _markedly darker_ — the sky goes from
 light blue to navy. Colours were confirmed to be passing through unconverted,
 so the darkening came from the output side. Leaving both at the r185 defaults
 looks far closer to the original.
@@ -54,7 +54,7 @@ boxes, the wish tokens, the Keeper — would be dimmer and much tighter.
 `src/state.js`:
 
 ```js
-export function pointLight(color, intensity, distance){
+export function pointLight(color, intensity, distance) {
   const l = new THREE.PointLight(color, intensity, distance);
   l.decay = 0;
   return l;
@@ -107,8 +107,8 @@ copy of `state.js`, which made it look like code changes were doing nothing.
 If the game stops responding to your edits, paste this in the browser console:
 
 ```js
-(await navigator.serviceWorker.getRegistrations()).forEach(r => r.unregister());
-(await caches.keys()).forEach(k => caches.delete(k));
+(await navigator.serviceWorker.getRegistrations()).forEach((r) => r.unregister());
+(await caches.keys()).forEach((k) => caches.delete(k));
 ```
 
 then reload. In Chrome DevTools you can also tick
@@ -129,13 +129,14 @@ This was the worst one. A ground plane is built in local XY and rotated −90° 
 X to lie flat. That rotation maps local **+y** to world **−z**.
 
 Sample your height function with the local y as though it were world z, and you
-build the terrain from a *mirrored* copy of it — while the player, props and
+build the terrain from a _mirrored_ copy of it — while the player, props and
 everything else use the true one. Nothing looks obviously wrong: a mirrored
 valley is still a valley. But objects sit up to 9 m off the visible surface, so
 they float, and walking onto high ground drops you through the floor.
 
 ```js
-const x = pos.getX(i), z = -pos.getY(i);   // note the minus
+const x = pos.getX(i),
+  z = -pos.getY(i); // note the minus
 pos.setZ(i, heightAt(x, z));
 ```
 
@@ -149,24 +150,24 @@ glTF says `baseColorFactor` is linear, so `GLTFLoader` stores it as linear. Some
 exporters (Kenney's among them) write **sRGB** values into that field. Rendered
 as linear they come out far too bright: bark went salmon, leaves went turquoise.
 
-Proof, if you suspect it: the kit's `.mtl` files carried the *identical* numbers
+Proof, if you suspect it: the kit's `.mtl` files carried the _identical_ numbers
 as `Kd`, which is sRGB by convention. Fix with `.convertSRGBToLinear()` on the
 material colour before baking it into vertices.
 
 ## Scale models by their longest axis, not their height
 
-Scaling everything to a target *height* wrecks anything wider than it is tall.
+Scaling everything to a target _height_ wrecks anything wider than it is tall.
 `rock_largeA` is far broader than high, so forcing it to 2.4 m tall made it 8 m
 across and it filled the screen. Use the longest of the three dimensions.
 
 ## EffectComposer breaks renderer.info
 
 `renderer.info` resets on every `render()` call, so once a composer is in the
-picture, any stats readout reports only the *final* pass — "1 call, 0 triangles".
+picture, any stats readout reports only the _final_ pass — "1 call, 0 triangles".
 
 ```js
-renderer.info.autoReset = false;   // once, at setup
-renderer.info.reset();             // yourself, before composer.render()
+renderer.info.autoReset = false; // once, at setup
+renderer.info.reset(); // yourself, before composer.render()
 ```
 
 Counts then accumulate across passes, which is the honest number anyway.
@@ -175,7 +176,7 @@ Counts then accumulate across passes, which is the honest number anyway.
 
 A dark ground colour is invisible on a flat plane and brutal on terrain: every
 slope facing away from the sun falls to near-black. Lighter bounce colour, plus a
-low `AmbientLight`, so shadows read as *darker* rather than as holes.
+low `AmbientLight`, so shadows read as _darker_ rather than as holes.
 
 ## The build passing does not mean the game runs
 
@@ -241,7 +242,7 @@ things much larger, so the eye can judge distance).
 Two mistakes in doing that, both found by looking rather than by reasoning:
 
 **A clearing is free of trees, not of grass.** Excluding every prop from clearings
-and paths left bare green expanses that looked *emptier* than the confetti did.
+and paths left bare green expanses that looked _emptier_ than the confetti did.
 Ground cover has to keep growing there; only the tall things stay out.
 
 **`regionAt().blend` is not a distance.** It is `nearest / (nearest + second)` --
@@ -313,7 +314,7 @@ is a trunk with the camera jammed behind you.
 ## An environment map REPLACES your fake fill lights, it does not join them
 
 Switching Lambert materials to Standard and adding `scene.environment` made the
-valley look *worse* at first: washed out, low contrast, everything tinted the sky's
+valley look _worse_ at first: washed out, low contrast, everything tinted the sky's
 blue. Nothing was wrong with the environment map.
 
 The hemisphere light and the ambient light were **cheap stand-ins for sky light**,
@@ -354,15 +355,15 @@ fingers away from walking and looking:
 2. the walking thumb is sitting near the centre of its stick, so it is resting
    rather than steering.
 
-Two fingers down only opens a *candidate*; the joystick and look-drag keep working
+Two fingers down only opens a _candidate_; the joystick and look-drag keep working
 until those hold. See `pinch` in `src/input.js`.
 
 Two smaller things that matter more than they look:
 
 - Measure the zoom from where the fingers are when the pinch **commits**, not from
   where they first landed, or the view jumps by the threshold at that moment.
-- When one finger lifts, hand the remaining one back to look-drag *at its current
-  position*. Otherwise the next drag is measured from a stale point and the view snaps.
+- When one finger lifts, hand the remaining one back to look-drag _at its current
+  position_. Otherwise the next drag is measured from a stale point and the view snaps.
 
 ## Sharing the link never shares your progress
 
@@ -371,8 +372,7 @@ the origin **and to the device**, and the game makes no network calls at all -- 
 no socket, no server. So:
 
 - Whoever opens your link starts with an empty save. They cannot see or inherit your items.
-- Your own phone and laptop keep *separate* saves, same URL, same person.
+- Your own phone and laptop keep _separate_ saves, same URL, same person.
 - Clearing site data wipes yours, and nothing can restore it.
 
 Shared or cross-device progress would need accounts and a server. There are none, by design.
-

@@ -7,7 +7,7 @@ not estimated; the command that produced it is given so you can re-run it.
 > referenced `CLAUDE.md`, `docs/orb-seeker-polish-and-party.md` and
 > `docs/orb-seeker-roadmap.md`. **None of those three files are in the repository.**
 > This audit depends on none of them, so it is complete. The parts of Stage 1 that
-> *do* depend on them are listed at the end under *Deliberately not done yet*.
+> _do_ depend on them are listed at the end under _Deliberately not done yet_.
 
 ## What exists
 
@@ -18,32 +18,32 @@ JavaScript across 25 modules, plus 129 lines of HTML and 134 of CSS.
 
 ### The modules, by job
 
-| Module | Lines | Job |
-| --- | ---: | --- |
-| `world` | 786 | terrain, regions, scenery, water, horizon |
-| `config` | 394 | every tunable number, plus the shop's item table |
-| `main` | 383 | builds everything, wires listeners, runs the frame loop |
-| `props` | 232 | loads 58 glTF models, recolours and merges them |
-| `map` | 206 | the valley map and what you have explored |
-| `wanderers` | 201 | the seven villagers, their camps and hearing |
-| `input` | 174 | joystick, look-drag, pinch zoom, keyboard |
-| `sky` | 157 | sky dome, sun, shadows, environment light |
-| `keeper` | 155 | the dragon and the wish ceremony |
-| `player` | 136 | the monkey, its cosmetics and poses |
-| `tuner` | 133 | the `?tune` panel (lazy-loaded) |
-| `state` | 132 | renderer, scene, camera, lights, shared `G` |
-| `orbs` | 107 | the seven orbs and their pooled lights |
-| `inventory` | 105 | pickups and the satchel panel |
-| `voice` | 99 | all of the game's writing |
-| `duel` | 92 | the tap duel |
-| `ui` | 84 | HUD, toasts, stats overlay |
-| `loadout` | 84 | rules about what you may wear |
-| `events` | 70 | the publish/subscribe bus |
-| `bloom` | 66 | the glow pass |
-| `finder` | 56 | the radar |
-| `rng` | 49 | seeded randomness |
-| `save` | 45 | browser storage |
-| `shop` | 41 | the trader's cart |
+| Module      | Lines | Job                                                     |
+| ----------- | ----: | ------------------------------------------------------- |
+| `world`     |   786 | terrain, regions, scenery, water, horizon               |
+| `config`    |   394 | every tunable number, plus the shop's item table        |
+| `main`      |   383 | builds everything, wires listeners, runs the frame loop |
+| `props`     |   232 | loads 58 glTF models, recolours and merges them         |
+| `map`       |   206 | the valley map and what you have explored               |
+| `wanderers` |   201 | the seven villagers, their camps and hearing            |
+| `input`     |   174 | joystick, look-drag, pinch zoom, keyboard               |
+| `sky`       |   157 | sky dome, sun, shadows, environment light               |
+| `keeper`    |   155 | the dragon and the wish ceremony                        |
+| `player`    |   136 | the monkey, its cosmetics and poses                     |
+| `tuner`     |   133 | the `?tune` panel (lazy-loaded)                         |
+| `state`     |   132 | renderer, scene, camera, lights, shared `G`             |
+| `orbs`      |   107 | the seven orbs and their pooled lights                  |
+| `inventory` |   105 | pickups and the satchel panel                           |
+| `voice`     |    99 | all of the game's writing                               |
+| `duel`      |    92 | the tap duel                                            |
+| `ui`        |    84 | HUD, toasts, stats overlay                              |
+| `loadout`   |    84 | rules about what you may wear                           |
+| `events`    |    70 | the publish/subscribe bus                               |
+| `bloom`     |    66 | the glow pass                                           |
+| `finder`    |    56 | the radar                                               |
+| `rng`       |    49 | seeded randomness                                       |
+| `save`      |    45 | browser storage                                         |
+| `shop`      |    41 | the trader's cart                                       |
 
 ### How it is structured
 
@@ -141,8 +141,8 @@ is queued behind the file split, since several will move file anyway.
 
 A corrupt save silently resets you to a new game. A full storage quota silently stops
 saving and you lose everything since the last successful write, with no indication
-anything is wrong. For a game whose premise is that *the valley keeps the record of
-every wish you made*, losing that record without a word is the worst failure this
+anything is wrong. For a game whose premise is that _the valley keeps the record of
+every wish you made_, losing that record without a word is the worst failure this
 code can have.
 
 **Fix:** keep the default state, and surface a toast. Distinguish "unreadable save,
@@ -199,7 +199,7 @@ the existing assertions across so nothing already covered is lost.
 - **The dependency graph is acyclic** and the event bus is used correctly.
 - **`config.js` is genuinely declarative** — no imports, no logic, only values. It is
   long, but length is not the problem it looks like here.
-- **The comments explain *why*, not *what*.** Several record bugs that cost real time.
+- **The comments explain _why_, not _what_.** Several record bugs that cost real time.
   Protect them through any refactor.
 - **`UPGRADE-NOTES.md` is a working record of traps already hit.** Read it before
   touching terrain, the camera, or anything to do with colour.
@@ -211,11 +211,11 @@ the existing assertions across so nothing already covered is lost.
 Stage 1 items that cannot be done correctly without files that are not in the
 repository:
 
-| Item | Blocked on | Why I did not guess |
-| --- | --- | --- |
-| Split files "per CLAUDE.md's module list" | `CLAUDE.md` | Splitting to a different list than yours means doing it twice. |
-| `docs/TESTPLAN.md`, "the manual checklist from CLAUDE.md" | `CLAUDE.md` | The checklist *is* the content; inventing it produces a plan that tests the wrong things. |
-| FPS monitor and auto low-graphics "per CLAUDE.md's performance budget" | `CLAUDE.md` | The thresholds *are* the budget. A guessed threshold silently degrades the game on devices that were fine. |
-| Whole-codebase Prettier format | `CLAUDE.md` | Reformatting all 3,987 lines before the repo's style law is known rewrites every line, twice. |
+| Item                                                                   | Blocked on  | Why I did not guess                                                                                        |
+| ---------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| Split files "per CLAUDE.md's module list"                              | `CLAUDE.md` | Splitting to a different list than yours means doing it twice.                                             |
+| `docs/TESTPLAN.md`, "the manual checklist from CLAUDE.md"              | `CLAUDE.md` | The checklist _is_ the content; inventing it produces a plan that tests the wrong things.                  |
+| FPS monitor and auto low-graphics "per CLAUDE.md's performance budget" | `CLAUDE.md` | The thresholds _are_ the budget. A guessed threshold silently degrades the game on devices that were fine. |
+| Whole-codebase Prettier format                                         | `CLAUDE.md` | Reformatting all 3,987 lines before the repo's style law is known rewrites every line, twice.              |
 
 Everything else in Stage 1 proceeded.
