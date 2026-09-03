@@ -31,7 +31,12 @@ session in this repo, forever. When a request conflicts with them, say so before
   declaring done. If a change is risky, make it behind a flag in src/config.js.
 - Commits: small, one topic each, imperative message ("Add shoreline foam"), and update
   CHANGELOG.md (one line per user-visible change).
-- When index.html or built assets change in a deploy, bump the cache version in sw.js.
+- Do not hand-bump a cache version in sw.js; it does not need one. Vite hashes every
+  built asset, so the filename is the version and those files are cached forever.
+  index.html is the one name that never changes, so the worker serves navigations
+  network-first and falls back to cache only when genuinely offline. A deploy is
+  therefore picked up on the next load with no manual step. Only touch `CACHE` if
+  you change what is in the precached shell list (index.html, the manifest, icons).
 - Keep dependencies few. Justify each new package in one sentence in the commit message.
 - Formatting/linting: Prettier + ESLint with the default recommended configs; fix warnings
   rather than silencing them.
