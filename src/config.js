@@ -186,6 +186,14 @@ export const CONFIG = {
     bobHeight: 0.12,
     radius: 0.45,         // how close you can get to a tree trunk
 
+    // Jumping. Height is speed squared over twice gravity, so 6.2 and 16 give
+    // about 1.2 m -- enough to clear a rock, a stump or a fallen log, and not a
+    // boulder or a tree. That ceiling is the point: a jump that clears
+    // everything is a jump that deletes the obstacle course.
+    jumpSpeed: 6.2,        // metres per second, straight up
+    gravity: 16,           // metres per second squared
+    jumpClearance: 0.05,   // how far your feet must be above a thing to pass it
+
     // Crawling: quieter, but slow. The trade is the point -- you give up ground
     // to give up noise. Started at 0.42, which playtesting found unbearable:
     // slow enough that nobody ever chose it.

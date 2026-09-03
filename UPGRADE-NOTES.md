@@ -254,6 +254,23 @@ Also: `Math.sqrt(rng()) * radius` spreads points evenly over a disc. Plain
 `rng() * radius` piles them into the middle, so every clump grows a dense core
 and a thin edge -- the same mistake as uniform scatter, just smaller.
 
+## `await import('/src/x.js')` can hand you a SECOND module instance
+
+Vite serves hot-updated modules with a `?t=` cache-busting query, so
+`/src/world.js` and `/src/world.js?t=123` are different module URLs and therefore
+different instances, each with its own state.
+
+This bit twice. Importing world.js from the console to inspect `obstacles` gave an
+empty array; importing it for `surfaceHeightAt` gave a function whose region list
+was empty, so it described a different landscape and produced obstacle heights
+6 m BELOW their own ground. The impossible number is what gave it away -- a
+plausible wrong answer would have been believed.
+
+To measure the running game, expose what you need from inside it
+(`window.__x = thing` next to the code that owns it) rather than re-importing.
+`CONFIG` happens to be safe because it is pure data loaded once, which is why
+toggling values from the console does work.
+
 ## A camera occlusion test in 2D will lurch
 
 Reusing the walking-collision circles for camera occlusion works, but those

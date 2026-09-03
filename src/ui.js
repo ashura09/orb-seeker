@@ -50,6 +50,10 @@ export function echoToast(msg, secs = 5){
 // buttons are gone. If a reason to crawl ever appears, this is where the
 // control comes back -- ideally offered when it is needed rather than always.
 
+// Jump is on pointerdown, not click: a click waits for the finger to lift, which
+// on a phone is a jump that happens after you wanted it.
+$('jumpBtn').addEventListener('pointerdown', e => { e.preventDefault(); emit(EVENTS.JUMP); });
+
 export const ordinal = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');
 
 // ---------- stats overlay ----------

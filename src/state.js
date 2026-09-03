@@ -36,6 +36,9 @@ export const G = {
   camPitch: 0,     // camera elevation; set from config on first frame
   camDist: CONFIG.camera.distance,  // live zoom; pinch and the wheel move it
   crawling: false, // quieter and slower
+  airborne: false, // off the ground, so gravity is running
+  vy: 0,           // vertical speed while airborne, metres per second
+  airY: 0,         // world height while airborne; the ground is not in charge
   whistleT: 0,     // seconds of noise still carrying
   whistleCd: 0,    // seconds until you can whistle again
 

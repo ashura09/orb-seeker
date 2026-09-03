@@ -86,6 +86,15 @@
      the others. box-sizing matters: without it the 3px border is added ON TOP
      of width:100% and the card grows a scrollbar. */
   #map .card{max-width:min(94vw,600px);width:100%}
+  /* One button, bottom right, where the looking thumb already rests. Crawl and
+     whistle lost theirs because nothing in the game ever asked for them; this
+     one is pressed constantly, so it earns the space. */
+  .actbtn{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 54px);
+    pointer-events:auto;padding:12px 22px;border-radius:999px;touch-action:manipulation;
+    background:var(--face);color:var(--mint);border:3px solid var(--brass);font:inherit;font-weight:bold;
+    font-size:16px;cursor:pointer;box-shadow:0 0 0 2px var(--brass-dark),0 4px 10px rgba(0,0,0,.3)}
+  .actbtn:active{background:var(--mint);color:var(--face)}
+  .actbtn:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
   #mapc{display:block;box-sizing:border-box;width:100%;max-width:min(72vh,560px);aspect-ratio:1;
     margin:6px auto 2px;border-radius:10px;border:3px solid var(--brass);background:#14180f}
   .mapnote{font-size:13px;opacity:.75;text-align:center;margin:6px 2px 0}

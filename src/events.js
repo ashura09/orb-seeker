@@ -32,6 +32,7 @@ export const EVENTS = {
   CRAWL_TOGGLE:          'player:crawl-toggle',   // the player asked to crawl or stand
   WHISTLE:               'player:whistle',        // the player made a noise on purpose
   LOADOUT_CHANGED:       'loadout:changed',       // something put on or taken off (payload: item id)
+  JUMP:                  'player:jump',           // the player asked to jump
 };
 
 const listeners = new Map();

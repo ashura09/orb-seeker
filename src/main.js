@@ -14,7 +14,7 @@ import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
 import { paintSky, setupShadows, followPlayer, setNightLevel, buildEnvironment } from './sky.js';
 import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
-import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
+import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose, setAirPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
 import { keys, joy, setCamDist } from './input.js';
 import { updateWanderers, homeWanderers } from './wanderers.js';
@@ -83,6 +83,17 @@ on(EVENTS.CRAWL_TOGGLE, () => {
   G.crawling = !G.crawling;
   setCrawlPose(G.crawling);
   toast(G.crawling ? 'Crawling. Slower, and harder to hear.' : 'Standing.', 1.6);
+});
+
+// You cannot jump from a crawl, and you cannot jump twice. Both are refusals
+// rather than silent no-ops elsewhere in the loop, so the rule lives in one place.
+on(EVENTS.JUMP, () => {
+  if (G.state !== 'play' || G.airborne || G.crawling) return;
+  G.airborne = true;
+  G.vy = CONFIG.player.jumpSpeed;
+  G.airY = surfaceHeightAt(player.position.x, player.position.z);
+  setAirPose(true);
+  if (navigator.vibrate) navigator.vibrate(12);
 });
 
 on(EVENTS.WHISTLE, () => {
@@ -220,16 +231,38 @@ function frame(){
     const pr = Math.hypot(player.position.x, player.position.z);
     if (pr > WORLD_R){ player.position.x *= WORLD_R/pr; player.position.z *= WORLD_R/pr; }
     for (const ob of obstacles){
+      // If your feet are above it, you pass over it. This is what makes jumping
+      // a verb rather than a flourish: rocks, stumps and logs can be cleared,
+      // boulders and trees cannot. The height came from the camera work -- the
+      // obstacle already had to know how tall it was.
+      if (player.position.y > ob.top + P.jumpClearance) continue;
       const dx = player.position.x - ob.x, dz = player.position.z - ob.z, d = Math.hypot(dx, dz), min = ob.r + P.radius;
       if (d < min && d > 0.0001){ player.position.x = ob.x + dx/d*min; player.position.z = ob.z + dz/d*min; }
     }
-    // the walk bounce rides on top of the terrain rather than on top of zero
-    player.position.y = surfaceHeightAt(player.position.x, player.position.z) + Math.abs(Math.sin(bob))*P.bobHeight;
-    // arms swing, tail sways
-    armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
-    handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
-    // legs swing opposite the arms, which is what walking looks like
-    legL.rotation.x = moving ? -Math.sin(bob)*0.5 : 0; legR.rotation.x = moving ? Math.sin(bob)*0.5 : 0;
+
+    // ----- vertical -----
+    const feetGround = surfaceHeightAt(player.position.x, player.position.z);
+    if (G.airborne){
+      G.vy -= P.gravity * dt;
+      G.airY += G.vy * dt;
+      if (G.airY <= feetGround){          // landed
+        G.airY = feetGround; G.vy = 0; G.airborne = false;
+        setAirPose(false);
+        if (navigator.vibrate) navigator.vibrate(18);
+      }
+      player.position.y = G.airY;
+    } else {
+      // the walk bounce rides on top of the terrain rather than on top of zero
+      player.position.y = feetGround + Math.abs(Math.sin(bob))*P.bobHeight;
+    }
+    // arms swing, tail sways -- but not in mid-air, where the jump pose owns
+    // the same rotations and the walk cycle would overwrite it every frame.
+    if (!G.airborne){
+      armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
+      handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
+      // legs swing opposite the arms, which is what walking looks like
+      legL.rotation.x = moving ? -Math.sin(bob)*0.5 : 0; legR.rotation.x = moving ? Math.sin(bob)*0.5 : 0;
+    }
     for (const o of orbs){
       if (o.found) continue;
       o.mesh.position.y = surfaceHeightAt(o.x, o.z) + 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;

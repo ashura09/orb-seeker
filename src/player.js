@@ -73,6 +73,14 @@ export function setCrawlPose(on){
   legR.rotation.z = on ?  0.35 : 0;
 }
 
+/** Legs tucked and arms up while off the ground, so a jump reads as a jump. */
+export function setAirPose(on){
+  legL.rotation.x = on ? -0.7 : 0;
+  legR.rotation.x = on ? -0.4 : 0;
+  armL.rotation.x = on ? -1.5 : 0;
+  armR.rotation.x = on ? -1.5 : 0;
+}
+
 // ---------- cosmetics ----------
 //
 // BUILDING AND SHOWING ARE SEPARATE STEPS, and that separation is the whole

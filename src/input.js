@@ -165,7 +165,9 @@ window.addEventListener('keydown', e => {
   if (!e.repeat){
     if (k === 'c') emit(EVENTS.CRAWL_TOGGLE);
     if (k === 'v') emit(EVENTS.WHISTLE);
+    if (k === ' ') emit(EVENTS.JUMP);
   }
+  if (k === ' ') e.preventDefault();   // space scrolls the page otherwise
   keys[k] = true;
 });
 // R and F tilt the view on a keyboard, the way Q and E turn it.
