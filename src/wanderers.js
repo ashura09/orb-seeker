@@ -141,9 +141,6 @@ export const wanderers = WANDERERS.map((w, i) => {
   return {...w, g, limbs, tier:i+1, hx:0, hz:0, tx:0, tz:0, wait:0, cooldown:0, bob:Math.random()*6};
 });
 
-// opponent bar fill per second, by tier. Tier 1 ≈ 4 taps/s to beat, tier 7 ≈ 12 taps/s.
-export const tierRate = n => CONFIG.duel.opponentBase + n*CONFIG.duel.opponentPerTier;
-
 export function homeWanderers(){
   wanderers.forEach((w, i) => {
     w.hx = orbs[i].x; w.hz = orbs[i].z;

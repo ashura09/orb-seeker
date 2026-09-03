@@ -6,6 +6,7 @@ import { surfaceHeightAt } from './world.js';
 import { toast, showOrder } from './ui.js';
 import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
+import { pickOrbSpots } from './rules.js';
 
 export const ORB_COLORS = [0xff6b6b, 0xffa94d, 0xffe066, 0x8ce99a, 0x66d9e8, 0x748ffc, 0xda77f2];
 export const orbGeo = new THREE.SphereGeometry(0.55, 18, 14);
@@ -76,19 +77,10 @@ export const dots = orbs.map(o => { const d=document.createElement('i'); d.textC
 
 export function placeOrbs(){
   G.found = 0; G.orderKept = true;
-  // far-flung spots, at least 45 m apart, then dealt out in a shuffled order so the number tells you nothing about where
-  const O = CONFIG.orbs;
-  const spread = O.outerRadius - O.innerRadius;
-  const spots = [];
-  let guard = 0;
-  while (spots.length < 7 && guard++ < 4000){
-    const a = Math.random()*Math.PI*2, r = O.innerRadius + Math.random()*spread;
-    const x = Math.cos(a)*r, z = Math.sin(a)*r;
-    if (Math.hypot(x - player.position.x, z - player.position.z) < O.minDistanceFromPlayer) continue;
-    if (spots.every(s => Math.hypot(s.x - x, s.z - z) >= O.minSpacing)) spots.push({x, z});
-  }
-  while (spots.length < 7){ const a = Math.random()*Math.PI*2, r = O.innerRadius + Math.random()*spread; spots.push({x:Math.cos(a)*r, z:Math.sin(a)*r}); }
-  for (let i = spots.length-1; i > 0; i--){ const j = (Math.random()*(i+1))|0; [spots[i], spots[j]] = [spots[j], spots[i]]; }
+  // Far-flung spots, well apart, dealt out shuffled so an orb's number tells you
+  // nothing about where it is. The algorithm lives in rules.js, where it can be
+  // tested without a renderer.
+  const spots = pickOrbSpots({ playerX: player.position.x, playerZ: player.position.z });
   orbs.forEach((o, i) => {
     o.x = spots[i].x; o.z = spots[i].z; o.found = false;
     o.mesh.position.set(o.x, surfaceHeightAt(o.x, o.z) + 1.1, o.z); scene.add(o.mesh); dots[i].classList.remove('on');

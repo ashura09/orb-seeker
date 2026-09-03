@@ -7,7 +7,8 @@ import { save } from './save.js';
 import { worn } from './loadout.js';
 import { addFragments } from './ui.js';
 import { joy, stickEl } from './input.js';
-import { tierRate, pickTarget } from './wanderers.js';
+import { pickTarget } from './wanderers.js';
+import { tierRate, duelLoot } from './rules.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { voiceOf } from './voice.js';
@@ -67,11 +68,12 @@ export function endDuel(won){
   duel.over = true; let loot;
   const first = duel.w.short;
   if (won){
-    save.wins++; const roll = Math.random();
-    // pay scales with the camp's tier: about 3 near orb 1, about 10 near orb 7, doubled on a flawless roll
-    const base = D.lootBase + duel.w.tier + Math.floor(Math.random()*D.lootVariance);
-    const flawless = roll < D.flawlessChance;
-    loot = flawless ? base*D.flawlessMultiplier : base;
+    save.wins++;
+    // pay scales with the camp's tier: about 3 near orb 1, about 10 near orb 7,
+    // doubled on a flawless roll. The arithmetic lives in rules.js so it can be tested.
+    const paid = duelLoot(duel.w.tier);
+    loot = paid.loot;
+    const flawless = paid.flawless;
     $('resultBig').textContent = flawless ? 'Flawless!' : 'You win';
     $('resultSay').textContent = `“${voiceOf(duel.w.short).theyLose}”`;
     $('resultLoot').textContent = `${first} hands over ${loot} fragments.`;
