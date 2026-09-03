@@ -16,7 +16,7 @@ import { paintSky, setupShadows, followPlayer, setNightLevel } from './sky.js';
 import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
-import { keys, joy } from './input.js';
+import { keys, joy, setCamDist } from './input.js';
 import { updateWanderers, homeWanderers } from './wanderers.js';
 import { duel, updateDuel } from './duel.js';
 import { pickups, collectPickup, spawnPickup } from './inventory.js';
@@ -42,6 +42,9 @@ const timer = new THREE.Timer();
 const camTarget = new THREE.Vector3();
 const { player: P, camera: CAM, orbs: ORB, ceremony: CER, dayNight: DN } = CONFIG;
 G.camPitch = CAM.pitch;   // starting elevation
+// Zoom is a comfort setting, so it is remembered between visits rather than
+// reset to the default every time you open the game.
+setCamDist(save.camDist ?? CAM.distance);
 let bob = 0;
 
 // ---------- build the valley once the models are here ----------
@@ -253,7 +256,7 @@ function frame(){
   // the point it aims at climbs, which tips the view skyward. That is how you
   // get to see the Keeper overhead.
   const cine = G.state === 'ending' || G.state === 'wish';
-  const dist  = cine ? CAM.cinematicDistance : CAM.distance;
+  const dist  = cine ? CAM.cinematicDistance : G.camDist;   // yours, not a constant
   const pitch = G.camPitch;   // yours during the ceremony too, so you can look up at the Keeper
   const aimAt = cine ? CAM.cinematicLookAt   : CAM.lookAtHeight;
   const ease  = Math.min(1, dt*CAM.ease);

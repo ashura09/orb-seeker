@@ -155,6 +155,15 @@ export const CONFIG = {
     dragSensitivity: 0.008,
     dragSensitivityY: 0.006,
     invertY: false,        // flip if dragging up should look down instead
+
+    // Zoom. `distance` above is only the STARTING distance now; the live one
+    // is G.camDist, which pinch and the scroll wheel move between these.
+    minDistance: 3.0,      // close enough to read the monkey's face
+    maxDistance: 26,       // far enough that he is a figure in a landscape
+    wheelStep: 0.0012,     // per unit of wheel delta, applied exponentially
+    pinchThreshold: 24,    // px the finger gap must change before it counts
+    pinchJoyTolerance: 0.28,  // how far the walking thumb may stray and still
+                              // be treated as resting rather than walking
   },
 
   // ---------- the seven orbs ----------

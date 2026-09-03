@@ -190,6 +190,32 @@ Frame rate looked halved and it was not: the browser throttles `requestAnimation
 in tabs that are not in front, and several copies of the game were open at once.
 Measure with one tab, fronted.
 
+## On a phone, "two fingers" is not a gesture
+
+Pinch-to-zoom looks like a five-line feature and is not, because **walking while
+looking around is already two fingers**. Treat any second finger as a pinch and the
+camera zooms every time the player moves and turns at once -- which is most of the game.
+
+Nor is "the gap between the fingers changed" enough on its own: in walk-and-look the
+thumbs drift apart constantly.
+
+What works is making the pinch prove itself against BOTH tests before it takes the
+fingers away from walking and looking:
+
+1. the gap changed by more than a threshold (~24 px), **and**
+2. the walking thumb is sitting near the centre of its stick, so it is resting
+   rather than steering.
+
+Two fingers down only opens a *candidate*; the joystick and look-drag keep working
+until those hold. See `pinch` in `src/input.js`.
+
+Two smaller things that matter more than they look:
+
+- Measure the zoom from where the fingers are when the pinch **commits**, not from
+  where they first landed, or the view jumps by the threshold at that moment.
+- When one finger lifts, hand the remaining one back to look-drag *at its current
+  position*. Otherwise the next drag is measured from a stale point and the view snaps.
+
 ## Sharing the link never shares your progress
 
 Worth knowing before someone asks. `save.js` writes to `localStorage`, which is scoped to

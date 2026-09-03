@@ -34,6 +34,7 @@ export const G = {
   t: 0,            // seconds since load, used by every animation
   camYaw: 0,       // camera angle around the player, written by input.js
   camPitch: 0,     // camera elevation; set from config on first frame
+  camDist: CONFIG.camera.distance,  // live zoom; pinch and the wheel move it
   crawling: false, // quieter and slower
   whistleT: 0,     // seconds of noise still carrying
   whistleCd: 0,    // seconds until you can whistle again
