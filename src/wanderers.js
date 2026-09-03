@@ -3,7 +3,7 @@
 // One camps near each orb. The higher the orb, the faster the duelist, so
 // tier 1 near orb 1 is gentle and tier 7 near orb 7 is blistering.
 import * as THREE from 'three';
-import { scene, lam, G } from './state.js';
+import { scene, mat, G } from './state.js';
 import { player } from './player.js';
 import { worn } from './loadout.js';
 import { orbs } from './orbs.js';
@@ -49,14 +49,14 @@ const GEO = {
   beard:    new THREE.ConeGeometry(0.17, 0.34, 8),
 };
 
-const EYE = lam(0x1b1a17), WOOD = lam(0x6b4a2a), STEEL = lam(0x9aa3ab),
-      GOLD = lam(0xc9a15a), STRAW = lam(0xcfa955), BOOT = lam(0x4a4038),
-      WHISKERS = lam(0xe8e8e8), LEATHER = lam(0x8a6a3a), STRAPMAT = lam(0x5a3d1e),
-      LEAFMAT = lam(0x3d8f45);
+const EYE = mat(0x1b1a17), WOOD = mat(0x6b4a2a), STEEL = mat(0x9aa3ab),
+      GOLD = mat(0xc9a15a), STRAW = mat(0xcfa955), BOOT = mat(0x4a4038),
+      WHISKERS = mat(0xe8e8e8), LEATHER = mat(0x8a6a3a), STRAPMAT = mat(0x5a3d1e),
+      LEAFMAT = mat(0x3d8f45);
 
 function buildWanderer(w){
   const g = new THREE.Group();
-  const cloth = lam(w.color), skin = lam(w.skin), hatMat = lam(w.hat);
+  const cloth = mat(w.color), skin = mat(w.skin), hatMat = mat(w.hat);
   const s = w.build;
 
   // torso and head

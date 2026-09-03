@@ -5,7 +5,7 @@
 // wish or three depending on whether you kept the orbs in order, sets the wishes
 // down as tokens, and then departs once you have picked them all up.
 import * as THREE from 'three';
-import { scene, lam, glow, pointLight, $, G, forward } from './state.js';
+import { scene, mat, glow, pointLight, $, G, forward } from './state.js';
 import { player } from './player.js';
 import { save, persist } from './save.js';
 import { toast } from './ui.js';
@@ -22,7 +22,7 @@ export const ringOrbs = [];
 
 export function buildKeeper(){
   if (ka.built) return; ka.built = true;
-  const scale = lam(0xf1e2b5, 0.25), belly = lam(0xfff5d8, 0.3), gold = lam(0xc9a15a, 0.6), dark = lam(0x2a2320);
+  const scale = mat(0xf1e2b5, 0.25), belly = mat(0xfff5d8, 0.3), gold = mat(0xc9a15a, 0.6), dark = mat(0x2a2320);
   // stout body
   const body = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), scale); body.scale.set(2.3, 1.9, 3.0); body.position.set(0, 6, -1); keeper.add(body);
   const bellyM = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), belly); bellyM.scale.set(1.7, 1.3, 2.6); bellyM.position.set(0, 5.4, -0.6); keeper.add(bellyM);
@@ -53,7 +53,7 @@ export function buildKeeper(){
   const wingShape = new THREE.Shape();
   wingShape.moveTo(0, 0); wingShape.lineTo(3.2, 2.4); wingShape.lineTo(6.4, 2.0); wingShape.lineTo(5.6, 0.2); wingShape.lineTo(6.2, -2.0); wingShape.lineTo(3.4, -1.4); wingShape.lineTo(0, -1.2); wingShape.lineTo(0, 0);
   const wingGeo = new THREE.ShapeGeometry(wingShape);
-  const wingMat = new THREE.MeshLambertMaterial({color:0xe6cf95, emissive:0xe6cf95, emissiveIntensity:0.3, transparent:true, opacity:0.85, side:THREE.DoubleSide});
+  const wingMat = new THREE.MeshStandardMaterial({color:0xe6cf95, emissive:0xe6cf95, emissiveIntensity:0.3, roughness:0.6, metalness:0, transparent:true, opacity:0.85, side:THREE.DoubleSide});
   [[-1, 0, 6.9, -0.4], [1, 0, 6.9, -0.4], [-1, 0.7, 6.4, -2.6], [1, 0.7, 6.4, -2.6]].forEach(([s, sc, y, z], i) => {
     const pivot = new THREE.Group(); pivot.position.set(s*1.6, y, z);
     const wing = new THREE.Mesh(wingGeo, wingMat); wing.scale.set(s*(1 - sc*0.35), 1 - sc*0.3, 1); wing.rotation.x = -Math.PI/2;
@@ -99,7 +99,7 @@ export function beginEnding(){
   // the Keeper stands overhead and is worth looking up at.
   G.camPitch = CONFIG.camera.cinematicPitch;
   $('hint').style.opacity = 0;
-  orbs.forEach((o, i) => { const m = new THREE.Mesh(orbGeo, lam(o.color, 0.9)); m.add(pointLight(o.color, 1.5, 12)); scene.add(m); ringOrbs.push({m, i}); });
+  orbs.forEach((o, i) => { const m = new THREE.Mesh(orbGeo, mat(o.color, 0.9)); m.add(pointLight(o.color, 1.5, 12)); scene.add(m); ringOrbs.push({m, i}); });
   buildKeeper();
   const f = forward();
   const kx = player.position.x + f.x*CONFIG.ceremony.keeperDistance;

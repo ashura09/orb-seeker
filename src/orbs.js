@@ -1,6 +1,6 @@
 // orbs.js — the seven orbs: how they look, where they land, and collecting them.
 import * as THREE from 'three';
-import { scene, lam, glow, hex, pointLight, G, $ } from './state.js';
+import { scene, mat, glow, hex, pointLight, G, $ } from './state.js';
 import { player } from './player.js';
 import { surfaceHeightAt } from './world.js';
 import { toast, showOrder } from './ui.js';
@@ -60,7 +60,7 @@ export function updateOrbLights(){
 
 for (let i=0;i<7;i++){
   const c = ORB_COLORS[i];
-  const mesh = new THREE.Mesh(orbGeo, lam(c, 0.6));
+  const mesh = new THREE.Mesh(orbGeo, mat(c, 0.6));
   mesh.add(new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 10), glow(c, 0.18)));
   const tc = document.createElement('canvas'); tc.width = tc.height = 128; const tx = tc.getContext('2d');
   tx.fillStyle = '#f6efdf'; tx.beginPath(); tx.arc(64,64,54,0,Math.PI*2); tx.fill();

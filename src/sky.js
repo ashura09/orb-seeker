@@ -58,6 +58,47 @@ export function paintSky(night){
   col.needsUpdate = true;
 }
 
+// ---------- environment light ----------
+//
+// A Lambert material only knows about the lights you place, so every surface
+// facing the same direction came out the same flat colour. A Standard material
+// can also be lit by the SKY ITSELF -- a small, heavily blurred cube map of the
+// surroundings, sampled per pixel. A face turned upward catches sky; a face
+// turned down catches ground bounce. That variation, more than any texture, is
+// what stops a scene reading as plastic.
+//
+// The map is built ONCE, from the day sky. Rebuilding it as night falls would
+// mean re-rendering and re-blurring a cube map every frame; instead the night
+// simply receives less of it, through scene.environmentIntensity.
+export function buildEnvironment(){
+  const pmrem = new THREE.PMREMGenerator(renderer);
+
+  // The same gradient as the dome, but with the lower half turned toward the
+  // ground colour, since half of what actually lights an object outdoors is
+  // light coming back UP off the grass.
+  const R = 50;
+  const g = new THREE.SphereGeometry(R, 24, 16);
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
+  const pos = g.attributes.position, col = g.attributes.color;
+  const bounce = new THREE.Color(S.envGround);
+  const c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++){
+    const t = pos.getY(i) / R;
+    if (t >= 0) c.copy(DAY_LOW).lerp(DAY_HIGH, Math.pow(t, S.falloff));
+    else        c.copy(DAY_LOW).lerp(bounce, Math.min(1, -t * 2));
+    col.setXYZ(i, c.r, c.g, c.b);
+  }
+
+  const envScene = new THREE.Scene();
+  const m = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false });
+  envScene.add(new THREE.Mesh(g, m));
+
+  scene.environment = pmrem.fromScene(envScene).texture;
+  scene.environmentIntensity = CONFIG.render.envIntensity;
+
+  pmrem.dispose(); g.dispose(); m.dispose();
+}
+
 // ---------- the sun ----------
 //
 // A directional light casts shadows through an orthographic camera, and that
@@ -106,6 +147,11 @@ export function setNightLevel(night){
   hemi.intensity    = L.hemiDay - L.hemiNightDrop * night;
   sun.intensity     = L.sunDay  - L.sunNightDrop  * night;
   ambient.intensity = L.ambientDay - L.ambientNightDrop * night;
+
+  // The environment map is a DAY sky, so at night the world must simply receive
+  // less of it -- otherwise every surface keeps a blue noon sheen after dark.
+  const R = CONFIG.render;
+  scene.environmentIntensity = R.envIntensity + (R.envNightFloor - R.envIntensity) * night;
 }
 
 paintSky(0);

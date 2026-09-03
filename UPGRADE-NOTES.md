@@ -190,6 +190,34 @@ Frame rate looked halved and it was not: the browser throttles `requestAnimation
 in tabs that are not in front, and several copies of the game were open at once.
 Measure with one tab, fronted.
 
+## An environment map REPLACES your fake fill lights, it does not join them
+
+Switching Lambert materials to Standard and adding `scene.environment` made the
+valley look *worse* at first: washed out, low contrast, everything tinted the sky's
+blue. Nothing was wrong with the environment map.
+
+The hemisphere light and the ambient light were **cheap stand-ins for sky light**,
+put there back when Lambert could not be lit by an environment at all. Adding the
+real thing on top meant three helpings of fill at once. Fill light has no direction,
+so three of it means no contrast anywhere, and the strongest tint wins.
+
+The fix is to turn the stand-ins right down (hemi 0.85 -> 0.20, ambient 0.22 -> 0.05)
+and turn the sun UP (1.05 -> 1.75), so the light has a direction again.
+
+Related: with no tone mapping, everything over 1.0 clips to flat white. `ACESFilmic`
+plus an exposure of about 1.0 rolls highlights off instead and puts contrast back
+into the midtones. It restyles the whole game, so it is worth doing before tuning
+any colour by hand.
+
+## Comparing two versions needs the same world
+
+Every reload re-rolls the valley from a random seed, so two screenshots of "before"
+and "after" are of different landscapes and prove nothing. `?seed=4242` pins it:
+
+    http://localhost:5173/?seed=4242
+
+Use it for any change you intend to judge by eye.
+
 ## On a phone, "two fingers" is not a gesture
 
 Pinch-to-zoom looks like a five-line feature and is not, because **walking while

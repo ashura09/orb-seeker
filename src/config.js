@@ -78,6 +78,7 @@ export const CONFIG = {
   // A gradient dome rather than a flat background colour. Real skies are darker
   // overhead than at the horizon, and that alone makes a world feel large.
   sky: {
+    envGround: 0x6f8a5e,   // light bouncing back up off the grass, for the environment map
     radius: 900,          // must sit inside the camera's far plane
     falloff: 0.55,        // <1 tightens the gradient toward the horizon
     dayHorizon:   0xbfe0f5,
@@ -257,12 +258,17 @@ export const CONFIG = {
   // ---------- day and night ----------
   dayNight: {
     easeRate: 0.8,         // how quickly night falls
-    hemiDay: 0.85,
-    hemiNightDrop: 0.62,
-    sunDay: 1.05,
-    sunNightDrop: 0.95,
-    ambientDay: 0.22,
-    ambientNightDrop: 0.12,
+    // The hemisphere and ambient lights were CHEAP STAND-INS for sky light,
+    // back when Lambert materials could not be lit by an environment map. Now
+    // that they can, keeping all three meant three helpings of fill: nothing
+    // had contrast and everything took the sky's blue. The stand-ins are turned
+    // right down and the sun turned up, so the light has a direction again.
+    hemiDay: 0.20,
+    hemiNightDrop: 0.15,
+    sunDay: 1.75,
+    sunNightDrop: 1.62,
+    ambientDay: 0.05,
+    ambientNightDrop: 0.04,
     lanternBase: 0.2,
     lanternNightBoost: 1.4,
   },
@@ -273,6 +279,24 @@ export const CONFIG = {
   // OR lens, the bell that draws villagers to you OR the quiet of going without.
   // Everything needed for that is already here; the number is the whole switch.
   loadout: { slots: 0 },
+
+  // ---------- how the image is developed ----------
+  //
+  // The renderer had NO tone mapping, which means raw linear light values were
+  // written straight to the screen. Anything brighter than 1.0 simply clipped
+  // to flat white and everything below it sat in a narrow band -- which is most
+  // of why the valley looked chalky and plastic no matter what was in it.
+  //
+  // ACES filmic is the film-stock curve: it rolls highlights off smoothly
+  // instead of clipping them and gives midtones contrast. Exposure is the stop
+  // you shoot at, and it has to be raised a little because the curve darkens
+  // midtones by design.
+  render: {
+    exposure: 1.02,
+    envIntensity: 0.60,    // how much sky-bounce lands on every surface
+    envNightFloor: 0.12,   // ...and how little of it survives at night
+    roughness: 0.88,       // matte, but not the perfectly flat matte of Lambert
+  },
 
   // ---------- the frame loop ----------
   loop: {

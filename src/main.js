@@ -12,7 +12,7 @@ import { worn } from './loadout.js';
 import { WORLD_R, obstacles, buildWorld, surfaceHeightAt, isInWater } from './world.js';
 import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
-import { paintSky, setupShadows, followPlayer, setNightLevel } from './sky.js';
+import { paintSky, setupShadows, followPlayer, setNightLevel, buildEnvironment } from './sky.js';
 import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
 import { player, armL, armR, handL, handR, legL, legR, tailSegs, cosmetics, applyCosmetics, setCrawlPose } from './player.js';
 import { orbs, collect, placeOrbs, updateOrbLights } from './orbs.js';
@@ -66,6 +66,7 @@ loadProps()
   .catch(err => console.error('the valley could not be built:', err));
 
 setupShadows();
+buildEnvironment();   // sky-bounce light for every Standard material
 setupBloom();
 
 initStats(renderer);

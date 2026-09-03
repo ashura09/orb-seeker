@@ -42,7 +42,10 @@ export const G = {
   // The number the whole valley is generated from. Change it and the forest,
   // the highland, the wetland and every tree move somewhere else. A new one is
   // rolled each time the orbs scatter.
-  worldSeed: randomSeed(),
+  // ?seed=123 pins the valley so a change can be judged against the SAME
+  // landscape. Without it every reload re-rolls the world and two screenshots
+  // are never comparable -- which makes tuning how anything looks guesswork.
+  worldSeed: Number(new URLSearchParams(location.search).get('seed')) || randomSeed(),
   found: 0,        // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0,        // 0 = day, 1 = night; eased every frame
@@ -58,6 +61,17 @@ export const canvas = $('c');
 export const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
+
+// There was no tone mapping at all: linear light values went straight to the
+// screen, so anything over 1.0 clipped to flat white and everything else was
+// squeezed into a narrow band. ACES filmic rolls the highlights off the way
+// film does and puts contrast back into the midtones. Exposure compensates for
+// the curve darkening those midtones.
+//
+// This is applied by OutputPass when the bloom composer is running, and by the
+// renderer directly when it is not -- both read these two properties.
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = CONFIG.render.exposure;
 
 export const scene = new THREE.Scene();
 export const DAY = new THREE.Color(0x8fc7ff), NIGHT = new THREE.Color(0x0a0f2a);
@@ -87,7 +101,16 @@ export const ambient = new THREE.AmbientLight(0xbdd4e8, 0.22);
 
 scene.add(hemi, sun, ambient);
 
-export const lam = (c, e=0) => new THREE.MeshLambertMaterial(e ? {color:c, emissive:c, emissiveIntensity:e} : {color:c});
+// Standard, not Lambert. Lambert only knows about the lights you place, so every
+// surface facing the same way came out the same flat colour -- the "matte
+// plastic" look. Standard is also lit by scene.environment, the blurred image of
+// the sky built in sky.js, so a face turned up catches sky and a face turned
+// down catches ground bounce. That variation is most of what reads as "real".
+//
+// It costs more per pixel than Lambert. That is the trade being made here.
+export const mat = (c, e=0) => new THREE.MeshStandardMaterial(
+  e ? {color:c, emissive:c, emissiveIntensity:e, roughness:CONFIG.render.roughness, metalness:0}
+    : {color:c, roughness:CONFIG.render.roughness, metalness:0});
 export const glow = (c, op=1) => new THREE.MeshBasicMaterial({color:c, transparent:op<1, opacity:op});
 
 // 2. Point lights: r128 defaulted to decay = 1 with a simple falloff that

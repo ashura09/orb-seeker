@@ -21,7 +21,7 @@
 // stream in chunks later.
 import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { scene, lam, G } from './state.js';
+import { scene, mat, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
 import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK } from './props.js';
@@ -191,7 +191,7 @@ const GROUND_HALF = WORLD_R + CONFIG.terrain.skirt;
 const groundGeo = new THREE.PlaneGeometry(GROUND_HALF * 2, GROUND_HALF * 2, GROUND_SEGS, GROUND_SEGS);
 groundGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(groundGeo.attributes.position.count * 3), 3));
 
-const ground = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;   // casts nothing -- there is nothing beneath it
 scene.add(ground);
@@ -295,7 +295,7 @@ function buildHorizon(rng){
   const T = CONFIG.terrain;
   if (hills){ scene.remove(hills); hills.geometry.dispose(); }
   const count = T.hillCount;
-  hills = new THREE.InstancedMesh(hillGeo, lam(0x6f8570), count);
+  hills = new THREE.InstancedMesh(hillGeo, mat(0x6f8570), count);
   hills.frustumCulled = false;
   const d = new THREE.Object3D();
   for (let i = 0; i < count; i++){
@@ -330,8 +330,12 @@ const dummy = new THREE.Object3D();
 // wide, slightly translucent sheet at a FIXED height in the wetland basin, so
 // the shoreline is wherever the terrain happens to cross that level -- an
 // outline the landscape draws for itself rather than one drawn by hand.
-const waterMat = new THREE.MeshLambertMaterial({
+// Water is the one surface that should NOT be matte: a low roughness lets it
+// pick up the sky from the environment map, which is what makes a flat sheet
+// read as water rather than as blue paint.
+const waterMat = new THREE.MeshStandardMaterial({
   color: 0x3f8fbf, transparent: true, opacity: 0.78,
+  roughness: 0.18, metalness: 0.05,
   depthWrite: false,          // reeds and lilies read through the surface
 });
 const water = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.water.radius, 48), waterMat);

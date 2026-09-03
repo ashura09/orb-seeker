@@ -20,6 +20,7 @@
 // to a target height in metres and sat with its base on y = 0. The valley then
 // has consistent proportions no matter where a model came from.
 import * as THREE from 'three';
+import { CONFIG } from './config.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -107,7 +108,7 @@ export const PROP_RADIUS = Object.fromEntries(Object.entries(CATALOGUE).map(([k,
 export const PROP_SINK   = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.sink || 0]));
 
 // One material for every prop: the colour rides in the vertices.
-export const PROP_MATERIAL = new THREE.MeshLambertMaterial({ vertexColors: true });
+export const PROP_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: CONFIG.render.roughness, metalness: 0 });
 
 /**
  * Flattens a loaded glTF scene into one geometry with baked vertex colours.
