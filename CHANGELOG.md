@@ -34,6 +34,20 @@ Groundwork only: no change to how the game looks or plays, except where noted.
 - Unused imports (`hemi`, `sun` in `main.js`; `G` in `world.js`) and the unused
   `pillars` binding in `world.js`.
 
+### Stage 1 continued — palette and character merging
+
+**Added**
+
+- `src/palette.js` — every colour in the game, in one place. Pure extraction; the
+  scene is pixel-identical at the same seed.
+
+**Changed**
+
+- Project rules updated to match the service worker's actual behaviour; the manual
+  cache-version bump was already obsolete.
+- Villager meshes merged: 14–16 each down to 5, scene drawables 211 → 143. No
+  visible change — verified a villager still carries six distinct vertex colours.
+
 ### Stage 1 continued — after the project rules arrived
 
 **Added**
