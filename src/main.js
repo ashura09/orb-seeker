@@ -8,7 +8,7 @@ import './style.css';
 
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
-import { WORLD_R, obstacles, buildWorld, surfaceHeightAt } from './world.js';
+import { WORLD_R, obstacles, buildWorld, surfaceHeightAt, isInWater } from './world.js';
 import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
 import { paintSky, setupShadows, followPlayer, setNightLevel } from './sky.js';
@@ -161,7 +161,13 @@ function frame(){
     const len = Math.hypot(mx, my);
     let moving = false;
     if (len > 0.08){
-      const k = Math.min(len, 1) * (owned('boots') ? P.bootsMultiplier : 1) * (G.crawling ? P.crawlSpeedMultiplier : 1);
+      // Wading slows you, so water is something you feel rather than something
+      // you only look at -- and it gives the wetland a cost as well as a look.
+      const wading = isInWater(player.position.x, player.position.z);
+      const k = Math.min(len, 1)
+        * (owned('boots') ? P.bootsMultiplier : 1)
+        * (G.crawling ? P.crawlSpeedMultiplier : 1)
+        * (wading ? CONFIG.water.wadeSpeed : 1);
       const vx = f.x*(-my) + rx*mx, vz = f.z*(-my) + rz*mx, vl = Math.hypot(vx, vz) || 1;
       player.position.x += vx/vl*P.speed*k*dt; player.position.z += vz/vl*P.speed*k*dt;
       player.rotation.y = Math.atan2(vx, vz); bob += dt*P.bobRate*k; moving = true;

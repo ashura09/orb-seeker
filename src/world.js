@@ -24,28 +24,83 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { scene, lam, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
-import { PROPS, PROP_MATERIAL, PROP_RADIUS } from './props.js';
+import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK } from './props.js';
 
 export const WORLD_R = CONFIG.world.radius;
 export const obstacles = [];
 
 // ---------- what kinds of place exist ----------
 //
-// `lift` raises or lowers the ground, which is what makes a region read as a
-// different landscape rather than a different colour. `props` are relative
-// weights, not counts.
+// A region is not a tint any more. Each one has:
+//
+//   lift      how far its ground rises or sinks -- the highland is a genuine
+//             plateau, the wetland a genuine basin
+//   radius    how far it reaches, and therefore how abrupt its edges are
+//   edge      0..1: how sharply the lift falls off at the border. High values
+//             give a plateau with sides you can see; low values give a swell
+//             you barely notice crossing
+//   props     what grows there, as relative weights
+//   landmark  one built thing at its centre, so there is somewhere to walk TO
+//             that is not an orb
 const REGIONS = [
-  { name: 'meadow',   lift:  0, ground: [0x55984a, 0x6ab558],
-    props: { broadleaf: 1.0, shrub: 0.9, flower: 1.2, rock: 0.4 } },
-  { name: 'forest',   lift:  2, ground: [0x2c6b38, 0x3a7d45],
-    props: { conifer: 3.0, fern: 2.0, mushroom: 0.7, stump: 0.5, fallenLog: 0.4, rock: 0.3 } },
-  { name: 'highland', lift: 11, ground: [0x8a8f76, 0x9ba190],
-    props: { boulder: 2.2, rock: 1.8, shrub: 0.5 } },
-  { name: 'wetland',  lift: -4, ground: [0x4a8f6a, 0x5aa47c],
-    props: { reeds: 3.5, broadleaf: 0.3, fern: 0.5, rock: 0.2 } },
-  { name: 'burn',     lift:  1, ground: [0x6b5f45, 0x7d6f52],
-    props: { deadTree: 1.8, stump: 1.4, fallenLog: 0.5, rock: 0.5 } },
+  { name: 'meadow',   lift:   1, radius: 74, edge: 0.35,
+    ground: [0x55984a, 0x6ab558],
+    props: { broadleaf: 1.0, shrub: 0.8, flower: 2.0, grassTuft: 2.5, rock: 0.3 },
+    landmark: 'field' },
+
+  { name: 'forest',   lift:   4, radius: 70, edge: 0.5,
+    ground: [0x2c6b38, 0x3a7d45],
+    props: { conifer: 4.0, fern: 3.0, mushroom: 1.2, stump: 0.6, fallenLog: 0.5, shrub: 0.8 },
+    landmark: 'camp' },
+
+  { name: 'highland', lift:  17, radius: 62, edge: 0.86,   // steep sides: a plateau
+    ground: [0x8a8f76, 0x9ba190],
+    props: { boulder: 2.4, rock: 2.0, shrub: 0.4, grassTuft: 0.5 },
+    landmark: 'ruin' },
+
+  { name: 'wetland',  lift:  -7, radius: 68, edge: 0.55,   // a basin that holds water
+    ground: [0x4a8f6a, 0x5aa47c],
+    props: { reeds: 4.0, bamboo: 1.2, lily: 0.6, fern: 0.8, broadleaf: 0.25 },
+    landmark: 'landing' },
+
+  { name: 'burn',     lift:   0, radius: 66, edge: 0.4,
+    ground: [0x6b5f45, 0x7d6f52],
+    props: { deadTree: 2.2, stump: 1.8, fallenLog: 0.7, rock: 0.5 },
+    landmark: 'marker' },
 ];
+
+// What each landmark is made of: [kind, x, z, rotation, scale] around the
+// region's centre. These are the things you see from across the valley and walk
+// toward, and they are why the kit's tents, fences and bridges are here at all.
+const LANDMARKS = {
+  field: [
+    ['fence', -6, -4, 0, 1], ['fence', -3, -4, 0, 1], ['fence', 0, -4, 0, 1],
+    ['fence', 3, -4, 0, 1],  ['gate', 6, -4, 0, 1],
+    ['fence', -6, 5, 0, 1],  ['fence', -3, 5, 0, 1], ['fence', 0, 5, 0, 1],
+    ['shrub', -2, 0, 0.4, 1.4], ['shrub', 3, 1.5, 1.1, 1.2],
+  ],
+  camp: [
+    ['tent', -2.5, 0, 0.5, 1.3], ['tent', 2.5, 1, -0.9, 1.1],
+    ['campfire', 0, 2.5, 0, 1.1],
+    ['fallenLog', -2, 4, 0.3, 1.2], ['fallenLog', 2.5, 4, -0.4, 1.2],
+  ],
+  ruin: [
+    ['column', -6, 0, 0, 1], ['column', 6, 0, 0, 1],
+    ['column', 0, -6, 0, 1], ['column', 0, 6, 0, 1],
+    ['column', -4.3, -4.3, 0, 0.9], ['column', 4.3, 4.3, 0, 0.9],
+    ['statueRing', 0, 0, 0, 1.4], ['statueHead', -2, 3, 0.7, 1],
+  ],
+  landing: [
+    ['bridge', 0, 0, 0, 1.6], ['bridgeSide', -2.2, 0, 0, 1.6], ['bridgeSide', 2.2, 0, 0, 1.6],
+    ['canoe', 4, 3, 0.8, 1.2],
+    ['reeds', -3, 2, 0, 1.4], ['reeds', 3, -2, 0, 1.4],
+  ],
+  marker: [
+    ['statueBlock', 0, 0, 0, 1.2],
+    ['deadTree', -4, 2, 0, 1.1], ['deadTree', 4, -2, 0, 0.9],
+    ['stump', -2, -3, 0, 1.3], ['stump', 3, 3, 0, 1.2],
+  ],
+};
 
 let centres = [];
 
@@ -85,17 +140,46 @@ function terrainNoise(x, z){
  * stops the world from ending at a visible line -- the ground climbs away from
  * you instead.
  */
+// Smooth 0..1 ramp. Used for region edges, because a linear blend gives a swell
+// and a smoothstep gives something with a defined lip you can see and walk up.
+function smooth01(t){
+  t = Math.min(1, Math.max(0, t));
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * How high the ground is at a point. The underlying shape of the valley.
+ *
+ * Note that almost nothing calls this directly -- things standing on the ground
+ * use surfaceHeightAt below, which returns the surface actually being drawn.
+ *
+ * Three things add up: rolling noise, the region plateaus and basins, and the
+ * rim far out that stops the world ending at a visible line.
+ */
 export function heightAt(x, z){
   const T = CONFIG.terrain;
   let h = terrainNoise(x, z) * T.amplitude;
 
-  const { region, neighbour, blend } = regionAt(x, z);
-  h += region.lift * (1 - blend) + neighbour.lift * blend;
+  // ----- regions as landforms -----
+  //
+  // Each centre contributes its lift, faded out toward its own radius. A high
+  // `edge` keeps the lift at full strength almost to the border and then drops
+  // it quickly, which is what turns the highland into a plateau with sides
+  // rather than a gentle hummock. Weighted average, so overlapping regions
+  // blend instead of stacking into a tower.
+  let wsum = 0, lsum = 0;
+  for (const c of centres){
+    const r = c.region.radius;
+    const d = Math.hypot(x - c.x, z - c.z);
+    const inner = r * (0.25 + 0.65 * c.region.edge);   // held at full lift
+    const w = 1 - smooth01((d - inner) / Math.max(1, r * 1.15 - inner));
+    if (w > 0){ wsum += w; lsum += c.region.lift * w; }
+  }
+  if (wsum > 0) h += lsum / wsum * Math.min(1, wsum);
 
-  // Distance out from the middle, turned into a 0..1 climb. Squared so the
-  // ground stays almost flat where you actually walk and only rears up far away.
-  const r = Math.hypot(x, z);
-  const rise = Math.min(1, Math.max(0, (r - WORLD_R * T.rimStart) / T.rimSpan));
+  // ----- the rim, far beyond where you can walk -----
+  const rr = Math.hypot(x, z);
+  const rise = Math.min(1, Math.max(0, (rr - WORLD_R * T.rimStart) / T.rimSpan));
   h += rise * rise * T.rimHeight;
 
   return h;
@@ -240,15 +324,72 @@ function buildHorizon(rng){
 let propMeshes = [];
 const dummy = new THREE.Object3D();
 
-const pondMat = lam(0x4aa6d9);
-pondMat.polygonOffset = true; pondMat.polygonOffsetFactor = -2; pondMat.polygonOffsetUnits = -2;
-const pond = new THREE.Mesh(new THREE.CircleGeometry(8, 32), pondMat);
-pond.rotation.x = -Math.PI / 2;
-scene.add(pond);
+// ---------- water ----------
+//
+// The pond used to be an 8 m opaque blue disc sitting on the grass. This is a
+// wide, slightly translucent sheet at a FIXED height in the wetland basin, so
+// the shoreline is wherever the terrain happens to cross that level -- an
+// outline the landscape draws for itself rather than one drawn by hand.
+const waterMat = new THREE.MeshLambertMaterial({
+  color: 0x3f8fbf, transparent: true, opacity: 0.78,
+  depthWrite: false,          // reeds and lilies read through the surface
+});
+const water = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.water.radius, 48), waterMat);
+water.rotation.x = -Math.PI / 2;
+water.renderOrder = 1;
+scene.add(water);
+
+// The height of the water sheet, so main.js can tell when you are wading.
+export let waterLevel = -999;
+export function isInWater(x, z){
+  return Math.hypot(x - water.position.x, z - water.position.z) < CONFIG.water.radius
+      && surfaceHeightAt(x, z) < waterLevel;
+}
 
 // The ruin uses the kit's columns rather than plain cylinders, so it is built
 // with the rest of the world once the models are in.
 let pillars = null;
+
+/**
+ * Turns the collected placements into instanced meshes.
+ *
+ * Called once at the END of buildWorld, after scenery, cliffs and landmarks
+ * have all been decided -- it used to run mid-way, which would have left the
+ * cliffs and landmarks placed but never drawn.
+ *
+ * One mesh per (kind, variant): three shapes of pine cost three draw calls, not
+ * one per tree.
+ */
+function buildInstances(placements){
+  for (const m of propMeshes) scene.remove(m);
+  propMeshes = [];
+
+  for (const [kind, list] of Object.entries(placements)){
+    if (!list.length) continue;
+    const byVariant = new Map();
+    for (const p of list){
+      if (!byVariant.has(p.variant)) byVariant.set(p.variant, []);
+      byVariant.get(p.variant).push(p);
+    }
+    for (const [variant, group] of byVariant){
+      const geo = PROPS[kind]?.[variant];
+      if (!geo) continue;
+      const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.forEach((p, i) => {
+        dummy.position.set(p.x, surfaceHeightAt(p.x, p.z) - (PROP_SINK[kind] || 0) * p.s, p.z);
+        dummy.rotation.set(0, p.rot, 0);
+        dummy.scale.setScalar(p.s);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      scene.add(mesh);
+      propMeshes.push(mesh);
+    }
+  }
+}
 
 /** Builds, or rebuilds, the entire valley from one seed. */
 export function buildWorld(seed){
@@ -301,61 +442,55 @@ export function buildWorld(seed){
     if (rad > 0) obstacles.push({ x, z, r: rad });
   }
 
-  // ----- build one instanced mesh per kind -----
-  for (const m of propMeshes){ scene.remove(m); }
-  propMeshes = [];
-  // One mesh per (kind, variant): three shapes of pine cost three draw calls,
-  // not one per tree.
-  for (const [kind, list] of Object.entries(placements)){
-    if (!list.length) continue;
-    const byVariant = new Map();
-    for (const p of list){
-      if (!byVariant.has(p.variant)) byVariant.set(p.variant, []);
-      byVariant.get(p.variant).push(p);
-    }
-    for (const [variant, group] of byVariant){
-      const geo = PROPS[kind]?.[variant];
-      if (!geo) continue;
-      const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.forEach((p, i) => {
-        dummy.position.set(p.x, surfaceHeightAt(p.x, p.z), p.z);
-        dummy.rotation.set(0, p.rot, 0);
-        dummy.scale.setScalar(p.s);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
+  // ----- cliffs around the plateau's lip -----
+  //
+  // The highland's sides drop about 17 m over 20 m of ground. Ringing that lip
+  // with cliff blocks turns a steep grass slope into something that reads as
+  // rock, which is what makes it a plateau rather than a hill.
+  const highland = centres.find(c => c.region.name === 'highland');
+  if (highland && PROPS.cliff){
+    const R = highland.region.radius;
+    const ring = CONFIG.world.cliffRing;
+    for (let i = 0; i < ring; i++){
+      const a = (i / ring) * Math.PI * 2 + rng() * 0.12;
+      const d = R * (0.92 + rng() * 0.16);
+      const x = highland.x + Math.cos(a) * d, z = highland.z + Math.sin(a) * d;
+      if (Math.hypot(x, z) > WORLD_R - 4) continue;
+      const kind = (rng() < 0.12 && PROPS.cliffCave) ? 'cliffCave' : 'cliff';
+      const variants = PROPS[kind];
+      placements[kind].push({
+        x, z,
+        s: 0.85 + rng() * 0.6,
+        variant: (rng() * variants.length) | 0,
+        rot: a + Math.PI / 2 + (rng() - 0.5) * 0.5,
       });
-      mesh.instanceMatrix.needsUpdate = true;
-      scene.add(mesh);
-      propMeshes.push(mesh);
+      obstacles.push({ x, z, r: PROP_RADIUS[kind] * 0.8 });
     }
   }
 
-  // ----- the ruin stands on the high ground, the pond lies in the low -----
-  const highland = centres.find(c => c.region.name === 'highland') || centres[0];
-  if (pillars) scene.remove(pillars);
-  const columns = PROPS.column;
-  if (columns && columns.length){
-    const n = CONFIG.world.pillars;
-    pillars = new THREE.InstancedMesh(columns[0], PROP_MATERIAL, n);
-    pillars.castShadow = true;
-    pillars.receiveShadow = true;
-    for (let i = 0; i < n; i++){
-      const a = (i / n) * Math.PI * 2;
-      const x = highland.x + Math.cos(a) * 7.5, z = highland.z + Math.sin(a) * 7.5;
-      dummy.position.set(x, surfaceHeightAt(x, z), z);
-      dummy.rotation.set(0, rng() * Math.PI * 2, 0);
-      dummy.scale.setScalar(0.85 + rng() * 0.5);
-      dummy.updateMatrix();
-      pillars.setMatrixAt(i, dummy.matrix);
-      obstacles.push({ x, z, r: 0.8 });
+  // ----- one landmark per region -----
+  for (const c of centres){
+    const parts = LANDMARKS[c.region.landmark];
+    if (!parts) continue;
+    const spin = rng() * Math.PI * 2;
+    for (const [kind, ox, oz, rot, sc] of parts){
+      const variants = PROPS[kind];
+      if (!variants || !variants.length) continue;
+      // rotate the whole arrangement so it is not identically oriented each time
+      const x = c.x + ox * Math.cos(spin) - oz * Math.sin(spin);
+      const z = c.z + ox * Math.sin(spin) + oz * Math.cos(spin);
+      if (Math.hypot(x, z) > WORLD_R - 3) continue;
+      placements[kind].push({ x, z, s: sc, variant: (rng() * variants.length) | 0, rot: rot + spin });
+      const rad = (PROP_RADIUS[kind] || 0) * sc;
+      if (rad > 0) obstacles.push({ x, z, r: rad });
     }
-    pillars.instanceMatrix.needsUpdate = true;
-    scene.add(pillars);
   }
 
-  const wetland = centres.find(c => c.region.name === 'wetland') || centres[1] || centres[0];
-  pond.position.set(wetland.x, surfaceHeightAt(wetland.x, wetland.z) + 0.06, wetland.z);
+  buildInstances(placements);
+
+  // ----- water sits in the wetland basin -----
+  const wetland = centres.find(c => c.region.name === 'wetland') || centres[0];
+  const floor = surfaceHeightAt(wetland.x, wetland.z);
+  waterLevel = floor + CONFIG.water.depth;
+  water.position.set(wetland.x, waterLevel, wetland.z);
 }
-

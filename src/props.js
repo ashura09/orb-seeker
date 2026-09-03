@@ -48,6 +48,31 @@ const CATALOGUE = {
   fallenLog: { files: ['log'],                                                                     size: 2.2, radius: 0.5 },
   lily:      { files: ['lily_large'],                                                              size: 0.9, radius: 0 },
   column:    { files: ['statue_column', 'statue_columnDamaged', 'statue_obelisk'],                 size: 4.2, radius: 0.7 },
+
+  // ground cover -- the cheap stuff that fills a landscape out
+  grassTuft: { files: ['grass', 'grass_leafs'],                                                    size: 0.7, radius: 0 },
+  bamboo:    { files: ['crops_bambooStageB', 'crops_bambooStageA'],                                size: 2.6, radius: 0 },
+
+  // cliffs -- what turns the highland from a hummock into a plateau you walk around
+  // `sink` buries a prop's base below the surface. A 7 m cliff block sitting
+  // exactly ON a steep slope leaves a visible gap under its downhill edge;
+  // pushing it into the hill hides that without anyone noticing the block is
+  // partly buried.
+  cliff:     { files: ['cliff_large_rock', 'cliff_block_rock', 'cliff_blockHalf_rock',
+                       'cliff_blockDiagonal_rock', 'cliff_rock'],                 size: 7.0, radius: 2.6, sink: 2.2 },
+  cliffCave: { files: ['cliff_cave_rock'],                                        size: 7.0, radius: 2.6, sink: 2.0 },
+
+  // landmark pieces
+  tent:       { files: ['tent_detailedOpen', 'tent_smallClosed'],                                  size: 3.0, radius: 1.0 },
+  campfire:   { files: ['campfire_stones', 'campfire_logs'],                                       size: 1.6, radius: 0.5 },
+  fence:      { files: ['fence_simple', 'fence_bend'],                                             size: 2.2, radius: 0 },
+  gate:       { files: ['fence_gate'],                                                             size: 2.4, radius: 0 },
+  bridge:     { files: ['bridge_center_wood'],                                                     size: 5.0, radius: 0 },
+  bridgeSide: { files: ['bridge_side_wood'],                                                       size: 5.0, radius: 0 },
+  canoe:      { files: ['canoe'],                                                                  size: 3.4, radius: 0.6 },
+  statueRing: { files: ['statue_ring'],                                                            size: 3.6, radius: 0.9 },
+  statueHead: { files: ['statue_head'],                                                            size: 2.4, radius: 0.8 },
+  statueBlock:{ files: ['statue_block'],                                                           size: 2.2, radius: 0.8 },
 };
 
 // ---------- palette ----------
@@ -79,6 +104,7 @@ const PALETTE = {
 // kind -> array of prepared geometries, one per variant. Filled by loadProps().
 export const PROPS = {};
 export const PROP_RADIUS = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.radius]));
+export const PROP_SINK   = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.sink || 0]));
 
 // One material for every prop: the colour rides in the vertices.
 export const PROP_MATERIAL = new THREE.MeshLambertMaterial({ vertexColors: true });

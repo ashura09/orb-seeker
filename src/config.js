@@ -19,7 +19,11 @@ export const CONFIG = {
   // ---------- the valley ----------
   world: {
     radius: 150,          // how far you can walk from the centre, in metres
-    props: 260,           // total trees, rocks, reeds and scrub; regions decide the mix
+    // Scenery count. Instancing means this is cheap: every copy of one model is
+    // a single draw call however many there are, so the limit is triangles, not
+    // objects. 260 read as empty.
+    props: 950,           // total scenery; regions decide the mix
+    cliffRing: 26,        // cliff blocks ringing the highland plateau
     pillars: 8,
     groundSegments: 128,  // terrain detail, about 4.7 m per quad across 600 m
   },
@@ -48,6 +52,15 @@ export const CONFIG = {
     hillFar: 1000,
     hillMin: 70,
     hillMax: 220,
+  },
+
+  // ---------- water ----------
+  // A sheet at a fixed height in the wetland basin. The shoreline is wherever
+  // the terrain crosses that level, so the landscape draws its own outline.
+  water: {
+    radius: 46,
+    depth: 2.4,           // how far above the basin floor the surface sits
+    wadeSpeed: 0.55,      // how much water slows you
   },
 
   // ---------- how far you can see ----------
@@ -106,9 +119,10 @@ export const CONFIG = {
     bobHeight: 0.12,
     radius: 0.45,         // how close you can get to a tree trunk
 
-    // Crawling: quieter, but slow. The trade is the whole point -- you give up
-    // ground to give up noise.
-    crawlSpeedMultiplier: 0.42,
+    // Crawling: quieter, but slow. The trade is the point -- you give up ground
+    // to give up noise. Started at 0.42, which playtesting found unbearable:
+    // slow enough that nobody ever chose it.
+    crawlSpeedMultiplier: 0.62,
   },
 
   // ---------- camera ----------
