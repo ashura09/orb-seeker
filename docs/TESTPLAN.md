@@ -33,6 +33,9 @@ camera and the time of day, and freezes the villagers, so two runs are comparabl
 Plain `?stats` while walking around is fine for a rough look but useless as a
 before/after — the same code measured 166 and 192 draw calls that way.
 
+Bench does not pin the _window_, and the frustum follows it: the same build reads
+302k triangles at 900x600 and 419k at 800x823. Compare at one screen size.
+
 | Reading    |             Budget | Notes                                                                      |
 | ---------- | -----------------: | -------------------------------------------------------------------------- |
 | Triangles  |     under **300k** | The single biggest lever is `CONFIG.world.props`.                          |

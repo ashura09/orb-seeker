@@ -277,6 +277,10 @@ fixed time of day, input ignored, villagers frozen, orbs and camps seeded from t
 world seed. Four runs with deliberately different saved state now give byte-identical
 numbers. **Take every performance before/after there.**
 
+**One thing `?bench` does NOT pin: the window.** The frustum follows the viewport, so
+the same build measured 302k triangles in a 900x600 iframe and 419k in an 800x823
+pane. Compare at the same window size, or compare drawables instead.
+
 The number that was trustworthy all along is the count of drawable objects in the
 scene — deterministic, and unaffected by where anyone is looking:
 
