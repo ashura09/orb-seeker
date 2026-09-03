@@ -21,7 +21,7 @@
 // stream in chunks later.
 import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { scene, mat, G } from './state.js';
+import { scene, renderer, mat, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
 import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK } from './props.js';
@@ -191,7 +191,7 @@ const GROUND_HALF = WORLD_R + CONFIG.terrain.skirt;
 const groundGeo = new THREE.PlaneGeometry(GROUND_HALF * 2, GROUND_HALF * 2, GROUND_SEGS, GROUND_SEGS);
 groundGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(groundGeo.attributes.position.count * 3), 3));
 
-const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, map: makeGroundDetail() }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;   // casts nothing -- there is nothing beneath it
 scene.add(ground);
@@ -251,7 +251,71 @@ function mottle(x, z){
   return Math.min(1, Math.max(0, n));
 }
 
+// ---------- fine detail on the ground ----------
+//
+// Vertex colours cannot describe anything smaller than a quad, and a quad here
+// is about 4.7 m. Up close the ground was therefore perfectly, obviously flat.
+// A small greyscale texture tiled over it is multiplied into those colours, so
+// there is grain between the vertices without adding a single triangle.
+//
+// The pattern is built from SINE WAVES AT WHOLE-NUMBER FREQUENCIES, which makes
+// it seamless by construction -- each wave completes a whole number of cycles
+// across the tile, so the left edge meets the right exactly. No seam to hide.
+function makeGroundDetail(){
+  const D = CONFIG.detail, S = 256;
+
+  // Seamless value noise. The lattice coordinates WRAP at each octave's own
+  // period, so the tile's left edge meets its right exactly and there is no
+  // seam to hide.
+  //
+  // The first attempt built this from sin(a*u) * cos(b*v) instead. Those are
+  // SEPARABLE -- a function of u times a function of v -- which draws an
+  // axis-aligned lattice however many terms you sum, and stamped a visible grid
+  // across the whole valley. Raising the frequencies only made a finer grid.
+  // The structure was wrong, not the scale.
+  const hash = (a, b, period, seed) => {
+    a = ((a % period) + period) % period;
+    b = ((b % period) + period) % period;
+    const n = Math.sin(a * 127.1 + b * 311.7 + seed * 74.7) * 43758.5453;
+    return n - Math.floor(n);
+  };
+  const vnoise = (x, y, period, seed) => {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const u = xf*xf*(3 - 2*xf), v = yf*yf*(3 - 2*yf);   // smoothstep, so no creases
+    const a = hash(xi,   yi,   period, seed), b = hash(xi+1, yi,   period, seed);
+    const c = hash(xi,   yi+1, period, seed), d = hash(xi+1, yi+1, period, seed);
+    return (a*(1-u) + b*u)*(1-v) + (c*(1-u) + d*u)*v;
+  };
+
+  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  const img = ctx.createImageData(S, S);
+  for (let y = 0; y < S; y++){
+    for (let x = 0; x < S; x++){
+      const fx = x / S, fy = y / S;
+      const n = 0.5 * vnoise(fx*8,  fy*8,  8,  1)
+              + 0.3 * vnoise(fx*17, fy*17, 17, 2)
+              + 0.2 * vnoise(fx*33, fy*33, 33, 3);
+      // Kept near white: this is a MULTIPLIER over the region colours, so a mid
+      // grey would simply halve the brightness of the whole valley.
+      const g = Math.round(255 * (1 - D.detailDepth * (1 - Math.min(1, Math.max(0, n)))));
+      const i = (y*S + x) * 4;
+      img.data[i] = img.data[i+1] = img.data[i+2] = g; img.data[i+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(D.detailRepeat, D.detailRepeat);
+  // Mipmaps plus anisotropy, or a tile this small shimmers badly in the distance.
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return tex;
+}
+
 const colA = new THREE.Color(), colB = new THREE.Color(), colOut = new THREE.Color();
+const colRock = new THREE.Color();
 
 function shapeGround(){
   const pos = groundGeo.attributes.position;
@@ -276,6 +340,24 @@ function shapeGround(){
     colA.setHex(region.ground[0]).lerp(colB.setHex(region.ground[1]), m);
     colB.setHex(neighbour.ground[0]).lerp(colOut.setHex(neighbour.ground[1]), m);
     colOut.copy(colA).lerp(colB, blend);
+
+    // STEEP GROUND IS ROCK. Grass does not hold on a cliff face, and painting
+    // one the same green as the meadow beside it is most of why the terrain
+    // read as a bedsheet thrown over furniture. The gradient is measured from
+    // the height function itself rather than from the mesh normals, which are
+    // not computed until after this loop.
+    const D = CONFIG.detail;
+    const e = 2.0;
+    const grad = Math.hypot(heightAt(x+e, z) - heightAt(x-e, z),
+                            heightAt(x, z+e) - heightAt(x, z-e)) / (2*e);
+    const slope = Math.min(1, grad / D.slopeFull);
+    colOut.lerp(colRock.setHex(D.rockColor), slope * D.rockOnSlopes);
+
+    // High ground bleaches in the light; low ground sits damp and dark.
+    const h = pos.getZ(i);
+    if (h > 6)  colOut.lerp(colA.setRGB(1, 1, 0.96), Math.min(1, (h - 6) / 14) * D.dryHigh);
+    if (h < 1)  colOut.multiplyScalar(1 - Math.min(1, (1 - h) / 6) * D.wetLow);
+
     col.setXYZ(i, colOut.r, colOut.g, colOut.b);
   }
   pos.needsUpdate = true;
@@ -323,6 +405,14 @@ function buildHorizon(rng){
 // count that was placed, so no capacity is wasted drawing invisible instances.
 let propMeshes = [];
 const dummy = new THREE.Object3D();
+const tint = new THREE.Color();
+
+// A cheap deterministic hash in 0..1. Not for cryptography -- for deciding that
+// THIS tree is a shade lighter than the one beside it, the same way every time.
+function hash01(a, b){
+  const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return n - Math.floor(n);
+}
 
 // ---------- water ----------
 //
@@ -383,14 +473,28 @@ function buildInstances(placements){
       const mesh = new THREE.InstancedMesh(geo, PROP_MATERIAL, group.length);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+      const D = CONFIG.detail;
       group.forEach((p, i) => {
         dummy.position.set(p.x, surfaceHeightAt(p.x, p.z) - (PROP_SINK[kind] || 0) * p.s, p.z);
         dummy.rotation.set(0, p.rot, 0);
         dummy.scale.setScalar(p.s);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
+
+        // Every copy of a model was the exact same colour, which is why 1900
+        // props read as fifteen objects repeated. Three.js multiplies the
+        // per-instance colour into the baked vertex colours, so a little spread
+        // in brightness and warmth costs nothing but the buffer it rides in.
+        // Hashed from position, so a rebuild of the same seed looks the same.
+        const h1 = hash01(p.x * 3.1, p.z * 2.7);
+        const h2 = hash01(p.z * 5.3, p.x * 4.1);
+        const v = 1 - D.propTint * 0.5 + D.propTint * h1;
+        const w = (h2 - 0.5) * D.propWarmth;
+        tint.setRGB(v * (1 + w), v, v * (1 - w));
+        mesh.setColorAt(i, tint);
       });
       mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       scene.add(mesh);
       propMeshes.push(mesh);
     }

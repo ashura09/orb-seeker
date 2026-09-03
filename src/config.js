@@ -30,6 +30,30 @@ export const CONFIG = {
     groundSegments: 128,  // terrain detail, about 4.7 m per quad across 600 m
   },
 
+  // ---------- surface detail ----------
+  //
+  // The ground was one flat colour per region, on a grid of about 4.7 m per
+  // vertex. Nothing that happens between two vertices could show at all, and a
+  // cliff face was painted the same green as the meadow beside it.
+  detail: {
+    rockOnSlopes: 0.8,     // how strongly steep ground turns to rock
+    slopeFull: 0.55,       // the gradient counted as "fully steep"
+    rockColor: 0x7a7164,
+    dryHigh: 0.12,         // high ground bleaches slightly, low ground darkens
+    wetLow: 0.20,
+
+    // A tiling noise texture multiplied over the ground. Vertex colours cannot
+    // describe anything smaller than a quad; this can.
+    detailRepeat: 70,      // tiles across the 600 m plane -- about 8.6 m each
+    detailDepth: 0.11,     // how dark the darkest speckle gets
+
+    // Every copy of a model was the exact same colour, which is a large part of
+    // why 1900 props read as 15 objects repeated. One colour per instance costs
+    // nothing: it rides in the same buffer as the transform.
+    propTint: 0.26,        // brightness spread between individual copies
+    propWarmth: 0.05,      // and a little warm/cool drift
+  },
+
   // ---------- how the scenery is arranged ----------
   //
   // Every prop used to land on an independent uniform random point. That is

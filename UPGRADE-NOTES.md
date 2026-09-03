@@ -190,6 +190,45 @@ Frame rate looked halved and it was not: the browser throttles `requestAnimation
 in tabs that are not in front, and several copies of the game were open at once.
 Measure with one tab, fronted.
 
+## sin(a*u) * cos(b*v) is a grid, not a texture
+
+Building a tiling noise texture out of products of sines seems reasonable -- whole
+number frequencies make it seamless for free. But `f(u) * g(v)` is **separable**,
+and separable functions draw axis-aligned lattices. Summing four of them still
+draws a lattice. Stamped across a 600 m ground plane it was a visible grid, which
+is worse than the flat colour it replaced.
+
+Raising the frequencies did not help, because the STRUCTURE was wrong, not the
+scale -- it just produced a finer grid.
+
+What works is value noise on an integer lattice whose coordinates wrap at each
+octave's own period. It is seamless for the same reason and has no preferred
+direction. About 25 lines, in `makeGroundDetail`.
+
+Two more things that ground detail needs:
+
+- The texture is a **multiplier** over the region colours, so it has to sit near
+  white. A mid-grey noise texture halves the brightness of the whole valley.
+- Mipmaps and `anisotropy` are not optional at 70 tiles across the plane, or the
+  distance shimmers.
+
+## Slope is what makes terrain read as terrain
+
+A cliff face painted the same green as the meadow beside it is most of why ground
+looks like a bedsheet thrown over furniture. Blending toward rock by the local
+gradient costs four extra `heightAt` calls per vertex, at build time only.
+
+Take the gradient from the height FUNCTION, not from the mesh normals --
+`computeVertexNormals()` has not run yet at that point in `shapeGround`.
+
+## One colour per instance is nearly free
+
+Every copy of a model was the exact same colour, which is why 1900 props read as
+fifteen objects repeated. `InstancedMesh.setColorAt` multiplies into the baked
+vertex colours and rides in the same buffer as the transform: no extra draw call,
+no extra material. Hash the tint from the prop's position so a rebuild of the same
+seed looks the same.
+
 ## Scattering things uniformly is why a world looks generated
 
 Every prop landed on an independent uniform random point. That is the definition
