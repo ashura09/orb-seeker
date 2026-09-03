@@ -255,6 +255,64 @@ Also: `Math.sqrt(rng()) * radius` spreads points evenly over a disc. Plain
 `rng() * radius` piles them into the middle, so every clump grows a dense core
 and a thin edge -- the same mistake as uniform scatter, just smaller.
 
+## Count drawables, not draw calls — and measure on the bench
+
+Draw calls are the number the budget is written in, and they are almost useless for
+comparing two versions of the code, because they depend on what is in the frustum at
+the instant you sample. Measuring the villager merge, the "before" came out at 166
+draw calls and the "after" at 192 — after deleting forty meshes. Nothing was wrong
+with the merge; the two runs were of different views.
+
+Three things were moving underneath the measurement, and each had to be pinned:
+
+- **Camera zoom.** `camDist` is restored from the save and persists, so a run after
+  some pinch-zoom testing frames far more scenery than a fresh one.
+- **Villagers.** They roam. Two or three wandering in or out of frame is worth
+  ~18 draw calls on its own — which is most of the gap above.
+- **Orb and camp placement.** `placeOrbs` used `Math.random`, so villagers camped in
+  different places each run even at a fixed world seed.
+
+Hence `?bench`: fixed seed, fixed player position, fixed camera angle and distance,
+fixed time of day, input ignored, villagers frozen, orbs and camps seeded from the
+world seed. Four runs with deliberately different saved state now give byte-identical
+numbers. **Take every performance before/after there.**
+
+The number that was trustworthy all along is the count of drawable objects in the
+scene — deterministic, and unaffected by where anyone is looking:
+
+```js
+let n = 0;
+scene.traverse((o) => {
+  if (o.isMesh || o.isPoints || o.isSprite) n++;
+});
+```
+
+## Merging beats instancing for characters
+
+Instancing solves repetition: 1150 props cost 53 draw calls because they are the same
+few models over and over. It does nothing for a thing that appears once.
+
+Seven villagers cost 103 draw calls between them, at 14–16 meshes each — more than
+twice what all the scenery cost. The fix is merging, and the trick that makes it
+possible across differently-coloured parts is to bake each part's colour into its
+vertices and use one `vertexColors` material:
+
+```js
+const geo = mesh.geometry.clone().applyMatrix4(mesh.matrix);
+// then fill a Float32Array with mesh.material.color repeated per vertex
+```
+
+Take the colour from `material.color`, NOT from the original hex: three.js has already
+converted it sRGB → linear, and converting again silently shifts every colour.
+
+What can merge is anything that never moves relative to its neighbours. A torso, head,
+eyes, hat and carried axe are one rigid object. So is a hand relative to its arm, and a
+foot relative to its leg — the Group still animates, the meshes inside it need not be
+separate. Villagers went 14–16 meshes to 5; the scene went 211 drawables to 143.
+
+What cannot merge is anything that recolours at runtime. The player's suit changes
+colour when the cloak is worn, so those parts stay separate.
+
 ## `await import('/src/x.js')` can hand you a SECOND module instance
 
 Vite serves hot-updated modules with a `?t=` cache-busting query, so

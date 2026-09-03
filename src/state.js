@@ -51,7 +51,12 @@ export const G = {
   // ?seed=123 pins the valley so a change can be judged against the SAME
   // landscape. Without it every reload re-rolls the world and two screenshots
   // are never comparable -- which makes tuning how anything looks guesswork.
-  worldSeed: Number(new URLSearchParams(location.search).get('seed')) || randomSeed(),
+  // ?bench pins the scene so performance numbers are comparable between runs.
+  // See CONFIG.bench and the note in UPGRADE-NOTES.md.
+  bench: new URLSearchParams(location.search).has('bench'),
+  worldSeed:
+    Number(new URLSearchParams(location.search).get('seed')) ||
+    (new URLSearchParams(location.search).has('bench') ? CONFIG.bench.seed : randomSeed()),
   found: 0, // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0, // 0 = day, 1 = night; eased every frame

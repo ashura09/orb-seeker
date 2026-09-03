@@ -97,13 +97,18 @@ export const dots = orbs.map((o) => {
   return d;
 });
 
-export function placeOrbs() {
+/**
+ * @param random  where the randomness comes from. Defaults to Math.random; the
+ *                bench passes a seeded one so the orbs -- and therefore the
+ *                villagers who camp beside them -- land in the same place every run.
+ */
+export function placeOrbs(random = Math.random) {
   G.found = 0;
   G.orderKept = true;
   // Far-flung spots, well apart, dealt out shuffled so an orb's number tells you
   // nothing about where it is. The algorithm lives in rules.js, where it can be
   // tested without a renderer.
-  const spots = pickOrbSpots({ playerX: player.position.x, playerZ: player.position.z });
+  const spots = pickOrbSpots({ playerX: player.position.x, playerZ: player.position.z, random });
   orbs.forEach((o, i) => {
     o.x = spots[i].x;
     o.z = spots[i].z;

@@ -375,6 +375,26 @@ export const CONFIG = {
     roughness: 0.88, // matte, but not the perfectly flat matte of Lambert
   },
 
+  // ---------- ?bench: a fixed scene for measuring ----------
+  //
+  // Performance numbers are only useful if two runs are comparable, and by
+  // default they are not: draw calls depend on what is in the frustum, and the
+  // camera zoom is restored from the save and drifts. Two measurements of the
+  // SAME code once came out 166 and 192 draw calls apart for that reason.
+  //
+  // ?bench pins everything the numbers depend on -- seed, player position, camera
+  // angle and distance, time of day -- and ignores input, so nothing can nudge
+  // the view mid-measurement. Every before/after in this project is taken here.
+  bench: {
+    seed: 4242, // used unless ?seed= says otherwise
+    x: 0,
+    z: 0, // where the player stands
+    yaw: 0.6, // camera angle around them, radians
+    pitch: 0.35,
+    distance: 14, // far enough to have real scenery in frame
+    night: 0, // full daylight, so shadows and bloom are both doing work
+  },
+
   // ---------- quality, and when to give some up ----------
   //
   // The target phone is a mid-range Android from about four years ago. It cannot

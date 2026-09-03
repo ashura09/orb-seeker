@@ -327,13 +327,14 @@ export const wanderers = WANDERERS.map((w, i) => {
   };
 });
 
-export function homeWanderers() {
+/** @param random  seeded on the bench, so camps land identically every run. */
+export function homeWanderers(random = Math.random) {
   wanderers.forEach((w, i) => {
     w.hx = orbs[i].x;
     w.hz = orbs[i].z;
     const W = CONFIG.wanderers;
-    const a = Math.random() * Math.PI * 2,
-      r = W.campRadiusMin + Math.random() * (W.campRadiusMax - W.campRadiusMin);
+    const a = random() * Math.PI * 2,
+      r = W.campRadiusMin + random() * (W.campRadiusMax - W.campRadiusMin);
     const wx = w.hx + Math.cos(a) * r,
       wz = w.hz + Math.sin(a) * r;
     w.g.position.set(wx, surfaceHeightAt(wx, wz), wz);
@@ -362,6 +363,11 @@ function animateLimbs(w, moving) {
 }
 
 export function updateWanderers(dt) {
+  // The bench is a still life. Villagers wandering in and out of frame was the
+  // last thing making two runs disagree -- 158 draw calls against 176, from the
+  // same code.
+  if (G.bench) return;
+
   const W = CONFIG.wanderers;
   // How far you carry. Crawling multiplies the base so it still stacks with the
   // Silver bell; whistling overrides both for as long as the noise lasts.

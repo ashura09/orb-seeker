@@ -10,7 +10,7 @@ import { G, scene, camera, renderer, DAY, NIGHT, $, forward } from './state.js';
 import { save } from './save.js';
 import { worn } from './loadout.js';
 import { WORLD_R, obstacles, buildWorld, surfaceHeightAt, isInWater } from './world.js';
-import { randomSeed } from './rng.js';
+import { randomSeed, makeRng } from './rng.js';
 import { loadProps } from './props.js';
 import { paintSky, setupShadows, followPlayer, setNightLevel, buildEnvironment } from './sky.js';
 import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
@@ -75,8 +75,12 @@ let bob = 0;
 loadProps()
   .then(() => {
     buildWorld(G.worldSeed);
-    placeOrbs();
-    homeWanderers();
+    // On the bench everything is seeded from the world seed, so orbs and the
+    // villagers camped beside them are in the same place on every run.
+    const rand = G.bench ? makeRng(G.worldSeed ^ 0x5eed) : undefined;
+    placeOrbs(rand);
+    homeWanderers(rand);
+    if (G.bench) enterBench(); // the terrain exists now, so the player can be stood on it
   })
   .catch((err) => console.error('the valley could not be built:', err));
 
@@ -151,6 +155,31 @@ $('startBtn').addEventListener('click', () => {
   setTimeout(recallAWish, 2200); // let the panel clear before the memory arrives
 });
 
+// ?bench starts straight away and stands still. Nothing about the view may
+// depend on when you happened to press a button or where you happened to walk,
+// or the numbers it produces are not comparable with the last run's.
+function enterBench() {
+  $('start').classList.add('hidden');
+  G.state = 'play';
+  const B = CONFIG.bench;
+  player.position.set(B.x, surfaceHeightAt(B.x, B.z), B.z);
+  G.camYaw = B.yaw;
+  G.camPitch = B.pitch;
+  G.camDist = B.distance;
+  G.night = G.nightTarget = B.night;
+}
+
+/** Holds the bench scene still against anything the loop would otherwise change. */
+function holdBench() {
+  const B = CONFIG.bench;
+  player.position.x = B.x;
+  player.position.z = B.z;
+  G.camYaw = B.yaw;
+  G.camPitch = B.pitch;
+  G.camDist = B.distance;
+  G.night = G.nightTarget = B.night;
+}
+
 /**
  * How far the camera may sit behind you before scenery gets in the way.
  *
@@ -218,14 +247,18 @@ function frame() {
   G.t += dt;
   let mx = joy.x,
     my = joy.y;
-  if (keys['w'] || keys['arrowup']) my = -1;
-  if (keys['s'] || keys['arrowdown']) my = 1;
-  if (keys['a'] || keys['arrowleft']) mx = -1;
-  if (keys['d'] || keys['arrowright']) mx = 1;
-  if (keys['q']) G.camYaw += CAM.turnSpeed * dt;
-  if (keys['e']) G.camYaw -= CAM.turnSpeed * dt;
+  if (G.bench) {
+    holdBench();
+    mx = my = 0; // input is ignored entirely; the bench does not move
+  }
+  if (!G.bench && (keys['w'] || keys['arrowup'])) my = -1;
+  if (!G.bench && (keys['s'] || keys['arrowdown'])) my = 1;
+  if (!G.bench && (keys['a'] || keys['arrowleft'])) mx = -1;
+  if (!G.bench && (keys['d'] || keys['arrowright'])) mx = 1;
+  if (!G.bench && keys['q']) G.camYaw += CAM.turnSpeed * dt;
+  if (!G.bench && keys['e']) G.camYaw -= CAM.turnSpeed * dt;
   // R and F tilt the view up and down on a keyboard
-  if (keys['r'] || keys['f']) {
+  if (!G.bench && (keys['r'] || keys['f'])) {
     const tilt = (keys['f'] ? 1 : 0) - (keys['r'] ? 1 : 0);
     G.camPitch = Math.max(
       CAM.pitchMin,

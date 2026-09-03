@@ -28,7 +28,10 @@ everything else passes — write it down before fixing, so it does not get lost.
 
 ## Performance check (do this one on the oldest phone you can find)
 
-Add `?stats` to the link. Walk to somewhere busy — a stand of trees near the cliffs.
+Use **`?bench&stats`**, not `?stats`. Bench mode pins the seed, your position, the
+camera and the time of day, and freezes the villagers, so two runs are comparable.
+Plain `?stats` while walking around is fine for a rough look but useless as a
+before/after — the same code measured 166 and 192 draw calls that way.
 
 | Reading    |             Budget | Notes                                                                      |
 | ---------- | -----------------: | -------------------------------------------------------------------------- |
