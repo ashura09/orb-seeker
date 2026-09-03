@@ -51,12 +51,21 @@ export function setupBloom(){
   return true;
 }
 
+// Low graphics turns the composer off without tearing it down, so it can come
+// back if the setting is ever raised again.
+let bypass = false;
+export function setBloomEnabled(on){ bypass = !on; }
+
 /** Draws the frame, through the composer when bloom is on. */
 export function render(){
-  if (composer){
+  if (composer && !bypass){
     renderer.info.reset();
     composer.render();
   } else {
+    // autoReset was turned off when the composer was set up, so the counters must
+    // still be reset by hand on this path -- otherwise they accumulate across
+    // every frame and the stats overlay reports six-figure draw calls.
+    if (!renderer.info.autoReset) renderer.info.reset();
     renderer.render(scene, camera);
   }
 }

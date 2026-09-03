@@ -21,7 +21,7 @@
 // stream in chunks later.
 import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { scene, renderer, mat } from './state.js';
+import { scene, renderer, mat, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
 import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK, PROP_HEIGHT } from './props.js';
@@ -625,7 +625,7 @@ export function buildWorld(seed){
   const placements = {};                      // kind -> [{x, z, s, rot}]
   for (const kind of Object.keys(PROPS)) placements[kind] = [];
 
-  const total = CONFIG.world.props;
+  const total = G.propBudget ?? CONFIG.world.props;   // low graphics lowers this
   let placed = 0, guard = 0;
   while (guard++ < total * 300 && placed < total){
     let x, z;

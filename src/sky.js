@@ -133,6 +133,20 @@ export function setupShadows(){
   scene.add(sun.target);
 }
 
+/**
+ * Turns shadows on or off for low-graphics mode.
+ *
+ * Changing shadowMap.enabled means every material has to be recompiled, which is
+ * a visible hitch — which is why graphics.js only ever drops quality once rather
+ * than flipping back and forth.
+ */
+export function setShadowsEnabled(on){
+  if (renderer.shadowMap.enabled === on) return;
+  renderer.shadowMap.enabled = on;
+  sun.castShadow = on;
+  scene.traverse(o => { if (o.material) o.material.needsUpdate = true; });
+}
+
 /** Keeps the sun, its shadow box and the dome centred on the player. */
 export function followPlayer(x, y, z){
   sun.position.set(x + SUN_OFFSET.x, y + SUN_OFFSET.y, z + SUN_OFFSET.z);

@@ -24,6 +24,7 @@ import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored, forgetExplored } from './map.js';
+import { initGraphics, watchFrameRate } from './graphics.js';
 import { wishEcho } from './voice.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
@@ -68,6 +69,7 @@ loadProps()
 
 setupShadows();
 buildEnvironment();   // sky-bounce light for every Standard material
+initGraphics();       // start low if this phone has struggled before
 setupBloom();
 
 initStats(renderer);
@@ -385,6 +387,7 @@ function frame(){
   camera.position.y += (camY - camera.position.y)*ease;
   camTarget.set(player.position.x, groundY + targetY, player.position.z); camera.lookAt(camTarget);
 
+  watchFrameRate(dt); // drops quality on its own if this phone cannot keep up
   markExplored(dt);   // the map remembers where you have walked
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);

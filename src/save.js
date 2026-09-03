@@ -27,7 +27,7 @@
 // what you are allowed to wear live in loadout.js.
 export const SAVE_KEY = 'orbseeker.save.v2';
 
-export const save = {fragments:0, wins:0, items:{}, wishes:[], cycles:0, worn:null};
+export const save = {fragments:0, wins:0, items:{}, wishes:[], cycles:0, worn:null, lowGraphics:false};
 
 // A save that cannot be read is a new game, which is survivable. A save that
 // cannot be WRITTEN loses everything since the last good write, which is not --

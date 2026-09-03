@@ -22,7 +22,7 @@ export const CONFIG = {
     // Scenery count. Instancing means this is cheap: every copy of one model is
     // a single draw call however many there are, so the limit is triangles, not
     // objects. 260 read as empty.
-    props: 1900,          // total scenery; regions decide the mix. Raised with
+    props: 1150,          // total scenery; regions decide the mix. Raised with
                           // clumping: stands leave more open ground between them,
                           // so the same count read as sparser than it did scattered.
     cliffRing: 26,        // cliff blocks ringing the highland plateau
@@ -372,6 +372,19 @@ export const CONFIG = {
     envIntensity: 0.60,    // how much sky-bounce lands on every surface
     envNightFloor: 0.12,   // ...and how little of it survives at night
     roughness: 0.88,       // matte, but not the perfectly flat matte of Lambert
+  },
+
+  // ---------- quality, and when to give some up ----------
+  //
+  // The target phone is a mid-range Android from about four years ago. It cannot
+  // be asked about at build time, so the game measures its own frame rate and
+  // drops quality if it cannot keep up. See src/graphics.js.
+  graphics: {
+    autoLowFps: 45,        // below this average...
+    autoLowSeconds: 5,     // ...for this long, and quality drops
+    sampleSeconds: 1,      // averaging window; one slow frame is a GC, not a slow phone
+    lowProps: 700,         // scenery count in low mode
+    forceLow: false,       // set true to see low mode without waiting for a slow phone
   },
 
   // ---------- the frame loop ----------
