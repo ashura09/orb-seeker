@@ -122,6 +122,34 @@ $('startBtn').addEventListener('click', () => {
   setTimeout(recallAWish, 2200);   // let the panel clear before the memory arrives
 });
 
+
+/**
+ * How far the camera may sit behind you before scenery gets in the way.
+ *
+ * Each obstacle is a circle on the ground. Project it onto the camera's own
+ * direction: `along` is how far down that line it sits, `perp` how far it
+ * misses to the side. If it misses by less than its own radius plus a margin,
+ * the camera has to stop short of it.
+ *
+ * Roughly 1900 obstacles, a few multiplications each -- cheaper by far than
+ * raycasting instanced meshes, and it uses a list that already exists.
+ */
+function clearBehind(dirX, dirZ, want){
+  const px = player.position.x, pz = player.position.z;
+  let best = want;
+  for (const o of obstacles){
+    if (o.r < CAM.blockRadius) continue;   // ferns and flowers do not block a view
+    const ox = o.x - px, oz = o.z - pz;
+    const along = ox*dirX + oz*dirZ;
+    if (along <= 0.5 || along - o.r > best) continue;   // behind you, or past where we already stop
+    const reach = o.r + CAM.clearance;
+    const perp = Math.abs(ox*dirZ - oz*dirX);
+    if (perp >= reach) continue;                        // the line passes wide of it
+    best = Math.min(best, along - Math.sqrt(reach*reach - perp*perp));
+  }
+  return Math.max(CAM.minClear, best);
+}
+
 function frame(){
   requestAnimationFrame(frame);
   timer.update();
@@ -257,19 +285,29 @@ function frame(){
   const aimAt = cine ? CAM.cinematicLookAt   : CAM.lookAtHeight;
   const ease  = Math.min(1, dt*CAM.ease);
 
-  const horiz  = Math.cos(pitch) * dist;                        // ground distance
+  const horizWanted = Math.cos(pitch) * dist;                   // ground distance
   const groundY = surfaceHeightAt(player.position.x, player.position.z);
 
+  // Scenery must not come between you and the camera -- with trees now up to
+  // 2.6x, sitting inside a canopy is easy and there is nothing to see from in
+  // there. No raycasting needed: `obstacles` already holds a ground circle per
+  // prop, built for walking collision, so this is a line-versus-circle test.
+  const dirX = Math.sin(G.camYaw), dirZ = Math.cos(G.camYaw);
+  const horiz = clearBehind(dirX, dirZ, horizWanted);
+  // The camera is pulled straight down its own line, so height scales with it
+  // and the angle you chose is preserved.
+  const k = horizWanted > 0.01 ? horiz / horizWanted : 1;
+
   // Where the camera wants to sit, in world terms.
-  const wantX = player.position.x + Math.sin(G.camYaw) * horiz;
-  const wantZ = player.position.z + Math.cos(G.camYaw) * horiz;
+  const wantX = player.position.x + dirX * horiz;
+  const wantZ = player.position.z + dirZ * horiz;
 
   // The camera sits BEHIND you, which on a slope can put it over ground higher
   // than the ground you are standing on -- and it would then be inside the hill,
   // looking out through the back of it at nothing. So it is held clear of the
   // terrain beneath ITSELF, not beneath the player.
   const groundUnderCamera = surfaceHeightAt(wantX, wantZ);
-  const wantY = groundY + aimAt + Math.sin(pitch) * dist;
+  const wantY = groundY + aimAt + Math.sin(pitch) * dist * k;
   const camY  = Math.max(wantY, groundUnderCamera + CAM.minHeight);
   const targetY = aimAt + Math.max(0, -pitch) * dist * CAM.lookUpGain;
 

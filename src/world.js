@@ -430,7 +430,10 @@ export function buildWorld(seed){
 
   // CLEARINGS. A wood is only legible when there are gaps to see across.
   // Wall-to-wall trees is a texture; the openings are what make it a place.
-  const clearings = [];
+  // The spot you start on is always open. Spawning inside a stand means your
+  // first sight of the valley is a tree trunk, and the camera jammed against
+  // your back trying to get out of it.
+  const clearings = [{ x: 0, z: 0, r: 14 }];
   for (let i = 0; i < C.clearings; i++){
     const a = rng() * Math.PI * 2, d = Math.sqrt(rng()) * (WORLD_R - 30);
     clearings.push({ x: Math.cos(a) * d, z: Math.sin(a) * d,

@@ -190,6 +190,12 @@ export const CONFIG = {
     dragSensitivityY: 0.006,
     invertY: false,        // flip if dragging up should look down instead
 
+    // Scenery must not come between you and the camera.
+    clearance: 0.7,        // extra margin beyond a prop's own radius
+    minClear: 3.4,         // the camera never comes closer than this to you
+    blockRadius: 0.7,      // props thinner than this are ignored. A fern has no
+                           // business shoving the camera into your back.
+
     // Zoom. `distance` above is only the STARTING distance now; the live one
     // is G.camDist, which pinch and the scroll wheel move between these.
     minDistance: 3.0,      // close enough to read the monkey's face

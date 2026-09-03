@@ -190,6 +190,42 @@ Frame rate looked halved and it was not: the browser throttles `requestAnimation
 in tabs that are not in front, and several copies of the game were open at once.
 Measure with one tab, fronted.
 
+## Scattering things uniformly is why a world looks generated
+
+Every prop landed on an independent uniform random point. That is the definition
+of confetti, and adding more of it never helps -- more confetti is still confetti.
+What turns the same models into a landscape is arrangement: clumps (things seed
+near each other), clearings (a wood is only legible when there are gaps to see
+across), paths (routes people would have walked), and a scale hierarchy (a few
+things much larger, so the eye can judge distance).
+
+Two mistakes in doing that, both found by looking rather than by reasoning:
+
+**A clearing is free of trees, not of grass.** Excluding every prop from clearings
+and paths left bare green expanses that looked *emptier* than the confetti did.
+Ground cover has to keep growing there; only the tall things stay out.
+
+**`regionAt().blend` is not a distance.** It is `nearest / (nearest + second)` --
+a measure of how EQUIDISTANT you are between two regions, which is maximal in the
+middle of the map. Thinning density by it made the exact spot you spawn on the
+emptiest ground in the valley. What you want is distance from the nearest region
+centre relative to that region's own radius.
+
+Also: `Math.sqrt(rng()) * radius` spreads points evenly over a disc. Plain
+`rng() * radius` piles them into the middle, so every clump grows a dense core
+and a thin edge -- the same mistake as uniform scatter, just smaller.
+
+## Keeping the camera out of the scenery costs no raycasting
+
+Once trees can be 2.6x, sitting inside a canopy is easy. The obstacle list built
+for WALKING collision is already a circle per prop on the ground, so how far the
+camera can back away is a line-versus-circle test against a list that exists --
+about 1900 cheap iterations, versus raycasting instanced meshes.
+
+Two things it needs: ignore small props (a fern has no business shoving the camera
+into your back), and keep the spawn point clear, or your first sight of the valley
+is a trunk with the camera jammed behind you.
+
 ## An environment map REPLACES your fake fill lights, it does not join them
 
 Switching Lambert materials to Standard and adding `scene.environment` made the
