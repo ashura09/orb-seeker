@@ -58,6 +58,11 @@ export const CONFIG = {
   // A sheet at a fixed height in the wetland basin. The shoreline is wherever
   // the terrain crosses that level, so the landscape draws its own outline.
   water: {
+    // radius is the WIDEST the lake may be; the basin decides the rest. minRadius
+    // is how far it may shrink before we decide there is no lake here at all,
+    // and minDepth how deep it must be to be worth drawing.
+    minRadius: 14,
+    minDepth: 0.8,
     radius: 46,
     depth: 2.4,           // how far above the basin floor the surface sits
     wadeSpeed: 0.55,      // how much water slows you
