@@ -22,10 +22,38 @@ export const CONFIG = {
     // Scenery count. Instancing means this is cheap: every copy of one model is
     // a single draw call however many there are, so the limit is triangles, not
     // objects. 260 read as empty.
-    props: 950,           // total scenery; regions decide the mix
+    props: 1900,          // total scenery; regions decide the mix. Raised with
+                          // clumping: stands leave more open ground between them,
+                          // so the same count read as sparser than it did scattered.
     cliffRing: 26,        // cliff blocks ringing the highland plateau
     pillars: 8,
     groundSegments: 128,  // terrain detail, about 4.7 m per quad across 600 m
+  },
+
+  // ---------- how the scenery is arranged ----------
+  //
+  // Every prop used to land on an independent uniform random point. That is
+  // exactly what confetti is, and it is why the valley read as scattered blocks
+  // rather than as a place. Landscapes are not uniform:
+  //
+  //   stands     things grow in clumps, because they seed near each other
+  //   clearings  open ground. A wood is only legible when there are gaps to see
+  //              across; wall-to-wall trees is a texture, not a forest
+  //   paths      routes between the landmarks where nothing grows, so the valley
+  //              looks walked rather than generated
+  //   scale      a few things much bigger than the rest, so there is a silhouette
+  //              above the canopy and your eye can judge distance
+  composition: {
+    standsPerRegion: 5,
+    standRadius: 22,       // average clump size, metres
+    standShare: 0.72,      // share of props that grow in a clump; the rest are
+                           // stragglers, which is what stops clumps reading as circles
+    clearings: 6,
+    clearingRadius: 13,
+    pathWidth: 5,          // half-width of the cleared route, metres
+    edgeThinning: 0.8,     // how much density drops toward a region's border
+    giantChance: 0.035,    // how often a tree or boulder is a big one
+    giantScale: 2.6,
   },
 
   // ---------- the shape of the ground ----------
