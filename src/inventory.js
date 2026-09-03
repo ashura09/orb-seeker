@@ -7,6 +7,7 @@ import { scene, lam, glow, hex, pointLight, $, G } from './state.js';
 import { player, applyCosmetics } from './player.js';
 import { surfaceHeightAt } from './world.js';
 import { save, persist, owned } from './save.js';
+import { worn, toggleWorn, wearIfRoom, slots, wornCount } from './loadout.js';
 import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
 import { emit, on, EVENTS } from './events.js';
@@ -38,8 +39,14 @@ export function spawnPickup(kind, data, angleHint){
 export function collectPickup(p, idx){
   scene.remove(p.g); pickups.splice(idx, 1);
   if (p.kind === 'item'){
-    const id = p.g.userData.id; save.items[id] = 'owned'; persist(); applyCosmetics();
-    toast(`${item(id).name} added to your inventory`);
+    // Picking it up makes it yours permanently. Putting it ON is a separate
+    // step, and only happens if you have room -- silently displacing something
+    // you deliberately chose would be worse than leaving the new thing off.
+    const id = p.g.userData.id; save.items[id] = 'owned'; persist();
+    const put = wearIfRoom(id);
+    applyCosmetics();
+    toast(put ? `${item(id).name} — worn`
+              : `${item(id).name} added. No room to wear it; open your satchel.`, put ? 2 : 3);
   } else {
     save.wishes.push({text:p.g.userData.text, cycle:save.cycles}); persist();
     toast(`Wish kept: “${p.g.userData.text}”`, 3);
@@ -57,12 +64,35 @@ export function renderSatchel(){
     r.innerHTML = `<span class="star">✦</span><div><div>“${x.text.replace(/</g,'&lt;')}”</div><div class="meta">Granted on your ${ordinal(x.cycle)} gathering</div></div>`;
     w.appendChild(r);
   });
+  // Owning is listed with `owned`; wearing is a separate toggle per row. This
+  // is the only place in the game where a loadout is chosen, so it is also the
+  // only place that needs to know the difference.
   const it = $('satchelItems'); it.innerHTML = '';
   const have = ITEMS.filter(u => owned(u.id));
   if (!have.length) it.innerHTML = '<div class="empty">Nothing yet. Win duels and visit the trader.</div>';
+
+  const cap = slots();
+  if (have.length && cap > 0){
+    const h = document.createElement('div'); h.className = 'slotline';
+    h.textContent = `Worn ${wornCount()} of ${cap}`;
+    it.appendChild(h);
+  }
+
   have.forEach(u => {
-    const row = document.createElement('div'); row.className = 'item';
+    const on = worn(u.id);
+    const row = document.createElement('div'); row.className = 'item' + (on ? ' isworn' : '');
     row.innerHTML = `<div class="row"><div class="swatch" style="background:${hex(u.color)}"></div><div><div class="name">${u.name}</div><div class="desc">${u.desc}</div></div></div>`;
+    const b = document.createElement('button');
+    b.textContent = on ? 'Take off' : 'Wear';
+    b.addEventListener('click', () => {
+      const r = toggleWorn(u.id);
+      if (!r.ok){ toast(r.reason, 3); return; }
+      // loadout.js already announced the change and player.js has redressed the
+      // monkey; all that is left is to redraw the list we are standing in.
+      renderSatchel();
+      bump($('satchelBtn'));
+    });
+    row.appendChild(b);
     it.appendChild(row);
   });
 }

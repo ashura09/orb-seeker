@@ -80,6 +80,9 @@
   .item .desc{font-size:14px;opacity:.8}
   .item button{padding:8px 14px;font-size:15px;white-space:nowrap}
   .item button[disabled]{opacity:.45;cursor:default}
+  .item.isworn .name::after{content:' · worn';font-weight:normal;opacity:.65;font-size:13px}
+  .item.isworn .swatch{box-shadow:0 0 0 2px var(--face)}
+  .slotline{font-size:14px;opacity:.75;padding:8px 0 2px}
   .item .owned{font-weight:bold;color:var(--face);white-space:nowrap;font-size:14px}
   .swatch{width:26px;height:26px;border-radius:8px;flex:none;border:2px solid rgba(0,0,0,.2)}
   .row{display:flex;align-items:center;gap:12px;flex:1}
