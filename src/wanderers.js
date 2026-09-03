@@ -7,7 +7,7 @@ import { scene, lam, G } from './state.js';
 import { player } from './player.js';
 import { owned } from './save.js';
 import { orbs } from './orbs.js';
-import { WORLD_R, heightAt } from './world.js';
+import { WORLD_R, surfaceHeightAt } from './world.js';
 import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 
@@ -150,7 +150,7 @@ export function homeWanderers(){
     const W = CONFIG.wanderers;
     const a = Math.random()*Math.PI*2, r = W.campRadiusMin + Math.random()*(W.campRadiusMax - W.campRadiusMin);
     const wx = w.hx + Math.cos(a)*r, wz = w.hz + Math.sin(a)*r;
-    w.g.position.set(wx, heightAt(wx, wz), wz); pickTarget(w);
+    w.g.position.set(wx, surfaceHeightAt(wx, wz), wz); pickTarget(w);
   });
 }
 
@@ -190,10 +190,10 @@ export function updateWanderers(dt){
       const sp = hunting ? W.huntSpeed : W.roamSpeed;
       w.g.position.x += dx/d*sp*dt; w.g.position.z += dz/d*sp*dt; w.g.rotation.y = Math.atan2(dx, dz);
       w.bob += dt*W.bobRate;
-      w.g.position.y = heightAt(w.g.position.x, w.g.position.z) + Math.abs(Math.sin(w.bob))*0.1;
+      w.g.position.y = surfaceHeightAt(w.g.position.x, w.g.position.z) + Math.abs(Math.sin(w.bob))*0.1;
       animateLimbs(w, true);
     } else {
-      w.g.position.y = heightAt(w.g.position.x, w.g.position.z);
+      w.g.position.y = surfaceHeightAt(w.g.position.x, w.g.position.z);
       w.wait -= dt; if (w.wait <= 0) pickTarget(w); animateLimbs(w, false);
     }
     if (G.state === 'play' && hunting && pd < W.challengeRange) emit(EVENTS.DUEL_CHALLENGE, w);

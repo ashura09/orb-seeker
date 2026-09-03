@@ -8,7 +8,7 @@ import './style.css';
 
 import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
 import { save, owned } from './save.js';
-import { WORLD_R, obstacles, buildWorld, heightAt } from './world.js';
+import { WORLD_R, obstacles, buildWorld, surfaceHeightAt } from './world.js';
 import { randomSeed } from './rng.js';
 import { loadProps } from './props.js';
 import { paintSky, setupShadows, followPlayer, setNightLevel } from './sky.js';
@@ -173,7 +173,7 @@ function frame(){
       if (d < min && d > 0.0001){ player.position.x = ob.x + dx/d*min; player.position.z = ob.z + dz/d*min; }
     }
     // the walk bounce rides on top of the terrain rather than on top of zero
-    player.position.y = heightAt(player.position.x, player.position.z) + Math.abs(Math.sin(bob))*P.bobHeight;
+    player.position.y = surfaceHeightAt(player.position.x, player.position.z) + Math.abs(Math.sin(bob))*P.bobHeight;
     // arms swing, tail sways
     armL.rotation.x = moving ? Math.sin(bob)*0.6 : 0; armR.rotation.x = moving ? -Math.sin(bob)*0.6 : 0;
     handL.position.z = Math.sin(armL.rotation.x)*0.3; handR.position.z = Math.sin(armR.rotation.x)*0.3;
@@ -181,12 +181,12 @@ function frame(){
     legL.rotation.x = moving ? -Math.sin(bob)*0.5 : 0; legR.rotation.x = moving ? Math.sin(bob)*0.5 : 0;
     for (const o of orbs){
       if (o.found) continue;
-      o.mesh.position.y = heightAt(o.x, o.z) + 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;
+      o.mesh.position.y = surfaceHeightAt(o.x, o.z) + 1.1 + Math.sin(G.t*2 + o.phase)*0.25; o.mesh.rotation.y += dt;
       if (Math.hypot(o.x - player.position.x, o.z - player.position.z) < ORB.pickupRadius) collect(o);
     }
     for (let i = pickups.length-1; i >= 0; i--){
       const p = pickups[i];
-      p.g.position.y = heightAt(p.g.position.x, p.g.position.z) + 0.7 + Math.sin(G.t*2.5 + p.phase)*0.15; p.g.rotation.y += dt*1.2;
+      p.g.position.y = surfaceHeightAt(p.g.position.x, p.g.position.z) + 0.7 + Math.sin(G.t*2.5 + p.phase)*0.15; p.g.rotation.y += dt*1.2;
       if (Math.hypot(p.g.position.x - player.position.x, p.g.position.z - player.position.z) < 1.5) collectPickup(p, i);
     }
     updateWanderers(dt);
@@ -250,7 +250,7 @@ function frame(){
   const ease  = Math.min(1, dt*CAM.ease);
 
   const horiz  = Math.cos(pitch) * dist;                        // ground distance
-  const groundY = heightAt(player.position.x, player.position.z);
+  const groundY = surfaceHeightAt(player.position.x, player.position.z);
 
   // Where the camera wants to sit, in world terms.
   const wantX = player.position.x + Math.sin(G.camYaw) * horiz;
@@ -260,7 +260,7 @@ function frame(){
   // than the ground you are standing on -- and it would then be inside the hill,
   // looking out through the back of it at nothing. So it is held clear of the
   // terrain beneath ITSELF, not beneath the player.
-  const groundUnderCamera = heightAt(wantX, wantZ);
+  const groundUnderCamera = surfaceHeightAt(wantX, wantZ);
   const wantY = groundY + aimAt + Math.sin(pitch) * dist;
   const camY  = Math.max(wantY, groundUnderCamera + CAM.minHeight);
   const targetY = aimAt + Math.max(0, -pitch) * dist * CAM.lookUpGain;

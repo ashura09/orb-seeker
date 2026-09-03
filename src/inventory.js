@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { scene, lam, glow, hex, pointLight, $, G } from './state.js';
 import { player, applyCosmetics } from './player.js';
-import { heightAt } from './world.js';
+import { surfaceHeightAt } from './world.js';
 import { save, persist, owned } from './save.js';
 import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
@@ -31,7 +31,7 @@ export function spawnPickup(kind, data, angleHint){
   }
   const a = angleHint !== undefined ? angleHint : Math.random()*Math.PI*2;
   const gx = player.position.x + Math.cos(a)*3.2, gz = player.position.z + Math.sin(a)*3.2;
-  g.position.set(gx, heightAt(gx, gz) + 0.7, gz);
+  g.position.set(gx, surfaceHeightAt(gx, gz) + 0.7, gz);
   scene.add(g); pickups.push({g, kind, phase:Math.random()*6});
 }
 

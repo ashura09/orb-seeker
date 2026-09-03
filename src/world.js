@@ -112,6 +112,53 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;   // casts nothing -- there is nothing beneath it
 scene.add(ground);
 
+// ---------- standing on the ground you can actually SEE ----------
+//
+// heightAt() is a smooth continuous function. The ground you look at is a mesh
+// of flat triangles sampled from it every GROUND_CELL metres. On any curve the
+// two disagree, and they disagree in opposite directions depending on which way
+// the ground bends:
+//
+//   convex, like the rising rim  -- the flat triangle sits ABOVE the true curve,
+//                                   so you end up walking UNDER the mountain
+//   concave, like a hilltop      -- the triangle sits BELOW it, so you walk on
+//                                   air and then drop at the next cell edge
+//
+// So nothing stands on heightAt any more. surfaceHeightAt reproduces the exact
+// triangles PlaneGeometry builds, which means the player is always on the
+// surface being drawn, however coarse that surface is.
+const GROUND_CELL = (GROUND_HALF * 2) / GROUND_SEGS;
+
+/**
+ * The height of the rendered ground at a world point.
+ *
+ * PlaneGeometry splits every cell into two triangles -- (a,b,d) and (b,c,d) --
+ * and this picks the same one and interpolates across it, so the answer is the
+ * mesh's own surface rather than an approximation of it.
+ */
+export function surfaceHeightAt(x, z){
+  const gx = (x + GROUND_HALF) / GROUND_CELL;
+  const gz = (z + GROUND_HALF) / GROUND_CELL;
+  const i = Math.floor(gx), j = Math.floor(gz);
+
+  // outside the mesh entirely: fall back to the smooth function
+  if (i < 0 || j < 0 || i >= GROUND_SEGS || j >= GROUND_SEGS) return heightAt(x, z);
+
+  const fx = gx - i, fz = gz - j;
+  const x0 = i * GROUND_CELL - GROUND_HALF, x1 = x0 + GROUND_CELL;
+  const z0 = j * GROUND_CELL - GROUND_HALF, z1 = z0 + GROUND_CELL;
+
+  const ha = heightAt(x0, z0);   // a
+  const hb = heightAt(x0, z1);   // b
+  const hc = heightAt(x1, z1);   // c
+  const hd = heightAt(x1, z0);   // d
+
+  // the diagonal runs from b to d, so fx + fz <= 1 is the a-b-d triangle
+  return (fx + fz <= 1)
+    ? ha + (hd - ha) * fx + (hb - ha) * fz
+    : hc + (hb - hc) * (1 - fx) + (hd - hc) * (1 - fz);
+}
+
 // Fine mottling so a region is not a flat wash of one colour.
 function mottle(x, z){
   const n = 0.5
@@ -273,7 +320,7 @@ export function buildWorld(seed){
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       group.forEach((p, i) => {
-        dummy.position.set(p.x, heightAt(p.x, p.z), p.z);
+        dummy.position.set(p.x, surfaceHeightAt(p.x, p.z), p.z);
         dummy.rotation.set(0, p.rot, 0);
         dummy.scale.setScalar(p.s);
         dummy.updateMatrix();
@@ -297,7 +344,7 @@ export function buildWorld(seed){
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
       const x = highland.x + Math.cos(a) * 7.5, z = highland.z + Math.sin(a) * 7.5;
-      dummy.position.set(x, heightAt(x, z), z);
+      dummy.position.set(x, surfaceHeightAt(x, z), z);
       dummy.rotation.set(0, rng() * Math.PI * 2, 0);
       dummy.scale.setScalar(0.85 + rng() * 0.5);
       dummy.updateMatrix();
@@ -309,6 +356,6 @@ export function buildWorld(seed){
   }
 
   const wetland = centres.find(c => c.region.name === 'wetland') || centres[1] || centres[0];
-  pond.position.set(wetland.x, heightAt(wetland.x, wetland.z) + 0.06, wetland.z);
+  pond.position.set(wetland.x, surfaceHeightAt(wetland.x, wetland.z) + 0.06, wetland.z);
 }
 

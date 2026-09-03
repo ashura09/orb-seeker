@@ -11,7 +11,7 @@ import { save, persist } from './save.js';
 import { toast } from './ui.js';
 import { orbs, orbGeo } from './orbs.js';
 import { spawnPickup } from './inventory.js';
-import { heightAt } from './world.js';
+import { surfaceHeightAt } from './world.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { keeperGreeting } from './voice.js';
@@ -104,7 +104,7 @@ export function beginEnding(){
   const f = forward();
   const kx = player.position.x + f.x*CONFIG.ceremony.keeperDistance;
   const kz = player.position.z + f.z*CONFIG.ceremony.keeperDistance;
-  keeper.position.set(kx, heightAt(kx, kz), kz);
+  keeper.position.set(kx, surfaceHeightAt(kx, kz), kz);
   keeper.lookAt(player.position.x, 0, player.position.z);
   keeper.scale.setScalar(0.001); scene.add(keeper);
   const n = G.orderKept ? CONFIG.ceremony.wishesInOrder : CONFIG.ceremony.wishesOutOfOrder;
