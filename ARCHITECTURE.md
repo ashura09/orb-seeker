@@ -155,13 +155,14 @@ Both flags can be combined.
     wanderers the seven villagers, their camps and their hearing
     duel      the tap duel
     finder    the radar
+    map       the valley map: what you have walked, and what is there
     keeper    the dragon and the wish ceremony
     tuner     the ?tune panel
     main      builds everything, wires listeners, runs the frame loop
 
 ## Current layering
 
-The graph sorts itself, no folders required yet. **Zero cycles** across 21 modules:
+The graph sorts itself, no folders required yet. **Zero cycles** across 22 modules:
 
 ```
 0   config, events, props, rng, save, voice     depend on nothing
@@ -169,7 +170,7 @@ The graph sorts itself, no folders required yet. **Zero cycles** across 21 modul
 2   bloom, input, player, sky, ui, world
 3   orbs, shop
 4   inventory, wanderers
-5   duel, finder, keeper
+5   duel, finder, keeper, map
 6   main
 ```
 

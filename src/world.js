@@ -29,6 +29,12 @@ import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK, PROP_HEIGHT } from './pro
 export const WORLD_R = CONFIG.world.radius;
 export const obstacles = [];
 
+// Where the named places are, and a counter that changes whenever the valley is
+// rebuilt. map.js watches the counter so it knows when its cached image is of a
+// landscape that no longer exists.
+export let places = [];
+export let worldVersion = 0;
+
 // ---------- what kinds of place exist ----------
 //
 // A region is not a tint any more. Each one has:
@@ -536,6 +542,9 @@ export function buildWorld(seed){
     const r = WORLD_R * (0.16 + rng() * 0.40);
     return { x: Math.cos(a) * r, z: Math.sin(a) * r, region: REGIONS[regionIndex] };
   });
+
+  places = centres.map(c => ({ x: c.x, z: c.z, name: c.region.name, landmark: c.region.landmark }));
+  worldVersion++;
 
   shapeGround();
   buildHorizon(rng);

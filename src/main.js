@@ -23,6 +23,7 @@ import { pickups, collectPickup, spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
+import { markExplored, forgetExplored } from './map.js';
 import { wishEcho } from './voice.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
@@ -276,6 +277,8 @@ function frame(){
       // same walk twice.
       G.worldSeed = randomSeed();
       buildWorld(G.worldSeed);
+      // The valley you mapped no longer exists, so the map starts blank again.
+      forgetExplored();
       placeOrbs(); homeWanderers();
       toast('The valley has shifted, and the seven orbs are scattered again', 3.5);
       setTimeout(recallAWish, 3600);
@@ -332,6 +335,7 @@ function frame(){
   camera.position.y += (camY - camera.position.y)*ease;
   camTarget.set(player.position.x, groundY + targetY, player.position.z); camera.lookAt(camTarget);
 
+  markExplored(dt);   // the map remembers where you have walked
   updateToast(dt);
   drawFinder(dt, f.x, f.z, rx, rz);
   renderFrame();   // through the bloom composer when it is on

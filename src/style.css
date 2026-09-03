@@ -82,6 +82,14 @@
   .item button[disabled]{opacity:.45;cursor:default}
   .item.isworn .name::after{content:' · worn';font-weight:normal;opacity:.65;font-size:13px}
   .item.isworn .swatch{box-shadow:0 0 0 2px var(--face)}
+  /* The map wants to be as big as the screen allows, so its card is wider than
+     the others. box-sizing matters: without it the 3px border is added ON TOP
+     of width:100% and the card grows a scrollbar. */
+  #map .card{max-width:min(94vw,600px);width:100%}
+  #mapc{display:block;box-sizing:border-box;width:100%;max-width:min(72vh,560px);aspect-ratio:1;
+    margin:6px auto 2px;border-radius:10px;border:3px solid var(--brass);background:#14180f}
+  .mapnote{font-size:13px;opacity:.75;text-align:center;margin:6px 2px 0}
+  #finder{cursor:pointer}
   .slotline{font-size:14px;opacity:.75;padding:8px 0 2px}
   .item .owned{font-weight:bold;color:var(--face);white-space:nowrap;font-size:14px}
   .swatch{width:26px;height:26px;border-radius:8px;flex:none;border:2px solid rgba(0,0,0,.2)}

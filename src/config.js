@@ -30,6 +30,15 @@ export const CONFIG = {
     groundSegments: 128,  // terrain detail, about 4.7 m per quad across 600 m
   },
 
+  // ---------- the map ----------
+  map: {
+    resolution: 288,       // pixels across the drawn valley. Every pixel costs
+                           // three height lookups, so this is the one number
+                           // that decides how long the map takes to build.
+    grid: 128,              // cells across, for what you have and have not seen
+    seeRadius: 38,         // how far walking reveals, in metres
+  },
+
   // ---------- surface detail ----------
   //
   // The ground was one flat colour per region, on a grid of about 4.7 m per
