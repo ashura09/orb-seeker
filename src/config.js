@@ -14,6 +14,8 @@
 // A number earns its place here if you might reasonably want to tune it while
 // playtesting.
 
+import * as P from './palette.js';
+
 export const CONFIG = {
   // ---------- the valley ----------
   world: {
@@ -46,7 +48,7 @@ export const CONFIG = {
   detail: {
     rockOnSlopes: 0.8, // how strongly steep ground turns to rock
     slopeFull: 0.55, // the gradient counted as "fully steep"
-    rockColor: 0x7a7164,
+    rockColor: P.ROCK_FACE,
     dryHigh: 0.12, // high ground bleaches slightly, low ground darkens
     wetLow: 0.2,
 
@@ -138,13 +140,13 @@ export const CONFIG = {
   // A gradient dome rather than a flat background colour. Real skies are darker
   // overhead than at the horizon, and that alone makes a world feel large.
   sky: {
-    envGround: 0x6f8a5e, // light bouncing back up off the grass, for the environment map
+    envGround: P.GROUND_BOUNCE, // light bouncing back up off the grass, for the environment map
     radius: 900, // must sit inside the camera's far plane
     falloff: 0.55, // <1 tightens the gradient toward the horizon
-    dayHorizon: 0xbfe0f5,
-    dayZenith: 0x4a90d9,
-    nightHorizon: 0x2a3560,
-    nightZenith: 0x070d24,
+    dayHorizon: P.DAY_HORIZON,
+    dayZenith: P.DAY_ZENITH,
+    nightHorizon: P.NIGHT_HORIZON,
+    nightZenith: P.NIGHT_ZENITH,
     // Where the sun sits relative to you. Long shadows come from a low sun.
     sunOffsetX: 60,
     sunOffsetY: 85,
@@ -395,48 +397,48 @@ export const CONFIG = {
 // The trader's stock. `cost` is in fragments; everything else is presentation.
 // Kept beside the other tunables because price is the thing you will fiddle with.
 export const ITEMS = [
-  { id: 'boots', name: 'Swift boots', desc: 'Walk 40% faster.', cost: 12, color: 0x66d9e8 },
-  { id: 'lens', name: 'Long lens', desc: 'Finder sees 50% farther.', cost: 10, color: 0x8ce99a },
+  { id: 'boots', name: 'Swift boots', desc: 'Walk 40% faster.', cost: 12, color: P.ITEM.boots },
+  { id: 'lens', name: 'Long lens', desc: 'Finder sees 50% farther.', cost: 10, color: P.ITEM.lens },
   {
     id: 'grip',
     name: 'Duelist grip',
     desc: 'Each tap counts more in duels.',
     cost: 18,
-    color: 0xe0553d,
+    color: P.ITEM.grip,
   },
   {
     id: 'lantern',
     name: 'Brass lantern',
     desc: 'Carry your own light for the dark.',
     cost: 8,
-    color: 0xffe066,
+    color: P.ITEM.lantern,
   },
   {
     id: 'hat',
     name: 'Straw hat',
     desc: 'A wide hat, worn over the hood.',
     cost: 6,
-    color: 0xd9b86a,
+    color: P.ITEM.hat,
   },
   {
     id: 'cloak',
     name: 'Violet suit',
     desc: 'A new color for your ninja suit.',
     cost: 9,
-    color: 0x9b59b6,
+    color: P.ITEM.cloak,
   },
   {
     id: 'charm',
     name: 'Orbit charm',
     desc: 'A small ring that circles your sash.',
     cost: 14,
-    color: 0xc9a15a,
+    color: P.ITEM.charm,
   },
   {
     id: 'bell',
     name: 'Silver bell',
     desc: 'Wanderers hear you and seek you from farther.',
     cost: 16,
-    color: 0xdddddd,
+    color: P.ITEM.bell,
   },
 ];

@@ -3,6 +3,7 @@
 // Pickups are the one way anything enters your inventory: the shop sets bought
 // items down beside you, and the Keeper sets your wishes down as tokens.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { scene, mat, glow, hex, pointLight, $, G } from './state.js';
 import { player, applyCosmetics } from './player.js';
 import { surfaceHeightAt } from './world.js';
@@ -19,17 +20,17 @@ export function spawnPickup(kind, data, angleHint) {
   const g = new THREE.Group();
   if (kind === 'item') {
     const it = item(data);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.5), mat(0x8a6a3a));
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.5), mat(P.CRATE));
     const lid = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.18, 0.54), mat(it.color, 0.35));
     lid.position.y = 0.32;
-    const clasp = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.06), mat(0xc9a15a));
+    const clasp = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.06), mat(P.BRASS));
     clasp.position.set(0, 0.22, 0.28);
     g.add(base, lid, clasp, pointLight(it.color, 0.9, 6));
     g.userData = { kind, id: data };
   } else {
-    const tok = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), mat(0xffe9b0, 0.9));
-    tok.add(new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), glow(0xfff0c8, 0.2)));
-    tok.add(pointLight(0xffe9b0, 1.2, 8));
+    const tok = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), mat(P.WISH_TOKEN, 0.9));
+    tok.add(new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), glow(P.WISH_GLOW, 0.2)));
+    tok.add(pointLight(P.WISH_TOKEN, 1.2, 8));
     g.add(tok);
     g.userData = { kind, text: data };
   }

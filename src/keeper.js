@@ -5,6 +5,7 @@
 // wish or three depending on whether you kept the orbs in order, sets the wishes
 // down as tokens, and then departs once you have picked them all up.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { scene, mat, glow, pointLight, $, G, forward } from './state.js';
 import { player } from './player.js';
 import { save, persist } from './save.js';
@@ -31,10 +32,10 @@ export const ringOrbs = [];
 export function buildKeeper() {
   if (ka.built) return;
   ka.built = true;
-  const scale = mat(0xf1e2b5, 0.25),
-    belly = mat(0xfff5d8, 0.3),
-    gold = mat(0xc9a15a, 0.6),
-    dark = mat(0x2a2320);
+  const scale = mat(P.DRAGON_SCALE, 0.25),
+    belly = mat(P.DRAGON_BELLY, 0.3),
+    gold = mat(P.BRASS, 0.6),
+    dark = mat(P.DRAGON_DARK);
   // stout body
   const body = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), scale);
   body.scale.set(2.3, 1.9, 3.0);
@@ -75,7 +76,7 @@ export function buildKeeper() {
   nostrils.position.set(0, 0.05, 1.85);
   head.add(nostrils);
   [-1, 1].forEach((s) => {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), glow(0x8ff5c8));
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), glow(P.MINT));
     eye.position.set(s * 0.5, 0.2, 0.75);
     head.add(eye);
     ka.eyes.push(eye);
@@ -112,8 +113,8 @@ export function buildKeeper() {
   wingShape.lineTo(0, 0);
   const wingGeo = new THREE.ShapeGeometry(wingShape);
   const wingMat = new THREE.MeshStandardMaterial({
-    color: 0xe6cf95,
-    emissive: 0xe6cf95,
+    color: P.DRAGON_WING,
+    emissive: P.DRAGON_WING,
     emissiveIntensity: 0.3,
     roughness: 0.6,
     metalness: 0,
@@ -170,7 +171,7 @@ export function buildKeeper() {
   keeper.add(tip);
   ka.tailTip = tip;
   // rune ring on the ground, sparks, light
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(5.5, 0.08, 6, 80), glow(0x8ff5c8, 0.6));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(5.5, 0.08, 6, 80), glow(P.MINT, 0.6));
   ring.rotation.x = Math.PI / 2;
   ring.position.y = 0.15;
   keeper.add(ring);
@@ -188,13 +189,18 @@ export function buildKeeper() {
   sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   ka.sparks = new THREE.Points(
     sg,
-    new THREE.PointsMaterial({ color: 0xfff3c4, size: 0.16, transparent: true, opacity: 0.9 }),
+    new THREE.PointsMaterial({
+      color: P.DRAGON_SPARK,
+      size: 0.16,
+      transparent: true,
+      opacity: 0.9,
+    }),
   );
   keeper.add(ka.sparks);
-  const kl = pointLight(0xffe9b0, 3.5, 50);
+  const kl = pointLight(P.DRAGON_LIGHT, 3.5, 50);
   kl.position.y = 8;
   keeper.add(kl);
-  const mouthLight = pointLight(0x8ff5c8, 1.5, 12);
+  const mouthLight = pointLight(P.MINT, 1.5, 12);
   mouthLight.position.set(0, 10, 7);
   keeper.add(mouthLight);
 }

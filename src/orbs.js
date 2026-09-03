@@ -1,5 +1,6 @@
 // orbs.js — the seven orbs: how they look, where they land, and collecting them.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { scene, mat, glow, hex, pointLight, G, $ } from './state.js';
 import { player } from './player.js';
 import { surfaceHeightAt } from './world.js';
@@ -8,7 +9,7 @@ import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { pickOrbSpots } from './rules.js';
 
-export const ORB_COLORS = [0xff6b6b, 0xffa94d, 0xffe066, 0x8ce99a, 0x66d9e8, 0x748ffc, 0xda77f2];
+const ORB_COLORS = P.ORB;
 export const orbGeo = new THREE.SphereGeometry(0.55, 18, 14);
 export const orbs = [];
 
@@ -32,7 +33,7 @@ export const orbs = [];
 const LIT_ORBS = CONFIG.orbs.litAtOnce;
 const orbLights = [];
 for (let i = 0; i < LIT_ORBS; i++) {
-  const l = pointLight(0xffffff, 0, CONFIG.orbs.lightRange);
+  const l = pointLight(P.WHITE, 0, CONFIG.orbs.lightRange);
   l.visible = false;
   scene.add(l);
   orbLights.push(l);

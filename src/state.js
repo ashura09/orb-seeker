@@ -12,6 +12,7 @@
 //     exported that way (you'd only ever see the starting value), so they live
 //     on the G object below and are written as G.state, G.t, and so on.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { randomSeed } from './rng.js';
 import { CONFIG } from './config.js';
 
@@ -79,8 +80,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = CONFIG.render.exposure;
 
 export const scene = new THREE.Scene();
-export const DAY = new THREE.Color(0x8fc7ff),
-  NIGHT = new THREE.Color(0x0a0f2a);
+export const DAY = new THREE.Color(P.FOG_DAY),
+  NIGHT = new THREE.Color(P.FOG_NIGHT);
 scene.background = DAY.clone();
 // Fog used to close in at 130 m, which meant the valley was always ringed by
 // haze and felt boxed in. Pushed out so the horizon is visible through it.
@@ -95,15 +96,15 @@ export const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 
 // slope facing away from the sun fell to nearly black -- fine on a flat disc
 // with no hills, badly wrong once the valley had them. A lighter bounce colour
 // keeps backlit faces readable.
-export const hemi = new THREE.HemisphereLight(0xe6f2ff, 0x6f8a5e, 0.85);
+export const hemi = new THREE.HemisphereLight(P.SKY_FILL, P.GROUND_BOUNCE, 0.85);
 
 // Warm and low, so shadows are long and the light has a direction you can feel.
-export const sun = new THREE.DirectionalLight(0xfff0d0, 1.05);
+export const sun = new THREE.DirectionalLight(P.SUN, 1.05);
 sun.position.set(60, 85, 40);
 
 // A little flat fill so nothing in shadow is ever pure black. Shadows should
 // read as darker, not as holes.
-export const ambient = new THREE.AmbientLight(0xbdd4e8, 0.22);
+export const ambient = new THREE.AmbientLight(P.AMBIENT, 0.22);
 
 scene.add(hemi, sun, ambient);
 

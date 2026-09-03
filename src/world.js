@@ -20,6 +20,7 @@
 // exactly -- which is what lets it re-roll each gathering, and what would let it
 // stream in chunks later.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { scene, renderer, mat, G } from './state.js';
 import { CONFIG } from './config.js';
@@ -54,7 +55,7 @@ const REGIONS = [
     lift: 1,
     radius: 74,
     edge: 0.35,
-    ground: [0x55984a, 0x6ab558],
+    ground: P.GROUND_MEADOW,
     props: { broadleaf: 1.0, shrub: 0.8, flower: 2.0, grassTuft: 2.5, rock: 0.3 },
     landmark: 'field',
   },
@@ -64,7 +65,7 @@ const REGIONS = [
     lift: 4,
     radius: 70,
     edge: 0.5,
-    ground: [0x2c6b38, 0x3a7d45],
+    ground: P.GROUND_FOREST,
     props: { conifer: 4.0, fern: 3.0, mushroom: 1.2, stump: 0.6, fallenLog: 0.5, shrub: 0.8 },
     landmark: 'camp',
   },
@@ -74,7 +75,7 @@ const REGIONS = [
     lift: 17,
     radius: 62,
     edge: 0.86, // steep sides: a plateau
-    ground: [0x8a8f76, 0x9ba190],
+    ground: P.GROUND_HIGHLAND,
     props: { boulder: 2.4, rock: 2.0, shrub: 0.4, grassTuft: 0.5 },
     landmark: 'ruin',
   },
@@ -84,7 +85,7 @@ const REGIONS = [
     lift: -7,
     radius: 68,
     edge: 0.55, // a basin that holds water
-    ground: [0x4a8f6a, 0x5aa47c],
+    ground: P.GROUND_WETLAND,
     props: { reeds: 4.0, bamboo: 1.2, lily: 0.6, fern: 0.8, broadleaf: 0.25 },
     landmark: 'landing',
   },
@@ -94,7 +95,7 @@ const REGIONS = [
     lift: 0,
     radius: 66,
     edge: 0.4,
-    ground: [0x6b5f45, 0x7d6f52],
+    ground: P.GROUND_BURN,
     props: { deadTree: 2.2, stump: 1.8, fallenLog: 0.7, rock: 0.5 },
     landmark: 'marker',
   },
@@ -153,7 +154,7 @@ const LANDMARKS = {
 let centres = [];
 
 /** Which region a point belongs to, plus a blend toward its neighbour. */
-const DEFAULT_REGION = { name: 'meadow', lift: 0, ground: [0x55984a, 0x6ab558], props: {} };
+const DEFAULT_REGION = { name: 'meadow', lift: 0, ground: P.GROUND_MEADOW, props: {} };
 
 export function regionAt(x, z) {
   // The world is built only once the models have loaded, so this can be asked
@@ -479,7 +480,7 @@ function buildHorizon(rng) {
     hills.geometry.dispose();
   }
   const count = T.hillCount;
-  hills = new THREE.InstancedMesh(hillGeo, mat(0x6f8570), count);
+  hills = new THREE.InstancedMesh(hillGeo, mat(P.DISTANT_HILLS), count);
   hills.frustumCulled = false;
   const d = new THREE.Object3D();
   for (let i = 0; i < count; i++) {
@@ -543,7 +544,7 @@ function hash01(a, b) {
 // pick up the sky from the environment map, which is what makes a flat sheet
 // read as water rather than as blue paint.
 const waterMat = new THREE.MeshStandardMaterial({
-  color: 0x3f8fbf,
+  color: P.WATER,
   transparent: true,
   opacity: 0.78,
   roughness: 0.18,

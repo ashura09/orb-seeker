@@ -3,6 +3,7 @@
 // One camps near each orb. The higher the orb, the faster the duelist, so
 // tier 1 near orb 1 is gentle and tier 7 near orb 7 is blistering.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { scene, mat, G } from './state.js';
 import { player } from './player.js';
 import { worn } from './loadout.js';
@@ -18,9 +19,9 @@ export const WANDERERS = [
   {
     name: 'Bram the Woodcutter',
     short: 'Bram',
-    color: 0x6b8e23,
-    hat: 0x5a3d1e,
-    skin: 0xd9a878,
+    color: P.VILLAGER.bram.coat,
+    hat: P.VILLAGER.bram.hat,
+    skin: P.VILLAGER.bram.skin,
     build: 1.1,
     headwear: 'cap',
     prop: 'axe',
@@ -28,9 +29,9 @@ export const WANDERERS = [
   {
     name: 'Nell the Herbalist',
     short: 'Nell',
-    color: 0x9b59b6,
-    hat: 0xf6efdf,
-    skin: 0xf1c9a5,
+    color: P.VILLAGER.nell.coat,
+    hat: P.VILLAGER.nell.hat,
+    skin: P.VILLAGER.nell.skin,
     build: 0.92,
     headwear: 'kerchief',
     prop: 'basket',
@@ -38,9 +39,9 @@ export const WANDERERS = [
   {
     name: 'Pip the Courier',
     short: 'Pip',
-    color: 0x3d8fc9,
-    hat: 0xe0553d,
-    skin: 0xe8bb90,
+    color: P.VILLAGER.pip.coat,
+    hat: P.VILLAGER.pip.hat,
+    skin: P.VILLAGER.pip.skin,
     build: 0.85,
     headwear: 'cap',
     prop: 'satchel',
@@ -48,9 +49,9 @@ export const WANDERERS = [
   {
     name: 'Marla Stonehand',
     short: 'Marla',
-    color: 0x8a6a3a,
-    hat: 0x7f8c8d,
-    skin: 0xc98f63,
+    color: P.VILLAGER.marla.coat,
+    hat: P.VILLAGER.marla.hat,
+    skin: P.VILLAGER.marla.skin,
     build: 1.18,
     headwear: 'none',
     prop: 'hammer',
@@ -58,9 +59,9 @@ export const WANDERERS = [
   {
     name: 'Old Tarrow',
     short: 'Tarrow',
-    color: 0x7f8c8d,
-    hat: 0x1b1a17,
-    skin: 0xdcb894,
+    color: P.VILLAGER.tarrow.coat,
+    hat: P.VILLAGER.tarrow.hat,
+    skin: P.VILLAGER.tarrow.skin,
     build: 0.95,
     headwear: 'brim',
     prop: 'staff',
@@ -69,9 +70,9 @@ export const WANDERERS = [
   {
     name: 'Sable the Fencer',
     short: 'Sable',
-    color: 0x1b1a17,
-    hat: 0xc9a15a,
-    skin: 0xd9a878,
+    color: P.VILLAGER.sable.coat,
+    hat: P.VILLAGER.sable.hat,
+    skin: P.VILLAGER.sable.skin,
     build: 1.0,
     headwear: 'none',
     prop: 'blade',
@@ -79,9 +80,9 @@ export const WANDERERS = [
   {
     name: 'The Grey Pilgrim',
     short: 'the Pilgrim',
-    color: 0xd9d9d9,
-    hat: 0x2b2d5c,
-    skin: 0xcfa07a,
+    color: P.VILLAGER.pilgrim.coat,
+    hat: P.VILLAGER.pilgrim.hat,
+    skin: P.VILLAGER.pilgrim.skin,
     build: 1.05,
     headwear: 'hood',
     prop: 'staff',
@@ -113,16 +114,16 @@ const GEO = {
   beard: new THREE.ConeGeometry(0.17, 0.34, 8),
 };
 
-const EYE = mat(0x1b1a17),
-  WOOD = mat(0x6b4a2a),
-  STEEL = mat(0x9aa3ab),
-  GOLD = mat(0xc9a15a),
-  STRAW = mat(0xcfa955),
-  BOOT = mat(0x4a4038),
-  WHISKERS = mat(0xe8e8e8),
-  LEATHER = mat(0x8a6a3a),
-  STRAPMAT = mat(0x5a3d1e),
-  LEAFMAT = mat(0x3d8f45);
+const EYE = mat(P.INK),
+  WOOD = mat(P.BARK),
+  STEEL = mat(P.STEEL),
+  GOLD = mat(P.BRASS),
+  STRAW = mat(P.STRAW),
+  BOOT = mat(P.BOOT),
+  WHISKERS = mat(P.WHISKERS),
+  LEATHER = mat(P.LEATHER),
+  STRAPMAT = mat(P.STRAP),
+  LEAFMAT = mat(P.LEAF_PROP);
 
 function buildWanderer(w) {
   const g = new THREE.Group();

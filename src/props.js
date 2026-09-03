@@ -20,6 +20,7 @@
 // to a target height in metres and sat with its base on y = 0. The valley then
 // has consistent proportions no matter where a model came from.
 import * as THREE from 'three';
+import * as P from './palette.js';
 import { CONFIG } from './config.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -107,16 +108,16 @@ const PALETTE = {
   // Kept deliberately far apart in tone. Mapping every green to nearly the same
   // value made the whole valley read as one flat mass; foliage needs a lighter
   // canopy and a darker underside to have any shape at all.
-  leafsGreen: 0x63b04a, // canopy, lighter than the ground
-  leafsDark: 0x2f6b34, // shaded foliage and undersides
-  grass: 0x7cbf5a, // the tufts on rocks and logs
-  woodBark: 0x6b4a2a, // was orange
-  woodBarkDark: 0x55381f,
-  woodInner: 0xc9a882,
-  dirt: 0x7a6142, // was bright orange
-  stone: 0x9aa3ab, // matches the game's rock grey
-  stoneDark: 0x767c84,
-  _defaultMat: 0xa8a8a8,
+  leafsGreen: P.LEAF, // canopy, lighter than the ground
+  leafsDark: P.LEAF_DARK, // shaded foliage and undersides
+  grass: P.GRASS_TUFT, // the tufts on rocks and logs
+  woodBark: P.BARK, // was orange
+  woodBarkDark: P.BARK_DARK,
+  woodInner: P.WOOD_INNER,
+  dirt: P.DIRT, // was bright orange
+  stone: P.STONE, // matches the game's rock grey
+  stoneDark: P.STONE_DARK,
+  _defaultMat: P.PROP_DEFAULT,
   // colorRed and colorPurple are the flowers, and are left alone on purpose.
 };
 
@@ -181,7 +182,7 @@ function flatten(root) {
       PALETTE[name] !== undefined
         ? new THREE.Color(PALETTE[name])
         : new THREE.Color()
-            .copy(node.material?.color ?? new THREE.Color(0xffffff))
+            .copy(node.material?.color ?? new THREE.Color(P.WHITE))
             .convertSRGBToLinear();
     const n = geo.attributes.position.count;
     const colors = new Float32Array(n * 3);
