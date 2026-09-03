@@ -143,8 +143,17 @@ Both flags can be combined.
     save      load and save to browser storage -- remembers, never judges
     loadout   the rules about what you may wear, and what wearing means
     state     renderer, scene, camera, lights, and the shared G object
-    world     terrain height, regions, scenery placement, the horizon
-    sky       the gradient dome, the sun, and shadow setup
+    palette   every colour in the game; nothing else may hold a hex literal
+    rules     the game's arithmetic -- orb placement, duel maths. No three.js, no DOM
+    graphics  the quality level, and the watchdog that lowers it for you
+    regions   what kinds of place exist, and where they landed this gathering
+    terrain   heightAt and surfaceHeightAt: the shape of the valley
+    ground    the mesh you walk on -- geometry, colour and grain
+    horizon   hills beyond the part you can reach
+    scatter   where scenery goes, and the instancing that draws it
+    water     the lake, and how far it can fill before it would drain
+    world     the assembler: builds the valley and is its public face
+    sky       the gradient dome, the sun, shadows, and the environment light
     bloom     the glow pass, behind CONFIG.bloom.enabled
     input     joystick, look-drag, keyboard; emits intent, decides nothing
     player    the monkey, its cosmetics and its crawl pose
@@ -162,18 +171,39 @@ Both flags can be combined.
 
 ## Current layering
 
-The graph sorts itself, no folders required yet. **Zero cycles** across 22 modules:
+The graph sorts itself, no folders required yet. **Zero cycles** across 33 modules:
 
 ```
-0   config, events, props, rng, save, voice     depend on nothing
-1   loadout, state, tuner
-2   bloom, input, player, sky, ui, world
-3   orbs, shop
-4   inventory, wanderers
-5   duel, finder, keeper, map
-6   main
+0   events, palette, rng, save, voice     depend on nothing
+1   config
+2   loadout, props, regions, rules, state, tuner
+3   bloom, input, player, sky, terrain, ui
+4   graphics, ground, horizon, scatter, shop, water
+5   world
+6   inventory, orbs
+7   keeper, map, wanderers
+8   duel, finder
+9   main
 ```
 
-Nothing at a lower number imports anything at a higher one. Re-check it any time with a
-quick scan of the `import ... from './x.js'` lines; if a cycle ever appears, the fix is
-almost always an event rather than an import.
+Nothing at a lower number imports anything at a higher one.
+
+Two things worth knowing about this shape. `config` is no longer at the bottom: it
+imports `palette`, because a colour in a config table is still a colour and the art
+rule admits no exceptions. And `world` sits in the middle rather than near the bottom
+— it is an assembler now, built on the six modules it replaced, and it re-exports
+their public API so nothing above it had to change when the split happened.
+
+**Re-check it after any restructure**, and read the import statements rather than the
+file: an early version of this check counted the example imports written inside
+`events.js` and `palette.js` comments, and reported a cycle from `palette` to itself.
+
+```py
+# only lines that are actually import statements
+for line in open(f):
+    t = line.strip()
+    if t.startswith(('//', '*', '/*')): continue
+    ...
+```
+
+If a cycle ever does appear, the fix is almost always an event rather than an import.

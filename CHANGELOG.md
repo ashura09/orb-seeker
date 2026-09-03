@@ -34,6 +34,22 @@ Groundwork only: no change to how the game looks or plays, except where noted.
 - Unused imports (`hemi`, `sun` in `main.js`; `G` in `world.js`) and the unused
   `pillars` binding in `world.js`.
 
+### Stage 1 continued — bench mode and the world.js split
+
+**Added**
+
+- `?bench` — a fixed scene for measuring: pinned seed, position, camera and time
+  of day, input ignored, villagers frozen. Four runs give identical numbers, which
+  plain `?stats` never did. Baseline: 166 draw calls, 302.0k triangles.
+
+**Changed**
+
+- `world.js` split into seven modules — regions, terrain, ground, horizon,
+  scatter, water, and world as the assembler. Verified inert against a bench
+  fingerprint: draw calls, triangles, drawables, obstacle count and checksum,
+  place coordinates and terrain samples all identical.
+- `ARCHITECTURE.md` brought up to date: 33 modules, zero cycles, real layering.
+
 ### Stage 1 continued — palette and character merging
 
 **Added**
