@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import './style.css';
 
-import { G, scene, camera, renderer, hemi, sun, DAY, NIGHT, $, forward } from './state.js';
+import { G, scene, camera, renderer, DAY, NIGHT, $, forward } from './state.js';
 import { save } from './save.js';
 import { worn } from './loadout.js';
 import { WORLD_R, obstacles, buildWorld, surfaceHeightAt, isInWater } from './world.js';
@@ -176,7 +176,24 @@ function clearBehind(dirX, dirZ, want, aimY, camY){
   return Math.max(Math.min(CAM.minClear, want), best);
 }
 
+// A hidden tab is a phone in a pocket. Browsers throttle requestAnimationFrame
+// there but do not stop it, so the loop kept running and kept spending battery.
+// Now it stops scheduling entirely, and on return the timer is stepped once to
+// swallow the gap -- otherwise the first frame back carries the whole absence as
+// its delta and the game lurches forward.
+let running = true;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    running = false;
+  } else if (!running) {
+    running = true;
+    timer.update();
+    requestAnimationFrame(frame);
+  }
+});
+
 function frame(){
+  if (!running) return;
   requestAnimationFrame(frame);
   timer.update();
   const dt = Math.min(timer.getDelta(), CONFIG.loop.maxDelta); G.t += dt;

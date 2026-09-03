@@ -21,7 +21,7 @@
 // stream in chunks later.
 import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { scene, renderer, mat, G } from './state.js';
+import { scene, renderer, mat } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
 import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK, PROP_HEIGHT } from './props.js';
@@ -463,10 +463,6 @@ export function isInWater(x, z){
   return Math.hypot(x - water.position.x, z - water.position.z) < waterRadius
       && surfaceHeightAt(x, z) < waterLevel;
 }
-
-// The ruin uses the kit's columns rather than plain cylinders, so it is built
-// with the rest of the world once the models are in.
-let pillars = null;
 
 /**
  * Turns the collected placements into instanced meshes.

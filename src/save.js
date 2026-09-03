@@ -29,7 +29,17 @@ export const SAVE_KEY = 'orbseeker.save.v2';
 
 export const save = {fragments:0, wins:0, items:{}, wishes:[], cycles:0, worn:null};
 
-try { const raw = localStorage.getItem(SAVE_KEY); if (raw) Object.assign(save, JSON.parse(raw)); } catch(e){}
+// A save that cannot be read is a new game, which is survivable. A save that
+// cannot be WRITTEN loses everything since the last good write, which is not --
+// so both are at least reported rather than swallowed in silence.
+// (Telling the PLAYER, not just the console, is a visible change and is waiting
+// on sign-off; see docs/AUDIT.md item 6.)
+try {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (raw) Object.assign(save, JSON.parse(raw));
+} catch (err) {
+  console.warn('save could not be read; starting a new one:', err);
+}
 
 // Saves written before loadouts existed have no `worn` list -- and back then,
 // owning an item meant wearing it. Those players start out wearing everything
@@ -39,7 +49,13 @@ if (!Array.isArray(save.worn)){
   save.worn = Object.keys(save.items).filter(id => save.items[id] === 'owned');
 }
 
-export function persist(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} }
+export function persist(){
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  } catch (err) {
+    console.warn('progress could not be saved:', err);
+  }
+}
 
 /** Do you have it at all? Permanent once picked up. Ask this for shop/satchel listings. */
 export const owned = id => save.items[id] === 'owned';
