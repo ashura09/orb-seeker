@@ -34,10 +34,35 @@ Groundwork only: no change to how the game looks or plays, except where noted.
 - Unused imports (`hemi`, `sun` in `main.js`; `G` in `world.js`) and the unused
   `pillars` binding in `world.js`.
 
+### Stage 1 continued — after the project rules arrived
+
+**Added**
+
+- `CLAUDE.md` and the two design docs.
+- `src/graphics.js` — a low-graphics quality level, and a watchdog that drops to it
+  after five seconds averaging under 45 fps. Turns off shadows and bloom and cuts
+  scenery. Remembered, so a phone that struggled once starts low next time.
+- `docs/TESTPLAN.md` — the two-minute manual checklist to run before every deploy.
+
+**Changed**
+
+- Scenery count 1900 to 1150, bringing triangles from 468.3k to 292.2k, inside the
+  300k budget CLAUDE.md sets. Low graphics measures 80 draw calls and 106.5k.
+- The whole codebase formatted with Prettier, in its own commit.
+
+**Fixed**
+
+- The stats overlay reported six-figure draw calls when the composer was bypassed:
+  `renderer.info.autoReset` is off, and the bypass path skipped the manual reset.
+
+**Known exception**
+
+- Draw calls are ~184 at normal quality against a budget of 150. Cause measured:
+  the player and seven villagers are built from a dozen-plus meshes each. The fix
+  is merging their non-animated parts, which belongs with the polish pass.
+
 **Not done, and why**
 
-`CLAUDE.md`, `docs/orb-seeker-polish-and-party.md` and `docs/orb-seeker-roadmap.md`
-are not in the repository. The Stage 1 items that depend on them — the file split
-"per CLAUDE.md's module list", `docs/TESTPLAN.md`, the FPS budget and auto
-low-graphics thresholds, and the whole-codebase Prettier format — are deliberately
-not attempted. See the table at the end of `docs/AUDIT.md`.
+Still open in Stage 1, now unblocked but not yet done: `src/palette.js` and the
+colour extraction, and splitting the three files still over the ~300-line rule
+(`world.js` 782, `main.js` 400, `config.js` 394).
