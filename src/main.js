@@ -134,7 +134,7 @@ $('startBtn').addEventListener('click', () => {
  * Roughly 1900 obstacles, a few multiplications each -- cheaper by far than
  * raycasting instanced meshes, and it uses a list that already exists.
  */
-function clearBehind(dirX, dirZ, want){
+function clearBehind(dirX, dirZ, want, aimY, camY){
   const px = player.position.x, pz = player.position.z;
   let best = want;
   for (const o of obstacles){
@@ -145,9 +145,23 @@ function clearBehind(dirX, dirZ, want){
     const reach = o.r + CAM.clearance;
     const perp = Math.abs(ox*dirZ - oz*dirX);
     if (perp >= reach) continue;                        // the line passes wide of it
+
+    // DOES THE VIEW PASS OVER IT? This test was missing, and its absence was
+    // the whole bug: flat in plan, a 2.8 m boulder blocked the camera even when
+    // the camera was ten metres up looking down over its top. Every boulder you
+    // walked past therefore hauled the camera in and let it go again.
+    //
+    // Only a handful of obstacles ever survive the two cheap tests above, so
+    // this costs nothing despite being last.
+    const f = want > 0.01 ? along / want : 0;
+    if (aimY + (camY - aimY) * f > o.top + CAM.overClearance) continue;
+
     best = Math.min(best, along - Math.sqrt(reach*reach - perp*perp));
   }
-  return Math.max(CAM.minClear, best);
+  // The floor is minClear, EXCEPT when you have deliberately zoomed closer than
+  // that -- then your own choice wins. Clamping to minClear unconditionally
+  // pushed the camera back out at the closest zoom, overriding the pinch.
+  return Math.max(Math.min(CAM.minClear, want), best);
 }
 
 function frame(){
@@ -293,7 +307,9 @@ function frame(){
   // there. No raycasting needed: `obstacles` already holds a ground circle per
   // prop, built for walking collision, so this is a line-versus-circle test.
   const dirX = Math.sin(G.camYaw), dirZ = Math.cos(G.camYaw);
-  const horiz = clearBehind(dirX, dirZ, horizWanted);
+  const aimY = groundY + aimAt;                          // the point it looks at
+  const camYWanted = aimY + Math.sin(pitch) * dist;      // where it would sit unobstructed
+  const horiz = clearBehind(dirX, dirZ, horizWanted, aimY, camYWanted);
   // The camera is pulled straight down its own line, so height scales with it
   // and the angle you chose is preserved.
   const k = horizWanted > 0.01 ? horiz / horizWanted : 1;

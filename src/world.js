@@ -24,7 +24,7 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { scene, renderer, mat, G } from './state.js';
 import { CONFIG } from './config.js';
 import { makeRng } from './rng.js';
-import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK } from './props.js';
+import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK, PROP_HEIGHT } from './props.js';
 
 export const WORLD_R = CONFIG.world.radius;
 export const obstacles = [];
@@ -407,6 +407,22 @@ let propMeshes = [];
 const dummy = new THREE.Object3D();
 const tint = new THREE.Color();
 
+/**
+ * Records a prop as something you cannot walk through -- and, now, as something
+ * of a known HEIGHT.
+ *
+ * The camera used the same list to decide what blocked its view, but the test
+ * was flat: a 2.8 m boulder blocked the camera even when it was ten metres up
+ * looking down over the top of it. Walking past boulders therefore yanked the
+ * camera in and released it again, every few seconds.
+ */
+function addObstacle(kind, x, z, s){
+  const r = (PROP_RADIUS[kind] || 0) * s;
+  if (r <= 0) return;
+  const h = (PROP_HEIGHT[kind] || 2) * s - (PROP_SINK[kind] || 0) * s;
+  obstacles.push({ x, z, r, top: surfaceHeightAt(x, z) + h });
+}
+
 // A cheap deterministic hash in 0..1. Not for cryptography -- for deciding that
 // THIS tree is a shade lighter than the one beside it, the same way every time.
 function hash01(a, b){
@@ -650,8 +666,7 @@ export function buildWorld(seed){
 
     placements[kind].push({ x, z, s, variant, rot: rng() * Math.PI * 2 });
     placed++;
-    const rad = (PROP_RADIUS[kind] || 0) * s;
-    if (rad > 0) obstacles.push({ x, z, r: rad });
+    addObstacle(kind, x, z, s);
   }
 
   // ----- cliffs around the plateau's lip -----
@@ -676,7 +691,7 @@ export function buildWorld(seed){
         variant: (rng() * variants.length) | 0,
         rot: a + Math.PI / 2 + (rng() - 0.5) * 0.5,
       });
-      obstacles.push({ x, z, r: PROP_RADIUS[kind] * 0.8 });
+      addObstacle(kind, x, z, 0.8);
     }
   }
 
@@ -693,8 +708,7 @@ export function buildWorld(seed){
       const z = c.z + ox * Math.sin(spin) + oz * Math.cos(spin);
       if (Math.hypot(x, z) > WORLD_R - 3) continue;
       placements[kind].push({ x, z, s: sc, variant: (rng() * variants.length) | 0, rot: rot + spin });
-      const rad = (PROP_RADIUS[kind] || 0) * sc;
-      if (rad > 0) obstacles.push({ x, z, r: rad });
+      addObstacle(kind, x, z, sc);
     }
   }
 

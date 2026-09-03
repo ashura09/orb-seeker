@@ -217,6 +217,7 @@ export const CONFIG = {
     // Scenery must not come between you and the camera.
     clearance: 0.7,        // extra margin beyond a prop's own radius
     minClear: 3.4,         // the camera never comes closer than this to you
+    overClearance: 0.5,    // how far the sight line must clear a prop's top by
     blockRadius: 0.7,      // props thinner than this are ignored. A fern has no
                            // business shoving the camera into your back.
 

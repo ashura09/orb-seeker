@@ -254,6 +254,34 @@ Also: `Math.sqrt(rng()) * radius` spreads points evenly over a disc. Plain
 `rng() * radius` piles them into the middle, so every clump grows a dense core
 and a thin edge -- the same mistake as uniform scatter, just smaller.
 
+## A camera occlusion test in 2D will lurch
+
+Reusing the walking-collision circles for camera occlusion works, but those
+circles are FLAT -- they carry no height. So a 2.8 m boulder blocked the camera
+even when the camera was ten metres up looking down over its top, and walking
+past boulders hauled the camera in and released it every few seconds. Measured on
+one fixed walk: 32 frames pulled in, worst case down to 15% of the set distance.
+
+The sight line has to be tested in three dimensions: interpolate the camera ray's
+height at the obstacle's distance and skip anything the view passes over. Put that
+test LAST -- only a handful of obstacles survive the two cheap 2D rejections, so
+it costs nothing. Same walk afterwards: 0 frames pulled in.
+
+Obstacle height must be MEASURED, not taken from the catalogue's `size`, which is
+the longest axis: a boulder is far wider than tall, and using its width as its
+height makes the camera treat a knee-high rock as a wall.
+
+Second bug in the same function: `Math.max(minClear, best)` pushes the camera back
+OUT when the player has deliberately zoomed closer than minClear. The floor has to
+be `Math.min(minClear, want)` so a deliberate choice always wins.
+
+**On A/B testing a fix like this:** put the new condition behind a config value and
+flip it live from the console between two sampled runs. `CONFIG` is a live module
+singleton, so the same walk can be measured both ways -- far better evidence than
+two screenshots. Careful with `await import('/src/x.js')` though: Vite loads modules
+with a `?t=` cache-busting query, so that path can hand you a SECOND, empty instance
+rather than the running one.
+
 ## Keeping the camera out of the scenery costs no raycasting
 
 Once trees can be 2.6x, sitting inside a canopy is easy. The obstacle list built

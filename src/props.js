@@ -107,6 +107,12 @@ export const PROPS = {};
 export const PROP_RADIUS = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.radius]));
 export const PROP_SINK   = Object.fromEntries(Object.entries(CATALOGUE).map(([k, v]) => [k, v.sink || 0]));
 
+// kind -> how tall it actually stands, in metres, at scale 1. Measured from the
+// prepared geometry rather than taken from `size`, because `size` is the LONGEST
+// axis: a boulder is far wider than it is tall, and using its width as a height
+// would make the camera treat a knee-high rock as a wall.
+export const PROP_HEIGHT = {};
+
 // One material for every prop: the colour rides in the vertices.
 export const PROP_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: CONFIG.render.roughness, metalness: 0 });
 
@@ -210,6 +216,16 @@ export async function loadProps(){
   // geometry that is not there.
   for (const kind of Object.keys(PROPS)){
     if (!PROPS[kind].length) delete PROPS[kind];
+  }
+
+  // The tallest variant of each kind, so nothing is under-estimated.
+  for (const [kind, geos] of Object.entries(PROPS)){
+    let h = 0;
+    for (const g of geos){
+      g.computeBoundingBox();
+      h = Math.max(h, g.boundingBox.max.y - g.boundingBox.min.y);
+    }
+    PROP_HEIGHT[kind] = h;
   }
   loaded = true;
   return PROPS;
