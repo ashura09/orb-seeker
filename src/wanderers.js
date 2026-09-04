@@ -1,7 +1,12 @@
-// wanderers.js — the seven villagers who keep camp in the valley.
+// wanderers.js — the seven villagers: their bodies, their camps, their hearing.
 //
-// One camps near each orb. The higher the orb, the faster the duelist, so
-// tier 1 near orb 1 is gentle and tier 7 near orb 7 is blistering.
+// Who they ARE is villagers.js. This file turns that table into meshes that walk
+// around, notice you, and come over for a duel.
+//
+// Each villager is five draw calls, not the fourteen-to-sixteen they started as:
+// everything rigid is merged into one geometry with its colours baked into the
+// vertices, and each limb is one mesh inside the Group that animates it. See
+// UPGRADE-NOTES.md, "Merging beats instancing for characters".
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as P from './palette.js';
@@ -9,86 +14,10 @@ import { scene, mat, G } from './state.js';
 import { player } from './player.js';
 import { worn } from './loadout.js';
 import { orbs } from './orbs.js';
-import { WORLD_R, surfaceHeightAt } from './world.js';
-import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
-
-// Each villager has a build, a skin tone, headwear and a prop that says what
-// they do for a living — so you can tell who is walking toward you from across
-// the valley, instead of only finding out from the duel panel.
-export const WANDERERS = [
-  {
-    name: 'Bram the Woodcutter',
-    short: 'Bram',
-    color: P.VILLAGER.bram.coat,
-    hat: P.VILLAGER.bram.hat,
-    skin: P.VILLAGER.bram.skin,
-    build: 1.1,
-    headwear: 'cap',
-    prop: 'axe',
-  },
-  {
-    name: 'Nell the Herbalist',
-    short: 'Nell',
-    color: P.VILLAGER.nell.coat,
-    hat: P.VILLAGER.nell.hat,
-    skin: P.VILLAGER.nell.skin,
-    build: 0.92,
-    headwear: 'kerchief',
-    prop: 'basket',
-  },
-  {
-    name: 'Pip the Courier',
-    short: 'Pip',
-    color: P.VILLAGER.pip.coat,
-    hat: P.VILLAGER.pip.hat,
-    skin: P.VILLAGER.pip.skin,
-    build: 0.85,
-    headwear: 'cap',
-    prop: 'satchel',
-  },
-  {
-    name: 'Marla Stonehand',
-    short: 'Marla',
-    color: P.VILLAGER.marla.coat,
-    hat: P.VILLAGER.marla.hat,
-    skin: P.VILLAGER.marla.skin,
-    build: 1.18,
-    headwear: 'none',
-    prop: 'hammer',
-  },
-  {
-    name: 'Old Tarrow',
-    short: 'Tarrow',
-    color: P.VILLAGER.tarrow.coat,
-    hat: P.VILLAGER.tarrow.hat,
-    skin: P.VILLAGER.tarrow.skin,
-    build: 0.95,
-    headwear: 'brim',
-    prop: 'staff',
-    beard: true,
-  },
-  {
-    name: 'Sable the Fencer',
-    short: 'Sable',
-    color: P.VILLAGER.sable.coat,
-    hat: P.VILLAGER.sable.hat,
-    skin: P.VILLAGER.sable.skin,
-    build: 1.0,
-    headwear: 'none',
-    prop: 'blade',
-  },
-  {
-    name: 'The Grey Pilgrim',
-    short: 'the Pilgrim',
-    color: P.VILLAGER.pilgrim.coat,
-    hat: P.VILLAGER.pilgrim.hat,
-    skin: P.VILLAGER.pilgrim.skin,
-    build: 1.05,
-    headwear: 'hood',
-    prop: 'staff',
-  },
-];
+import { emit, EVENTS } from './events.js';
+import { WANDERERS } from './villagers.js';
+import { WORLD_R, surfaceHeightAt } from './world.js';
 
 // Geometry is built once here and shared by all seven. Seven villagers there-
 // fore cost about as much memory as one; only the materials differ.
