@@ -38,8 +38,8 @@ Bench does not pin the _window_, and the frustum follows it: the same build read
 
 | Reading    |             Budget | Notes                                                                      |
 | ---------- | -----------------: | -------------------------------------------------------------------------- |
-| Triangles  |     under **300k** | The single biggest lever is `CONFIG.world.props`.                          |
-| Draw calls |      under **150** | Currently ~184 at normal quality; see the note below.                      |
+| Triangles  |     under **300k** | 276k at normal, 107k in low. Biggest lever is `CONFIG.world.props`.        |
+| Draw calls |      under **150** | 147 at normal quality, 70 in low. Checked by `npm run audit`.              |
 | FPS        | at or above **45** | Below this for five seconds and the game drops to low graphics on its own. |
 
 **The budget is now enforced, not just written down.** Run it:
