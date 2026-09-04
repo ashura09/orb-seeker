@@ -83,6 +83,10 @@ renderer.setSize(innerWidth, innerHeight);
 // renderer directly when it is not -- both read these two properties.
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = CONFIG.render.exposure;
+// Set explicitly rather than relying on it being the r185 default. CLAUDE.md
+// makes ACES + sRGB a standing rule, and a rule that depends on a library
+// default is one library upgrade away from silently not applying.
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 export const scene = new THREE.Scene();
 export const DAY = new THREE.Color(P.FOG_DAY),
