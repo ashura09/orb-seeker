@@ -447,8 +447,12 @@ canvas#c {
   text-align: center;
   margin: 6px 2px 0;
 }
+/* #hud is pointer-events:none so the canvas gets the drags. Anything meant to be
+   TAPPED has to opt back in -- .hudbtn and .actbtn do, and the radar did not, so
+   tapping it did nothing on a phone and the map was unreachable there. */
 #finder {
   cursor: pointer;
+  pointer-events: auto;
 }
 .slotline {
   font-size: 14px;
@@ -486,6 +490,22 @@ canvas#c {
   font-size: 14px;
   opacity: 0.7;
   padding: 6px 0;
+}
+.wishrow .forget {
+  margin-left: auto;
+  align-self: center;
+  padding: 8px 12px;
+  font-size: 13px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.forgetall {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  min-height: 44px;
+  font-size: 14px;
 }
 .wishrow {
   text-align: left;

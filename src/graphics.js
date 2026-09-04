@@ -46,8 +46,20 @@ let elapsed = 0;
 let frames = 0;
 let belowFor = 0;
 
+// The first seconds of a session are model loading, shader compilation and a
+// 16k-vertex terrain loop -- legitimately slow, and nothing to do with the phone.
+// Sampling through that made the watchdog drop quality on the FIRST VISIT and
+// persist that verdict forever, so most players never saw the shadows, the tone
+// mapping or the bloom at all. Measured on the live site: lowGraphics was set
+// within six seconds of a first load on a fast desktop.
+let settling = CONFIG.graphics.settleSeconds;
+
 export function watchFrameRate(dt) {
   if (G.lowGraphics) return; // it only ever drops, so there is nothing left to watch
+  if (settling > 0) {
+    settling -= dt;
+    return; // still loading; any reading here is about the load, not the device
+  }
 
   const GFX = CONFIG.graphics;
   elapsed += dt;

@@ -106,6 +106,38 @@ describe('save migration', () => {
   });
 });
 
+describe('a malformed save must not brick the game', () => {
+  // These all PARSE as JSON. The old loader copied them over the defaults and
+  // then called Object.keys(null) at module-import time -- in a layer-0 module,
+  // so every other module failed and the page went blank with no way back.
+  const wrongShapes = {
+    'items is null': '{"items":null}',
+    'items is an array': '{"items":[1,2,3]}',
+    'wishes is a string': '{"wishes":"nope"}',
+    'worn is a string': '{"worn":"boots"}',
+    'fragments is not a number': '{"fragments":"lots"}',
+    'everything is null': '{"items":null,"wishes":null,"worn":null,"fragments":null}',
+  };
+
+  for (const [name, raw] of Object.entries(wrongShapes)) {
+    it(`survives when ${name}`, async () => {
+      const { save, owned } = await loadSave(fakeStorage(raw));
+      expect(typeof save.items).toBe('object');
+      expect(Array.isArray(save.wishes)).toBe(true);
+      expect(Array.isArray(save.worn)).toBe(true);
+      expect(Number.isFinite(save.fragments)).toBe(true);
+      expect(() => owned('boots')).not.toThrow();
+    });
+  }
+
+  it('keeps the wishes that were real and drops the junk', async () => {
+    const { save } = await loadSave(
+      fakeStorage('{"wishes":[null,{"no":"text"},{"text":"a bicycle","cycle":2}]}'),
+    );
+    expect(save.wishes).toEqual([{ text: 'a bicycle', cycle: 2 }]);
+  });
+});
+
 describe('save failure', () => {
   it('survives a corrupt save rather than throwing', async () => {
     const { save } = await loadSave(fakeStorage('{not json at all'));

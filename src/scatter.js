@@ -45,7 +45,13 @@ function hash01(a, b) {
 }
 
 function buildInstances(placements) {
-  for (const m of propMeshes) scene.remove(m);
+  // dispose(), not just remove(). scene.remove unhooks the mesh from the graph
+  // but never frees the GPU buffers behind instanceMatrix and instanceColor, so
+  // every re-scattered valley leaked them for the rest of the session.
+  for (const m of propMeshes) {
+    scene.remove(m);
+    m.dispose();
+  }
   propMeshes = [];
 
   for (const [kind, list] of Object.entries(placements)) {

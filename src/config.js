@@ -423,8 +423,12 @@ export const CONFIG = {
   // be asked about at build time, so the game measures its own frame rate and
   // drops quality if it cannot keep up. See src/graphics.js.
   graphics: {
+    settleSeconds: 12, // ignore the frame rate for this long after startup: the
+    // first seconds are loading 58 models, compiling shaders
+    // and shaping 16k terrain vertices, and judging the phone
+    // on that permanently disabled the polish for most players
     autoLowFps: 45, // below this average...
-    autoLowSeconds: 5, // ...for this long, and quality drops
+    autoLowSeconds: 8, // ...for this long, and quality drops
     sampleSeconds: 1, // averaging window; one slow frame is a GC, not a slow phone
     lowProps: 700, // scenery count in low mode
     forceLow: false, // set true to see low mode without waiting for a slow phone

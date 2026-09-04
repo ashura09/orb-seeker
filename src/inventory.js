@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import * as P from './palette.js';
 import { scene, mat, glow, hex, pointLight, $, G } from './state.js';
 import { player, applyCosmetics } from './player.js';
-import { surfaceHeightAt } from './world.js';
+import { surfaceHeightAt, WORLD_R } from './world.js';
 import { save, persist, owned } from './save.js';
 import { worn, toggleWorn, wearIfRoom, slots, wornCount } from './loadout.js';
 import { toast, bump, ordinal } from './ui.js';
@@ -35,8 +35,18 @@ export function spawnPickup(kind, data, angleHint) {
     g.userData = { kind, text: data };
   }
   const a = angleHint !== undefined ? angleHint : Math.random() * Math.PI * 2;
-  const gx = player.position.x + Math.cos(a) * 3.2,
+  // Clamped inside the world. The player is hard-clamped to WORLD_R when walking,
+  // so a token dropped 3.2 m away at the rim landed somewhere she could never
+  // reach -- and the ceremony only ends when every wish token is collected, so
+  // the valley never re-scattered and the wish was lost to a reload.
+  let gx = player.position.x + Math.cos(a) * 3.2,
     gz = player.position.z + Math.sin(a) * 3.2;
+  const gr = Math.hypot(gx, gz),
+    limit = WORLD_R - 4;
+  if (gr > limit) {
+    gx *= limit / gr;
+    gz *= limit / gr;
+  }
   g.position.set(gx, surfaceHeightAt(gx, gz) + 0.7, gz);
   scene.add(g);
   pickups.push({ g, kind, phase: Math.random() * 6 });
@@ -75,12 +85,56 @@ export function renderSatchel() {
   w.innerHTML = '';
   if (!save.wishes.length)
     w.innerHTML = '<div class="empty">No wishes yet. Gather the seven orbs.</div>';
-  save.wishes.forEach((x) => {
+  // Built with textContent, not innerHTML. The old version interpolated the
+  // child's own typing into markup and escaped only "<" -- harmless while the
+  // text never leaves her device, and exactly the wrong habit to carry into
+  // anything shared. There is no escaping to get wrong this way.
+  //
+  // Every wish can be deleted. A nine-year-old types something true into that
+  // box -- a worry, a crush, a name -- and the game kept it forever with no way
+  // out, on a device her brother also uses. A record you cannot erase is not a
+  // keepsake.
+  save.wishes.forEach((x, i) => {
     const r = document.createElement('div');
     r.className = 'wishrow';
-    r.innerHTML = `<span class="star">✦</span><div><div>“${x.text.replace(/</g, '&lt;')}”</div><div class="meta">Granted on your ${ordinal(x.cycle)} gathering</div></div>`;
+
+    const star = document.createElement('span');
+    star.className = 'star';
+    star.textContent = '✦';
+
+    const body = document.createElement('div');
+    const line = document.createElement('div');
+    line.textContent = `“${x.text}”`;
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = `Granted on your ${ordinal(x.cycle)} gathering`;
+    body.append(line, meta);
+
+    const forget = document.createElement('button');
+    forget.className = 'quiet forget';
+    forget.textContent = 'Forget';
+    forget.setAttribute('aria-label', 'Forget this wish');
+    forget.addEventListener('click', () => {
+      save.wishes.splice(i, 1);
+      persist();
+      renderSatchel();
+    });
+
+    r.append(star, body, forget);
     w.appendChild(r);
   });
+
+  if (save.wishes.length > 1) {
+    const all = document.createElement('button');
+    all.className = 'quiet forgetall';
+    all.textContent = 'Forget every wish';
+    all.addEventListener('click', () => {
+      save.wishes.length = 0;
+      persist();
+      renderSatchel();
+    });
+    w.appendChild(all);
+  }
   // Owning is listed with `owned`; wearing is a separate toggle per row. This
   // is the only place in the game where a loadout is chosen, so it is also the
   // only place that needs to know the difference.

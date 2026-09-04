@@ -53,6 +53,22 @@ try {
 // owning an item meant wearing it. Those players start out wearing everything
 // they own, so nothing they collected appears to have been taken away.
 // `worn` is null only on such a save (or a brand new one, where it is empty).
+// A save that PARSES but is the wrong SHAPE used to kill the whole app. Object
+// .assign happily copies `items: null` over the default, and the next line then
+// called Object.keys(null) -- at module-import time, in a layer-0 module, so
+// every other module failed and the page went blank with no way back.
+//
+// JSON.parse succeeding is not the same as the data being usable.
+if (typeof save.items !== 'object' || save.items === null || Array.isArray(save.items)) {
+  save.items = {};
+}
+if (!Array.isArray(save.wishes)) save.wishes = [];
+save.wishes = save.wishes.filter((w) => w && typeof w.text === 'string');
+for (const k of ['fragments', 'wins', 'cycles']) {
+  if (!Number.isFinite(save[k])) save[k] = 0;
+}
+if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;
+
 if (!Array.isArray(save.worn)) {
   save.worn = Object.keys(save.items).filter((id) => save.items[id] === 'owned');
 }

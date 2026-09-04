@@ -171,19 +171,27 @@ function holdBench() {
 // swallow the gap -- otherwise the first frame back carries the whole absence as
 // its delta and the game lurches forward.
 let running = true;
+let rafId = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     running = false;
+    // Cancel the frame ALREADY SCHEDULED, not just future ones. Without this,
+    // hiding and showing before that callback fires starts a second loop while
+    // the first is still queued, and both keep rescheduling -- so every quick
+    // app-switch doubled the frame rate cost. A child switching apps hits this
+    // constantly.
+    cancelAnimationFrame(rafId);
+    rafId = 0;
   } else if (!running) {
     running = true;
     timer.update();
-    requestAnimationFrame(frame);
+    if (!rafId) rafId = requestAnimationFrame(frame);
   }
 });
 
 function frame() {
   if (!running) return;
-  requestAnimationFrame(frame);
+  rafId = requestAnimationFrame(frame);
   timer.update();
   const dt = Math.min(timer.getDelta(), CONFIG.loop.maxDelta);
   G.t += dt;

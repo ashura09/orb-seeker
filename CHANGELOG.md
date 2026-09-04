@@ -4,6 +4,39 @@ Notable changes, newest first. Dates are the day the work landed.
 
 ## Unreleased
 
+### Audit fixes — six parallel audits, eight real bugs
+
+**Fixed — the game was broken on a phone**
+
+- **The map could not be opened by tapping.** `#hud` is `pointer-events: none` and
+  `#finder` never opted back in, so the radar was not hit-testable. Keyboard `M`
+  worked, which is why it was never noticed.
+- **The polish was switched off for most players.** The frame-rate watchdog sampled
+  during loading — model fetches, shader compilation, terrain generation — decided
+  the device was slow, and persisted that verdict forever. Now waits 12s.
+- **Quick app-switching spawned duplicate render loops.** `visibilitychange` stopped
+  scheduling frames but never cancelled the one already queued.
+
+**Fixed — child safety**
+
+- **Wishes can now be deleted**, one at a time or all at once. A child typed
+  something true into a box that kept it forever, replayed it unprompted at the
+  start of every gathering, and showed it to whoever opened the app next on a
+  shared device.
+- Wish text is rendered with `textContent` instead of hand-escaped `innerHTML`.
+
+**Fixed — correctness**
+
+- Wish tokens could spawn outside the walkable world, stranding the ceremony so the
+  valley never re-scattered and the wish was lost.
+- A structurally-wrong save (`{"items":null}`) crashed every module at import and
+  left a blank page. Now validated field by field. 7 new tests.
+- Instanced meshes were removed from the scene but never disposed, leaking GPU
+  buffers on every re-scattered valley.
+- `buildInstances` was called twice, building the whole world's meshes twice over.
+- Shadows were never soft: `PCFSoftShadowMap` is deprecated in r185 and silently
+  becomes `PCFShadowMap`.
+
 ### Tooling — the budget is now a gate
 
 **Added**
