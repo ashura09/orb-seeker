@@ -64,7 +64,11 @@ export const CONFIG = {
 
     // A tiling noise texture multiplied over the ground. Vertex colours cannot
     // describe anything smaller than a quad; this can.
-    detailRepeat: 70, // tiles across the 600 m plane -- about 8.6 m each
+    // Tiles across the ground plane. NOTE the plane is (radius + skirt) * 2 =
+    // 800 m, not 600 -- so this is 11.4 m per tile. An earlier comment said 8.6,
+    // computed from the wrong width, which is why the grain reads as blotches
+    // rather than as texture. Raising this is the fix.
+    detailRepeat: 70,
     detailDepth: 0.11, // how dark the darkest speckle gets
 
     // Every copy of a model was the exact same colour, which is a large part of

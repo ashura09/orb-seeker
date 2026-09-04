@@ -128,7 +128,11 @@ const SUN_OFFSET = new THREE.Vector3(S.sunOffsetX, S.sunOffsetY, S.sunOffsetZ);
 export function setupShadows() {
   if (!CONFIG.shadows.enabled) return;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // PCFSoftShadowMap is DEPRECATED in r185 -- three.js silently substitutes
+  // PCFShadowMap and warns in the console, so asking for "soft" shadows was
+  // getting hard ones while the code and the docs claimed otherwise. Named
+  // honestly here; VSMShadowMap is the real soft option if we want to pay for it.
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   sun.castShadow = true;
   sun.shadow.mapSize.set(CONFIG.shadows.mapSize, CONFIG.shadows.mapSize);

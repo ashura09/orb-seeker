@@ -319,6 +319,4 @@ export function scatterScenery(rng) {
     }
   }
   buildInstances(placements);
-
-  buildInstances(placements);
 }
