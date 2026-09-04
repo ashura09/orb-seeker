@@ -14,7 +14,7 @@ import { forgetExplored } from './map.js';
 import { randomSeed } from './rng.js';
 import { toast } from './ui.js';
 import { duel, updateDuel } from './duel.js';
-import { keeper, ka, ringOrbs, animateKeeper } from './keeper.js';
+import { keeper, ka, ringOrbs, animateKeeper } from './dragon.js';
 
 const DN = CONFIG.dayNight;
 const CER = CONFIG.ceremony;

@@ -34,6 +34,26 @@ Groundwork only: no change to how the game looks or plays, except where noted.
 - Unused imports (`hemi`, `sun` in `main.js`; `G` in `world.js`) and the unused
   `pillars` binding in `world.js`.
 
+### Stage 1 complete — the remaining file splits
+
+**Changed**
+
+- `main.js` 535 lines into a loop plus `camera`, `motion` and `gathering`. The
+  frame loop now reads as four calls.
+- `wanderers.js` into `villagers.js` (who they are) and `wanderers.js` (their
+  bodies and behaviour).
+- `keeper.js` into `dragon.js` (the body) and `keeper.js` (the ceremony).
+- The trader's stock out of `config.js` into `items.js`.
+
+Every split verified against a bench fingerprint: draw calls, triangles,
+drawables, obstacle checksum and terrain samples unchanged throughout, plus a
+dynamic walk-and-jump check on the `main.js` split.
+
+**Deliberate exceptions to the ~300-line rule**, both documented in the files:
+`config.js` at 427 (a flat table of numbers with no logic, and the `?tune` panel
+walks it as one object) and `scatter.js` at 307 (arranging scenery and drawing it
+in few calls is one job).
+
 ### Stage 1 continued — bench mode and the world.js split
 
 **Added**
