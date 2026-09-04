@@ -153,6 +153,13 @@ Both flags can be combined.
     scatter   where scenery goes, and the instancing that draws it
     water     the lake, and how far it can fill before it would drain
     world     the assembler: builds the valley and is its public face
+    items     the trader's stock: names, prices, swatches
+    villagers who the seven are -- names, colours, builds, what they carry
+    wandererBody  turning a villager's row in the table into a body
+    dragon    the Keeper's body: how it is built and how it moves
+    camera    where the camera sits, and what it refuses to sit inside
+    motion    walking, wading, collision, gravity and the walk cycle
+    gathering the arc of one gathering: the light, the ceremony, the re-roll
     sky       the gradient dome, the sun, shadows, and the environment light
     bloom     the glow pass, behind CONFIG.bloom.enabled
     input     joystick, look-drag, keyboard; emits intent, decides nothing
@@ -171,19 +178,20 @@ Both flags can be combined.
 
 ## Current layering
 
-The graph sorts itself, no folders required yet. **Zero cycles** across 33 modules:
+The graph sorts itself, no folders required yet. **Zero cycles** across 40 modules:
 
 ```
-0   events, palette, rng, save, voice     depend on nothing
-1   config
+0   events, palette, rng, save, voice
+1   config, items, villagers
 2   loadout, props, regions, rules, state, tuner
-3   bloom, input, player, sky, terrain, ui
+3   bloom, dragon, input, player, sky, terrain, ui, wandererBody
 4   graphics, ground, horizon, scatter, shop, water
 5   world
-6   inventory, orbs
+6   camera, inventory, orbs
 7   keeper, map, wanderers
-8   duel, finder
-9   main
+8   duel, finder, motion
+9   gathering
+10   main
 ```
 
 Nothing at a lower number imports anything at a higher one.
