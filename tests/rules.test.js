@@ -91,13 +91,49 @@ describe('duel tier maths', () => {
     for (let t = 2; t <= 7; t++) expect(tierRate(t)).toBeGreaterThan(tierRate(t - 1));
   });
 
-  it('is beatable at tier 1 and hard at tier 7 within the duel length', () => {
-    // Sanity-checks the comment in config.js: tier 1 ≈ 4 taps/s, tier 7 ≈ 12 taps/s.
-    const { seconds, tapValue } = CONFIG.duel;
-    const tapsPerSecondToBeat = (tier) => tierRate(tier) / tapValue;
-    expect(tapsPerSecondToBeat(1)).toBeLessThan(6);
-    expect(tapsPerSecondToBeat(7)).toBeGreaterThan(10);
-    expect(seconds).toBeGreaterThan(0);
+  // This test used to assert the OPPOSITE of what it asserts now: that tier 7
+  // demanded more than 10 taps a second. It passed happily while four of the
+  // seven villagers were mathematically unbeatable by a nine-year-old, because
+  // it was written to describe the numbers rather than the players. A balance
+  // test has to name a human being or it just ratifies whatever is in the file.
+  //
+  // The player is a child of about nine on a phone. Sustained tapping tops out
+  // around 6 a second; 4 is comfortable.
+  const CHILD_COMFORTABLE = 4;
+  const CHILD_LIMIT = 6;
+
+  it('can be won by a nine-year-old at every tier', () => {
+    const { tapValue, tapValueWithGrip } = CONFIG.duel;
+    const bare = (tier) => tierRate(tier) / tapValue;
+    const withGrip = (tier) => tierRate(tier) / tapValueWithGrip;
+
+    // The first camp must be winnable without trying hard and without shopping.
+    expect(bare(1)).toBeLessThan(CHILD_COMFORTABLE);
+
+    // No camp may be out of reach once the grip is bought -- every villager has
+    // written losing dialogue, and dialogue nobody can trigger is dead content.
+    for (let t = 1; t <= 7; t++) expect(withGrip(t)).toBeLessThanOrEqual(CHILD_LIMIT);
+
+    // But the last camps must be past bare hands, or the grip is worthless and
+    // the difficulty curve is flat.
+    expect(bare(7)).toBeGreaterThan(CHILD_LIMIT);
+  });
+
+  it('has a clock that can actually run out', () => {
+    // updateDuel's `duel.time <= 0` branch was unreachable for the life of the
+    // game: the opponent always finished first. The low tiers are now decided on
+    // the clock, so the branch is live -- if this fails, it is dead code again.
+    const { seconds } = CONFIG.duel;
+    const tiersDecidedByClock = [1, 2, 3, 4, 5, 6, 7].filter((t) => 1 / tierRate(t) > seconds);
+    expect(tiersDecidedByClock.length).toBeGreaterThan(0);
+  });
+
+  it('never counts down for longer than the fight itself lasts', () => {
+    const { seconds, countdown } = CONFIG.duel;
+    const shortestFight = Math.min(
+      ...[1, 2, 3, 4, 5, 6, 7].map((t) => Math.min(1 / tierRate(t), seconds)),
+    );
+    expect(countdown).toBeLessThan(shortestFight);
   });
 
   it('pays more for a higher tier', () => {

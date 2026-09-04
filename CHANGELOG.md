@@ -179,3 +179,20 @@ in few calls is one job).
 Still open in Stage 1, now unblocked but not yet done: `src/palette.js` and the
 colour extraction, and splitting the three files still over the ~300-line rule
 (`world.js` 782, `main.js` 400, `config.js` 394).
+
+## Duel rebalance
+
+The duel was unwinnable above tier 3 and told the player the wrong duration.
+
+- Opponent difficulty per tier cut from 0.065 to 0.029, and the base from 0.16 to
+  0.145. Tier 7 asked for 12.3 taps a second, which no nine-year-old has; it now
+  asks 7.0, or 5.4 with the grip. All seven villagers are beatable, so the losing
+  lines written for Tarrow, Sable and the Pilgrim can finally be heard.
+- Duel length 10s to 4s, countdown 3s to 2s. The clock now decides tiers 1-3 on
+  points, so `updateDuel`'s timeout branch is reachable for the first time.
+- A tie at the buzzer goes to the player.
+- The consolation payment for losing raised from 1 fragment to 3.
+- The rules line no longer says "Ten seconds" -- it reads the number from the
+  config, because hand-typed durations go quietly false.
+- The balance test used to assert tier 7 needed *more* than 10 taps a second: it
+  ratified the bug. It now asserts what a nine-year-old can do.

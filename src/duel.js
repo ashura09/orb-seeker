@@ -49,7 +49,11 @@ export function startDuel(w) {
   // What they say comes first; the rules go underneath, quieter.
   $('duelWho').textContent = `“${voiceOf(w.short).challenge}”`;
   $('duelRules').textContent =
-    `${w.name} keeps camp by orb ${w.tier}, so expect ${tierWord} pace. Ten seconds: tap to fill your bar before theirs.`;
+    `${w.name} keeps camp by orb ${w.tier}, so expect ${tierWord} pace. ` +
+    // The duration is read from the config, never typed. It said "Ten seconds"
+    // for months after the clock became six, and then four -- copy that repeats
+    // a number by hand is copy that goes quietly false.
+    `${D.seconds} seconds: fill your bar first, or be further along when time runs out.`;
   $('resultSay').textContent = '';
   $('themName').textContent = w.short;
   $('duelPlay').style.display = 'block';
@@ -117,7 +121,10 @@ export function updateDuel(dt) {
   duel.them += dt * tierRate(duel.w.tier);
   renderDuel();
   if (duel.them >= 1) endDuel(false);
-  else if (duel.time <= 0) endDuel(duel.you > duel.them);
+  // Time out: whoever is further along wins, and a dead heat goes to the player.
+  // This branch was unreachable while the clock outlasted every opponent; below
+  // tier 4 it is now how the duel actually ends.
+  else if (duel.time <= 0) endDuel(duel.you >= duel.them);
 }
 
 export function endDuel(won) {

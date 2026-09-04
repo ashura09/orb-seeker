@@ -312,15 +312,35 @@ export const CONFIG = {
 
   // ---------- the tap duel ----------
   duel: {
-    seconds: 10,
-    countdown: 3,
+    // The duel really does last this long now. It used to say ten seconds while
+    // the opponent's bar filled in at most 4.44 -- so the clock never ran out,
+    // the timeout branch in duel.js was unreachable, and the countdown was
+    // longer than the fight at tier 4 and above. At six seconds the clock is a
+    // real part of the race. Below tier 4 the opponent cannot finish inside the
+    // window, so those duels are won by being FURTHER ALONG when the clock
+    // stops; from tier 4 up they can finish, so you have to fill first. One
+    // rule -- "fill first, or be ahead at the end" -- with two flavours.
+    seconds: 4,
+    // Two, not three: at tier 7 the whole fight lasts 2.87 seconds, and a
+    // countdown longer than the fight is a joke at the player's expense.
+    countdown: 2,
     tapValue: 0.05, // bar filled per tap. 1.0 wins, so 20 taps.
     tapValueWithGrip: 0.065, // Duelist grip. 16 taps.
 
     // The opponent's bar fills at (base + perTier x tier) per second.
-    // Tier 1 needs about 4 taps/second to beat; tier 7 about 12.
-    opponentBase: 0.16,
-    opponentPerTier: 0.065,
+    //
+    // REBALANCED. These were 0.16 and 0.065, which meant tier 7 demanded 12.3
+    // taps a second and tier 4 demanded 8.4. A nine-year-old on a touchscreen
+    // sustains about 5 to 6. So four of the seven villagers were unbeatable by
+    // the player this game is for, and the three best-written of them --
+    // Tarrow, Sable and the Pilgrim -- could never be made to say their losing
+    // lines. Pay rises with tier but winnability fell faster, so the only
+    // sensible strategy was farming Bram forever.
+    //
+    // Now: tier 1 wants 3.5 taps/second, tier 7 wants 7.0, and the Duelist grip
+    // brings tier 7 down to 5.4. Hard at the top, possible everywhere.
+    opponentBase: 0.145,
+    opponentPerTier: 0.029,
 
     // Winning pays (lootBase + tier + 0..lootVariance) fragments,
     // doubled on a flawless roll. Losing always pays consolation.
@@ -328,7 +348,10 @@ export const CONFIG = {
     lootVariance: 3,
     flawlessChance: 0.12,
     flawlessMultiplier: 2,
-    consolation: 1,
+    // Losing paid 1, and the Duelist grip that would end a losing streak costs
+    // 18 -- eighteen consecutive defeats to afford the way out of them. 3 is
+    // still a bad outcome, just not a hopeless one.
+    consolation: 3,
 
     resultDelay: 500, // ms before the result card replaces the bars
   },
