@@ -42,7 +42,8 @@ Groundwork only: no change to how the game looks or plays, except where noted.
   frame loop now reads as four calls.
 - `wanderers.js` into `villagers.js` (who they are) and `wanderers.js` (their
   bodies and behaviour).
-- `keeper.js` into `dragon.js` (the body) and `keeper.js` (the ceremony).
+- `keeper.js` into `dragon.js` (the body) and `keeper.js` (the ceremony), and
+  `wanderers.js` again into `wandererBody.js` (building) and behaviour.
 - The trader's stock out of `config.js` into `items.js`.
 
 Every split verified against a bench fingerprint: draw calls, triangles,
