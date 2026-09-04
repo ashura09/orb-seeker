@@ -311,6 +311,30 @@ export const CONFIG = {
   },
 
   // ---------- the tap duel ----------
+  // ---------------------------------------------------------------------------
+  // COLLECTING. The reward beat for walking into an orb.
+  //
+  // Everything here is short. A reward animation you have to wait through stops
+  // being a reward the second time you see it, and this one plays seven times a
+  // run. Half a second is enough to register and not enough to get bored of.
+  // ---------------------------------------------------------------------------
+  collect: {
+    sparks: 30, // one Points object, allocated once. See burst.js.
+    sparkSize: 0.65, // world units; a round sprite, so this is a diameter
+    sparkSpeed: 7.5, // metres/sec at full strength
+    sparkGravity: 11, // pulls the arc over; higher = snappier, less floaty
+    sparkDrag: 2.2, // sideways air resistance, so the spray blooms and settles
+    sparkLife: 0.75, // seconds until the last spark is gone
+
+    orbFlare: 0.42, // how long the orb takes to swell and vanish
+    orbPop: 1.85, // how big it swells before collapsing
+    orbRise: 2.6, // metres/sec it lifts as it goes, so it reads as taken up
+    orbFlash: 5, // emissive multiplier at the peak of the flare
+
+    shake: 0.09, // camera jolt, in metres. Deliberately tiny -- see camera.js.
+    shakeDecay: 9, // how fast the jolt dies. Higher = sharper, less wobble.
+  },
+
   duel: {
     // The duel really does last this long now. It used to say ten seconds while
     // the opponent's bar filled in at most 4.44 -- so the clock never ran out,

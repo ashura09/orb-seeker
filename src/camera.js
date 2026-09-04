@@ -11,6 +11,32 @@ import { surfaceHeightAt, obstacles } from './world.js';
 const CAM = CONFIG.camera;
 const camTarget = new THREE.Vector3();
 
+// ---------------------------------------------------------------------------
+// THE JOLT
+//
+// A tiny shove to the camera when something lands. Nine centimetres, gone in a
+// fifth of a second -- small enough that nobody could describe it afterwards,
+// which is the point. Screen shake you can see is screen shake that makes a
+// child feel sick on a phone held thirty centimetres from their face.
+//
+// It moves the camera and NOT the point it is looking at, so the world tips
+// rather than sliding. And it only ever grows: two jolts at once give you the
+// bigger one, never the sum, so nothing can pile up into a real lurch.
+// ---------------------------------------------------------------------------
+let jolt = 0;
+
+// Some people get motion sick, and some children are among them. The browser
+// already knows; it is rude not to ask.
+const stillPlease =
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+export function shakeCamera(strength) {
+  // Never on the bench: this is built on Math.random, and the bench exists so
+  // two runs of the same build give the same numbers.
+  if (G.bench || stillPlease) return;
+  jolt = Math.max(jolt, strength);
+}
+
 /**
  * How far the camera may sit behind you before scenery gets in the way.
  *
@@ -110,6 +136,16 @@ export function updateCamera(dt) {
   camera.position.x += (wantX - camera.position.x) * ease;
   camera.position.z += (wantZ - camera.position.z) * ease;
   camera.position.y += (camY - camera.position.y) * ease;
+  // The jolt is added after the smoothing and before the aim, so it is a shove
+  // to the camera rather than something the easing spends the next half second
+  // gently undoing.
+  if (jolt > 0.0001) {
+    camera.position.x += (Math.random() * 2 - 1) * jolt;
+    camera.position.y += (Math.random() * 2 - 1) * jolt;
+    camera.position.z += (Math.random() * 2 - 1) * jolt;
+    jolt -= jolt * Math.min(1, CONFIG.collect.shakeDecay * dt);
+  }
+
   camTarget.set(player.position.x, groundY + targetY, player.position.z);
   camera.lookAt(camTarget);
 }

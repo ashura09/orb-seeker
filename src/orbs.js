@@ -8,8 +8,15 @@ import { toast, showOrder } from './ui.js';
 import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { pickOrbSpots } from './rules.js';
+import { burstAt } from './burst.js';
+import { shakeCamera } from './camera.js';
+
+const C = CONFIG.collect;
 
 const ORB_COLORS = P.ORB;
+// The resting values the flare animates away from and restores afterwards.
+const ORB_EMISSIVE = 0.6;
+const GLOW_OPACITY = 0.18;
 export const orbGeo = new THREE.SphereGeometry(0.55, 18, 14);
 export const orbs = [];
 
@@ -40,30 +47,60 @@ for (let i = 0; i < LIT_ORBS; i++) {
 }
 
 // Called once per frame from main.js.
+// Which orbs currently hold a light, nearest first. Two fixed arrays, filled in
+// place: this used to be `.filter().map().sort().slice()`, which built four
+// arrays and seven little objects EVERY FRAME -- about 700 throwaway objects a
+// second, and CLAUDE.md's budget says no per-frame allocations for exactly this
+// reason. Garbage collection on a phone is a dropped frame you cannot predict.
+//
+// With only seven orbs and three lights, an insertion sort into a fixed array is
+// both faster than sorting and allocates nothing at all.
+const nearOrb = new Array(LIT_ORBS).fill(null);
+const nearDist = new Float32Array(LIT_ORBS);
+
 export function updateOrbLights() {
-  const near = orbs
-    .filter((o) => !o.found)
-    .map((o) => ({ o, d: Math.hypot(o.x - player.position.x, o.z - player.position.z) }))
-    .sort((a, b) => a.d - b.d)
-    .slice(0, LIT_ORBS);
-  orbLights.forEach((l, i) => {
-    const hit = near[i];
-    if (hit && hit.d < CONFIG.orbs.lightCutoff) {
+  for (let i = 0; i < LIT_ORBS; i++) {
+    nearOrb[i] = null;
+    nearDist[i] = Infinity;
+  }
+  for (const o of orbs) {
+    if (o.found) continue;
+    const dx = o.x - player.position.x;
+    const dz = o.z - player.position.z;
+    const d = Math.sqrt(dx * dx + dz * dz);
+    // Slide it into the ranking, pushing the rest down; drops off the end if it
+    // is not among the nearest few.
+    for (let i = 0; i < LIT_ORBS; i++) {
+      if (d < nearDist[i]) {
+        for (let j = LIT_ORBS - 1; j > i; j--) {
+          nearDist[j] = nearDist[j - 1];
+          nearOrb[j] = nearOrb[j - 1];
+        }
+        nearDist[i] = d;
+        nearOrb[i] = o;
+        break;
+      }
+    }
+  }
+  for (let i = 0; i < LIT_ORBS; i++) {
+    const l = orbLights[i];
+    const o = nearOrb[i];
+    if (o && nearDist[i] < CONFIG.orbs.lightCutoff) {
       l.visible = true;
-      l.color.setHex(hit.o.color);
+      l.color.setHex(o.color);
       l.intensity = CONFIG.orbs.lightIntensity;
-      l.position.set(hit.o.x, hit.o.mesh.position.y, hit.o.z);
+      l.position.set(o.x, o.mesh.position.y, o.z);
     } else {
       l.visible = false;
       l.intensity = 0;
     }
-  });
+  }
 }
 
 for (let i = 0; i < 7; i++) {
   const c = ORB_COLORS[i];
-  const mesh = new THREE.Mesh(orbGeo, mat(c, 0.6));
-  mesh.add(new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 10), glow(c, 0.18)));
+  const mesh = new THREE.Mesh(orbGeo, mat(c, ORB_EMISSIVE));
+  mesh.add(new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 10), glow(c, GLOW_OPACITY)));
   const tc = document.createElement('canvas');
   tc.width = tc.height = 128;
   const tx = tc.getContext('2d');
@@ -114,12 +151,67 @@ export function placeOrbs(random = Math.random) {
     o.z = spots[i].z;
     o.found = false;
     o.mesh.position.set(o.x, surfaceHeightAt(o.x, o.z) + 1.1, o.z);
+    resetLook(o); // an orb mid-flare when the valley is rebuilt must come back whole
     scene.add(o.mesh);
     dots[i].classList.remove('on');
   });
   showOrder(true, 0);
 }
 placeOrbs();
+
+// ---------------------------------------------------------------------------
+// THE FLARE — an orb taking its leave.
+//
+// The mesh stays in the scene and animates out, so `found` and "gone from the
+// screen" are no longer the same instant. Everything that reads `o.found` --
+// the lights, the pickup test, the counter -- treats it as collected right
+// away; only the picture lags behind. That ordering matters: the reward may
+// never delay the game reacting to you.
+// ---------------------------------------------------------------------------
+const vanishing = [];
+
+function resetLook(o) {
+  o.mesh.scale.setScalar(1);
+  o.mesh.material.emissiveIntensity = ORB_EMISSIVE;
+  o.mesh.children[0].material.opacity = GLOW_OPACITY;
+  o.mesh.children[0].scale.setScalar(1);
+}
+
+function startVanish(o) {
+  vanishing.push({ o, age: 0 });
+}
+
+/** Called every frame from motion.js, outside the play gate. Idle when empty. */
+export function updateVanish(dt) {
+  for (let i = vanishing.length - 1; i >= 0; i--) {
+    const v = vanishing[i];
+    v.age += dt;
+    const t = v.age / C.orbFlare;
+    if (t >= 1) {
+      scene.remove(v.o.mesh);
+      resetLook(v.o); // ready for the next round, since placeOrbs re-adds this mesh
+      vanishing.splice(i, 1);
+      continue;
+    }
+    // Swell fast, collapse slower: the shape of something being pulled away
+    // rather than something being deflated. The squared collapse means most of
+    // the shrinking happens at the end, so it holds its size and then goes.
+    const swell = 0.3;
+    const scale =
+      t < swell
+        ? 1 + (C.orbPop - 1) * (t / swell)
+        : C.orbPop * (1 - (t - swell) / (1 - swell)) ** 2;
+    v.o.mesh.scale.setScalar(Math.max(0.0001, scale));
+    v.o.mesh.position.y += C.orbRise * dt;
+    // Brightest at the moment it is biggest, then out.
+    v.o.mesh.material.emissiveIntensity = ORB_EMISSIVE * (1 + (C.orbFlash - 1) * (1 - t));
+    // The soft shell around it grows past the orb and thins to nothing, which is
+    // what makes the flare read as light rather than as a balloon.
+    const shell = v.o.mesh.children[0];
+    shell.scale.setScalar(1 + t * 1.6);
+    shell.material.opacity = GLOW_OPACITY * (1 - t);
+  }
+}
 
 export function collect(o) {
   if (o.n !== G.found + 1 && G.orderKept) {
@@ -133,7 +225,14 @@ export function collect(o) {
     );
   o.found = true;
   G.found++;
-  scene.remove(o.mesh);
+  // NOT scene.remove(o.mesh). That single line was the game's worst moment: the
+  // thing you had been hunting for five minutes stopped existing between one
+  // frame and the next, with nothing to mark it. The orb now takes itself out --
+  // it swells, flares, lifts and shrinks away over four tenths of a second --
+  // while the sparks fly and the camera takes a small knock.
+  startVanish(o);
+  burstAt(o.mesh.position.x, o.mesh.position.y, o.mesh.position.z, o.color);
+  shakeCamera(C.shake);
   dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);
   showOrder(G.orderKept, G.found);

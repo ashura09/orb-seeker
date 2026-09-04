@@ -18,7 +18,8 @@ import {
 } from './player.js';
 import { WORLD_R, obstacles, surfaceHeightAt, isInWater } from './world.js';
 import { worn } from './loadout.js';
-import { orbs, collect, updateOrbLights } from './orbs.js';
+import { orbs, collect, updateOrbLights, updateVanish } from './orbs.js';
+import { updateBurst } from './burst.js';
 import { pickups, collectPickup } from './inventory.js';
 import { updateWanderers } from './wanderers.js';
 
@@ -119,6 +120,10 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
     updateWanderers(dt);
   }
   updateOrbLights();
+  // Outside the play gate on purpose: a collected orb must finish flaring even
+  // if collecting the seventh one opened the ceremony half a second ago.
+  updateVanish(dt);
+  updateBurst(dt);
   tailSegs.forEach((s, i) => {
     const k = i + 1;
     s.position.set(

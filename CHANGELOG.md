@@ -214,3 +214,23 @@ number applied to a two-thumb game.
   `save.bestTaps` keeps the record. The next balance pass can be measured rather
   than argued about.
 - "tosses you 3 fragment" now pluralises.
+
+## Collecting an orb is now an event
+
+Walking into an orb used to call `scene.remove()`. The thing you had hunted for
+five minutes stopped existing between one frame and the next, which broke
+CLAUDE.md's rule that nothing appears or disappears instantly -- in the most
+repeated moment in the game.
+
+- The orb now swells, flares brighter, lifts and shrinks away over 0.42s, with
+  its glow shell expanding and thinning as it goes.
+- Thirty sparks in the orb's own colour burst out, arc over and fade (`burst.js`).
+- The camera takes a 9cm knock, gone in a third of a second -- deliberately too
+  small to notice, because visible screen shake on a phone held close to a child's
+  face makes them feel sick. Skipped entirely for `prefers-reduced-motion`.
+- Costs zero draw calls when idle and allocates nothing after load: one
+  pre-allocated `THREE.Points`, hidden when not in use. Still 147 draw calls.
+- `updateOrbLights` no longer allocates: `filter().map().sort().slice()` built
+  four arrays and seven objects every frame -- roughly 700 throwaway objects a
+  second -- against CLAUDE.md's no-per-frame-allocation rule. Now an in-place
+  insertion sort into two fixed arrays.
