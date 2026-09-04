@@ -12,8 +12,9 @@ Notable changes, newest first. Dates are the day the work landed.
   is mixed from those, down from 79 distinct hexes.
 - Each villager now wears a muted version of the orb they camp beside, so the
   seven of them are colour-coded to the fiction.
-- The orbs are now provably the most saturated things on screen: nothing else
-  exceeds 38%, the dullest orb is 40%.
+- Scenery and villagers are all muted below the orbs. The player keeps his
+  original navy and red, which is louder than any orb -- deliberately, since he
+  is the one thing always in frame.
 - sRGB output stated explicitly rather than inherited from the library default.
 
 ### Stage 1 — audit and foundations (3 September 2026)

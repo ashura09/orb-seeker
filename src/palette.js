@@ -107,9 +107,15 @@ export const LEAF_PROP = mix(FOLIAGE, GRASS, 0.35);
 // THE PLAYER. The suit is the deepest blue the palette can make, so the red
 // sash reads as the one warm thing on him.
 // ---------------------------------------------------------------------------
-export const SUIT = mix(WATER, INK, 0.56);
+// THE PLAYER'S OWN TWO. Declared, not derived, and deliberately outside the
+// eight. The muted versions were correct by the rules and wrong on the screen:
+// this is the character you look at for the entire game, and he should be vivid.
+// This is the one place the "nothing out-shouts the orbs" rule is knowingly
+// broken, and it is broken for the one thing that is always in frame.
+export const SUIT = 0x2b2d5c; // the original navy
+export const SASH = 0xe0553d; // the original red
+
 export const SUIT_CLOAK = mute(ORB[6], 0.45); // the Violet suit, once worn
-export const SASH = darken(mute(ORB[0], 0.45), 0.12); // his one accent, kept below the orbs
 export const FUR = mix(BARK, SAND, 0.15);
 export const SKIN = lighten(mix(SAND, BARK, 0.25), 0.15);
 export const HAT_BRIM = mix(SAND, BRASS, 0.5);
