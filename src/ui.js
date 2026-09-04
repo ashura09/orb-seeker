@@ -7,6 +7,11 @@ export const pouchEl = $('pouch'),
   fragEl = $('fragCount');
 export function renderPouch() {
   fragEl.textContent = save.fragments;
+  // The button SHOWS a number and was ANNOUNCED as "Fragments and shop", so a
+  // screen reader said something different from what was on screen -- which is
+  // the accessibility failure Lighthouse calls a label/content name mismatch.
+  // The spoken name now contains the visible number.
+  pouchEl.setAttribute('aria-label', save.fragments + ' fragments. Open the trader.');
 }
 export function bump(el) {
   el.classList.remove('bump');

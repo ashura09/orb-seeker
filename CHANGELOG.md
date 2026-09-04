@@ -4,6 +4,22 @@ Notable changes, newest first. Dates are the day the work landed.
 
 ## Unreleased
 
+### Tooling — the budget is now a gate
+
+**Added**
+
+- `npm run audit` — starts the game headless on `?bench` and fails if draw calls
+  or triangles are over CLAUDE.md's budget, or if anything logged a console error.
+- Lighthouse run against the live site: performance 85, accessibility 91, best
+  practices 100, SEO 100.
+
+**Fixed**
+
+- The fragments button showed a number but announced "Fragments and shop", so a
+  screen reader said something different from what was on screen.
+- Draw calls 165 to 147, inside budget: the player's ten static parts merge into
+  one mesh, the same trick the villagers already use.
+
 ### Stage 2 — the polish pass
 
 **Changed**

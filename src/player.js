@@ -3,8 +3,9 @@
 // The parts main.js animates each frame (arms, hands, tail) are exported.
 // `torso` is exported too because wanderers.js reuses its geometry.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as P from './palette.js';
-import { scene, mat, glow, pointLight } from './state.js';
+import { scene, mat, glow, pointLight, bakeIntoVertices, CHARACTER_MAT } from './state.js';
 import { worn } from './loadout.js';
 // aliased: setCrawlPose already has a parameter called `on`.
 import { on as onEvent, EVENTS } from './events.js';
@@ -73,19 +74,19 @@ for (let i = 0; i < 6; i++) {
   body.add(s);
   tailSegs.push(s);
 }
+// Ten of his parts never move relative to each other and never change colour --
+// head, face, muzzle, both eyes, both ears, the headband, the scarf tail and the
+// sash. They merge into one mesh with their colours baked into the vertices, the
+// same trick the villagers use.
+//
+// The torso and hood do NOT merge: they wear suitMat, which is recoloured when
+// the Violet suit is worn, and a baked vertex cannot be repainted later. The
+// limbs do not merge either, because they swing.
+const playerStatics = [headM, face, muzzle, eyeL, eyeR, earL, earR, band, scarfTail, sash];
 body.add(
+  new THREE.Mesh(mergeGeometries(playerStatics.map(bakeIntoVertices), false), CHARACTER_MAT),
   torso,
-  sash,
-  headM,
   hood,
-  face,
-  muzzle,
-  eyeL,
-  eyeR,
-  earL,
-  earR,
-  band,
-  scarfTail,
   armL,
   armR,
   handL,

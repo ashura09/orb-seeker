@@ -136,6 +136,36 @@ export const mat = (c, e = 0) =>
         }
       : { color: c, roughness: CONFIG.render.roughness, metalness: 0 },
   );
+/**
+ * Copies a mesh's geometry into its parent's space and paints its material colour
+ * into every vertex, so parts of different colours can be merged into one mesh.
+ *
+ * The colour comes from `material.color`, which three.js has already converted
+ * sRGB -> linear. Taking it from the original hex instead would convert twice and
+ * shift every colour.
+ */
+export function bakeIntoVertices(mesh) {
+  mesh.updateMatrix();
+  const geo = mesh.geometry.clone().applyMatrix4(mesh.matrix);
+  const n = geo.attributes.position.count;
+  const colors = new Float32Array(n * 3);
+  const { r, g, b } = mesh.material.color;
+  for (let i = 0; i < n; i++) {
+    colors[i * 3] = r;
+    colors[i * 3 + 1] = g;
+    colors[i * 3 + 2] = b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  return geo;
+}
+
+/** One material for every merged character part; the colours ride in the vertices. */
+export const CHARACTER_MAT = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: CONFIG.render.roughness,
+  metalness: 0,
+});
+
 export const glow = (c, op = 1) =>
   new THREE.MeshBasicMaterial({ color: c, transparent: op < 1, opacity: op });
 

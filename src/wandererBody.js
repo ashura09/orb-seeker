@@ -11,8 +11,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as P from './palette.js';
-import { scene, mat } from './state.js';
-import { CONFIG } from './config.js';
+import { scene, mat, bakeIntoVertices, CHARACTER_MAT } from './state.js';
 
 const GEO = {
   torso: new THREE.CylinderGeometry(0.3, 0.38, 0.8, 10),
@@ -56,11 +55,7 @@ const EYE = mat(P.INK),
 // the phone budget is 150 draw calls for the whole game. Props were never the
 // problem; 1150 of them cost 53 calls because they are instanced. The characters
 // were.
-const VILLAGER_MAT = new THREE.MeshStandardMaterial({
-  vertexColors: true,
-  roughness: CONFIG.render.roughness,
-  metalness: 0,
-});
+const VILLAGER_MAT = CHARACTER_MAT;
 
 /**
  * Copies a mesh's geometry into world-ish space and paints its material colour
@@ -70,20 +65,6 @@ const VILLAGER_MAT = new THREE.MeshStandardMaterial({
  * converted from sRGB to linear — copying it straight across means the merged
  * version is the same colour as the separate one, not a second conversion.
  */
-function bakeIntoVertices(mesh) {
-  mesh.updateMatrix();
-  const geo = mesh.geometry.clone().applyMatrix4(mesh.matrix);
-  const n = geo.attributes.position.count;
-  const colors = new Float32Array(n * 3);
-  const { r, g: gg, b } = mesh.material.color;
-  for (let i = 0; i < n; i++) {
-    colors[i * 3] = r;
-    colors[i * 3 + 1] = gg;
-    colors[i * 3 + 2] = b;
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  return geo;
-}
 
 export function buildWanderer(w) {
   const g = new THREE.Group();

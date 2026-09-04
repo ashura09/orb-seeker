@@ -42,12 +42,19 @@ Bench does not pin the _window_, and the frustum follows it: the same build read
 | Draw calls |      under **150** | Currently ~184 at normal quality; see the note below.                      |
 | FPS        | at or above **45** | Below this for five seconds and the game drops to low graphics on its own. |
 
-**Known exception:** draw calls sit at about 184 at normal quality, over the 150
-budget. The cause is measured and understood — the player and the seven villagers
-are each built from a dozen-plus separate meshes, roughly 118 calls between them.
-Low graphics is within budget at 80. The fix is to merge each character's
-non-animated parts into one geometry; it belongs with the polish pass, where the
-result has to be looked at anyway.
+**The budget is now enforced, not just written down.** Run it:
+
+    npm run audit
+
+It starts the game headless on `?bench`, reads the stats overlay in both normal
+and low graphics, and exits non-zero if draw calls or triangles are over budget,
+or if anything logged a console error. Current: 147 calls and 276.1k triangles
+normal, 70 and 106.9k low.
+
+It deliberately does NOT assert frame rate. Headless Chromium renders in software
+with no GPU, where this scene reports about 10 fps against 120 in a real browser.
+Counts transfer between machines; timings do not. **Frame rate is measured here,
+on a phone, and nowhere else.**
 
 ## Multiplayer (not built yet)
 

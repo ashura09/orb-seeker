@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Lighthouse reports are generated, not source
+lh.json
+lighthouse-*.json
