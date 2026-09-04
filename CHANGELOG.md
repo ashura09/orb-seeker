@@ -196,3 +196,21 @@ The duel was unwinnable above tier 3 and told the player the wrong duration.
   config, because hand-typed durations go quietly false.
 - The balance test used to assert tier 7 needed *more* than 10 taps a second: it
   ratified the bug. It now asserts what a nine-year-old can do.
+
+## Duel curve widened, and it now measures the player
+
+Ashura's note that "kids nowadays are fast" turned out to be checkable: `#tapzone`
+is a full-width pad bound to `touchstart`, so every finger that lands fires its
+own event and two thumbs double the rate. The previous ceiling was a one-thumb
+number applied to a two-thumb game.
+
+- Tier 7 raised from 7.0 to 8.0 taps a second, tier 1 held at 3.5. Past tier 5
+  one comfortable thumb is not enough, so the last camps are where you either buy
+  the grip or work out you may use both hands -- the duel's only real strategy.
+- The rules line now says "Two thumbs are allowed", from tier 4 up. The pad always
+  took two; nothing ever said so, which made the hard camps look impossible
+  instead of looking like a hint.
+- The result screen reports your taps per second and flags a personal best, and
+  `save.bestTaps` keeps the record. The next balance pass can be measured rather
+  than argued about.
+- "tosses you 3 fragment" now pluralises.

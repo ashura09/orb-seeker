@@ -590,3 +590,13 @@ canvas#c {
   font-size: 18px;
   font-weight: normal;
 }
+
+/* The tap-rate readout under a duel result. Quiet -- it is a fact about you,
+   not the result -- but present, because it is the only place the game tells
+   you something about your own hands. */
+#duelResult .rate {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--mint);
+  opacity: 0.85;
+}

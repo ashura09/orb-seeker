@@ -23,6 +23,8 @@ export const duel = {
   ready: D.countdown,
   waiting: true,
   over: false,
+  taps: 0, // how many times you hit the pad this round
+  tapStart: 0, // performance.now() at the first tap, for the rate readout
 };
 
 export function startDuel(w) {
@@ -34,6 +36,8 @@ export function startDuel(w) {
   duel.ready = D.countdown;
   duel.waiting = true;
   duel.over = false;
+  duel.taps = 0;
+  duel.tapStart = 0;
   joy.active = false;
   joy.x = joy.y = 0;
   stickEl.style.display = 'none';
@@ -53,7 +57,12 @@ export function startDuel(w) {
     // The duration is read from the config, never typed. It said "Ten seconds"
     // for months after the clock became six, and then four -- copy that repeats
     // a number by hand is copy that goes quietly false.
-    `${D.seconds} seconds: fill your bar first, or be further along when time runs out.`;
+    `${D.seconds} seconds: fill your bar first, or be further along when time runs out.` +
+    // Told, not hidden. The pad takes both thumbs and always has, but nothing in
+    // the game ever said so, so the hardest camps looked impossible instead of
+    // looking like a hint. Only mentioned from tier 4 up, where it starts to
+    // matter -- said earlier it would just be noise.
+    (w.tier >= 4 ? ' Two thumbs are allowed.' : '');
   $('resultSay').textContent = '';
   $('themName').textContent = w.short;
   $('duelPlay').style.display = 'block';
@@ -88,6 +97,12 @@ export function renderDuel() {
 
 export function tap() {
   if (G.state !== 'duel' || duel.over || duel.waiting || duel.ready > 0) return;
+  // First tap of the round starts the stopwatch. Everything above is a guess
+  // about how fast a nine-year-old is; this is the only number in the project
+  // that actually knows, so the next balance pass can be measured instead of
+  // argued about -- and kids like seeing their own score.
+  if (duel.taps === 0) duel.tapStart = performance.now();
+  duel.taps++;
   duel.you += worn('grip') ? D.tapValueWithGrip : D.tapValue;
   if (navigator.vibrate) navigator.vibrate(8);
   renderDuel();
@@ -146,8 +161,18 @@ export function endDuel(won) {
     loot = D.consolation;
     $('resultBig').textContent = 'Outpaced';
     $('resultSay').textContent = `“${voiceOf(duel.w.short).theyWin}”`;
-    $('resultLoot').textContent = `${first} wins, but tosses you ${loot} fragment for the effort.`;
+    $('resultLoot').textContent =
+      `${first} wins, but tosses you ${loot} fragment${loot === 1 ? '' : 's'} for the effort.`;
   }
+  // Taps per second, over the window between the first tap and the last.
+  const span = (performance.now() - duel.tapStart) / 1000;
+  const rate = duel.taps > 1 && span > 0.2 ? (duel.taps - 1) / span : 0;
+  const previousBest = save.bestTaps || 0;
+  const isRecord = rate > previousBest;
+  if (isRecord) save.bestTaps = rate;
+  $('resultRate').textContent = rate
+    ? `${rate.toFixed(1)} taps a second${isRecord ? ' — your best yet' : ''}`
+    : '';
   addFragments(loot);
   duel.w.cooldown = CONFIG.wanderers.cooldown;
   pickTarget(duel.w);

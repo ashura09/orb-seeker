@@ -30,6 +30,7 @@ export const SAVE_KEY = 'orbseeker.save.v2';
 export const save = {
   fragments: 0,
   wins: 0,
+  bestTaps: 0, // fastest taps-per-second ever managed in a duel
   items: {},
   wishes: [],
   cycles: 0,
@@ -64,7 +65,7 @@ if (typeof save.items !== 'object' || save.items === null || Array.isArray(save.
 }
 if (!Array.isArray(save.wishes)) save.wishes = [];
 save.wishes = save.wishes.filter((w) => w && typeof w.text === 'string');
-for (const k of ['fragments', 'wins', 'cycles']) {
+for (const k of ['fragments', 'wins', 'cycles', 'bestTaps']) {
   if (!Number.isFinite(save[k])) save[k] = 0;
 }
 if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;

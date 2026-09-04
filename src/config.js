@@ -339,8 +339,19 @@ export const CONFIG = {
     //
     // Now: tier 1 wants 3.5 taps/second, tier 7 wants 7.0, and the Duelist grip
     // brings tier 7 down to 5.4. Hard at the top, possible everywhere.
-    opponentBase: 0.145,
-    opponentPerTier: 0.029,
+    // Widened again after Ashura pointed out that kids today are fast, which the
+    // code then confirmed: #tapzone is a full-width 150px pad bound to
+    // touchstart, and every finger that lands fires its own event. Two thumbs
+    // alternating therefore DOUBLE the rate, so any ceiling stated in taps per
+    // second is a one-thumb ceiling with twice as much headroom behind it.
+    //
+    // The curve now runs 3.5 taps/s at tier 1 to 8.0 at tier 7 (2.7 to 6.2 with
+    // the grip). That is deliberately past one comfortable thumb at the top: the
+    // last camps are meant to be the moment you either buy the grip or work out
+    // that you are allowed to use both hands. That discovery is the duel's only
+    // piece of strategy, so the numbers have to make it worth discovering.
+    opponentBase: 0.1375,
+    opponentPerTier: 0.0375,
 
     // Winning pays (lootBase + tier + 0..lootVariance) fragments,
     // doubled on a flawless roll. Losing always pays consolation.

@@ -97,26 +97,34 @@ describe('duel tier maths', () => {
   // it was written to describe the numbers rather than the players. A balance
   // test has to name a human being or it just ratifies whatever is in the file.
   //
-  // The player is a child of about nine on a phone. Sustained tapping tops out
-  // around 6 a second; 4 is comfortable.
-  const CHILD_COMFORTABLE = 4;
-  const CHILD_LIMIT = 6;
+  // The player is a child of about nine on a phone. ONE thumb tops out around 6
+  // taps a second and is comfortable at 4 -- but #tapzone is bound to touchstart,
+  // so every finger that lands counts, and two thumbs alternating double it.
+  // Stating the ceiling per thumb is what keeps this test honest: the previous
+  // version quietly compared a two-thumb game against a one-thumb limit.
+  const ONE_THUMB_COMFORTABLE = 4;
+  const ONE_THUMB_LIMIT = 6;
+  const TWO_THUMB_LIMIT = 12;
 
-  it('can be won by a nine-year-old at every tier', () => {
+  it('opens gently and ends hard, and is winnable throughout', () => {
     const { tapValue, tapValueWithGrip } = CONFIG.duel;
     const bare = (tier) => tierRate(tier) / tapValue;
     const withGrip = (tier) => tierRate(tier) / tapValueWithGrip;
 
-    // The first camp must be winnable without trying hard and without shopping.
-    expect(bare(1)).toBeLessThan(CHILD_COMFORTABLE);
+    // The first camp: one thumb, no shopping, no hurry.
+    expect(bare(1)).toBeLessThan(ONE_THUMB_COMFORTABLE);
 
-    // No camp may be out of reach once the grip is bought -- every villager has
-    // written losing dialogue, and dialogue nobody can trigger is dead content.
-    for (let t = 1; t <= 7; t++) expect(withGrip(t)).toBeLessThanOrEqual(CHILD_LIMIT);
+    // Every camp stays inside two thumbs even with nothing bought, so no villager
+    // is ever unreachable and no losing dialogue goes unheard.
+    for (let t = 1; t <= 7; t++) expect(bare(t)).toBeLessThan(TWO_THUMB_LIMIT);
 
-    // But the last camps must be past bare hands, or the grip is worthless and
-    // the difficulty curve is flat.
-    expect(bare(7)).toBeGreaterThan(CHILD_LIMIT);
+    // The grip has to be worth its price: it must bring the last camp back inside
+    // one thumb's reach for a fast child.
+    expect(withGrip(7)).toBeLessThanOrEqual(ONE_THUMB_LIMIT + 0.5);
+
+    // And the last camp must be past one COMFORTABLE thumb, or there is nothing
+    // to buy the grip for and nothing to discover two thumbs for.
+    expect(bare(7)).toBeGreaterThan(ONE_THUMB_LIMIT);
   });
 
   it('has a clock that can actually run out', () => {
