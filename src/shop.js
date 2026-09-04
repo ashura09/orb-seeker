@@ -6,7 +6,7 @@ import { $, G, hex } from './state.js';
 import { save, persist } from './save.js';
 import { renderPouch, toast, pouchEl } from './ui.js';
 import { emit, EVENTS } from './events.js';
-import { ITEMS } from './config.js';
+import { ITEMS } from './items.js';
 
 export { ITEMS };
 
