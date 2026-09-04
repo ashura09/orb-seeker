@@ -88,14 +88,22 @@ export const CONFIG = {
   //   scale      a few things much bigger than the rest, so there is a silhouette
   //              above the canopy and your eye can judge distance
   composition: {
-    standsPerRegion: 5,
-    standRadius: 22, // average clump size, metres
-    standShare: 0.72, // share of props that grow in a clump; the rest are
+    standsPerRegion: 9,
+    standRadius: 15, // average clump size, metres
+    standShare: 0.78, // share of props that grow in a clump rather than alone
+    standPurity: 0.72, // of those, how many are the stand's own species. A
+    // stand is a stand OF SOMETHING; without this every
+    // clump was an even mixture of everything the region
+    // grows, which is what "thrown carelessly" looks like. // share of props that grow in a clump; the rest are
     // stragglers, which is what stops clumps reading as circles
     clearings: 6,
     clearingRadius: 13,
     pathWidth: 5, // half-width of the cleared route, metres
     edgeThinning: 0.8, // how much density drops toward a region's border
+    edgeThinningMax: 0.45, // ...but never more than this. Uncapped, ground beyond
+    // every region's reach rejected 80% of what it was
+    // offered, and the outer third of the valley came out
+    // nearly bare. A border should thin, not stop.
     giantChance: 0.035, // how often a tree or boulder is a big one
     giantScale: 2.6,
   },

@@ -152,17 +152,39 @@ export function scatterScenery(rng) {
 
   // STANDS. Things grow in clumps because they seed near each other. A handful
   // of clump centres per region, and most props are placed inside one.
+  //
+  // A STAND IS A STAND *OF SOMETHING*. This was the thing missing. Every stand
+  // used to re-roll the species at each prop, so a clump in the forest came out
+  // as conifer-fern-mushroom-stump-log-shrub mixed evenly -- and so did every
+  // other clump in the forest. Measured: 4.6 of the 28 kinds appeared in an
+  // average 40 m cell, which is why the valley read as "stuff thrown carelessly".
+  //
+  // Now each stand rolls ONE dominant species when it is created, and most of
+  // what grows in it is that. A stand of conifers, then a patch of ferns.
+  const rollKind = (region) => {
+    const entries = Object.entries(region.props);
+    const sum = entries.reduce((n, [, w]) => n + w, 0);
+    let pick = rng() * sum;
+    for (const [k, w] of entries) if ((pick -= w) <= 0) return k;
+    return entries[0][0];
+  };
+
+  // Stands are spread over the WHOLE valley by area, not around the region
+  // centres. Placing them per-centre put every one of them in the inner half --
+  // measured at 931 props inside the half-area ring against 278 outside it --
+  // and the rim came out bare. Each stand takes the species of wherever it
+  // happens to land, so a region's character still comes from the region.
   const stands = [];
-  for (const c of centres) {
-    for (let i = 0; i < C.standsPerRegion; i++) {
-      const a = rng() * Math.PI * 2,
-        d = Math.sqrt(rng()) * c.region.radius * 0.8;
-      stands.push({
-        x: c.x + Math.cos(a) * d,
-        z: c.z + Math.sin(a) * d,
-        r: C.standRadius * (0.55 + rng() * 0.9),
-      });
-    }
+  const standCount = C.standsPerRegion * centres.length;
+  let standGuard = 0;
+  while (stands.length < standCount && standGuard++ < standCount * 40) {
+    const a = rng() * Math.PI * 2;
+    const d = Math.sqrt(rng()) * (WORLD_R - 12); // sqrt = even across the disc
+    const x = Math.cos(a) * d,
+      z = Math.sin(a) * d;
+    const { region } = regionAt(x, z);
+    if (!Object.keys(region.props).length) continue;
+    stands.push({ x, z, kind: rollKind(region), r: C.standRadius * (0.55 + rng() * 0.9) });
   }
 
   // How far into its region a point is: 0 at the centre, 1 at the edge, more
@@ -196,8 +218,10 @@ export function scatterScenery(rng) {
     guard = 0;
   while (guard++ < total * 300 && placed < total) {
     let x, z;
+    let stand = null;
     if (stands.length && rng() < C.standShare) {
       const st = stands[(rng() * stands.length) | 0];
+      stand = st;
       const a = rng() * Math.PI * 2;
       // sqrt spreads points EVENLY over a disc. Without it they pile up in the
       // middle, and every stand grows a dense core with a thin edge -- which is
@@ -216,19 +240,13 @@ export function scatterScenery(rng) {
     // Thin out toward a region's border, so one does not stop dead where the
     // next begins.
     const { region } = regionAt(x, z);
-    if (rng() < Math.min(1, regionReach(x, z)) * C.edgeThinning) continue;
+    if (rng() < Math.min(C.edgeThinningMax, Math.min(1, regionReach(x, z)) * C.edgeThinning))
+      continue;
 
-    // roulette across this region's own vocabulary
-    const entries = Object.entries(region.props);
-    const sum = entries.reduce((n, [, w]) => n + w, 0);
-    let pick = rng() * sum,
-      kind = entries[0][0];
-    for (const [k, w] of entries) {
-      if ((pick -= w) <= 0) {
-        kind = k;
-        break;
-      }
-    }
+    // Inside a stand, its species wins most of the time. The remainder keeps a
+    // stand from being a monoculture, which reads as planted rather than grown.
+    const inStandSpecies = stand && region.props[stand.kind] && rng() < C.standPurity;
+    const kind = inStandSpecies ? stand.kind : rollKind(region);
 
     const variants = PROPS[kind];
     if (!variants || !variants.length) continue; // that model failed to load
@@ -301,6 +319,7 @@ export function scatterScenery(rng) {
     }
   }
 
+  window.__placements = placements; // TEMP
   buildInstances(placements);
 
   buildInstances(placements);
