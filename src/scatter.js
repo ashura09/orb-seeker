@@ -318,8 +318,6 @@ export function scatterScenery(rng) {
       addObstacle(kind, x, z, sc);
     }
   }
-
-  window.__placements = placements; // TEMP
   buildInstances(placements);
 
   buildInstances(placements);
