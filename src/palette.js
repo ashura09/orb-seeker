@@ -1,142 +1,186 @@
-// palette.js — every colour in the game, in one place.
+// palette.js — every colour in the game, from eight.
 //
-// CLAUDE.md's art rule: all colours come from here. Adding a colour means editing
-// this file, never writing a hex literal at the point of use. The reason is that
-// there were 114 colour literals across ten files, 79 of them distinct, and
-// nothing stopped two greens from quietly being different greens.
+// CLAUDE.md's art rule: all colours come from here, and adding one means editing
+// this file. The polish guide asks for about eight core colours plus the seven
+// orbs, on the grounds that amateur worlds use fifty and polished ones use eight.
+// This file used to declare seventy-nine.
 //
-// This file is a pure EXTRACTION: every value below is exactly what was inline
-// before, so nothing changed colour. The reduction to a tight palette is the
-// polish pass's job, not this one.
+// It now declares FIFTEEN literals: eight core, and the seven orbs. Everything
+// else in the game is mixed from those by the helpers below. That is the whole
+// discipline — if a colour is not derivable from the eight, it does not belong
+// in the valley, and the compiler cannot be argued with.
 //
-// The polish guide asks for roughly eight core colours plus the seven orbs. The
-// groups below are ordered with that in mind — the SEVEN and the CORE are what
-// should survive; everything under "still to be reduced" is a candidate to be
-// merged into them.
-//
-// Imported as a namespace everywhere (`import * as P from './palette.js'`) so a
-// name like EYE or GOLD cannot collide with a local variable at the use site.
+// SATURATION IS RESERVED. The eight are muted on purpose. The orbs are the only
+// fully saturated things in the game, because the eye goes to saturation and the
+// orbs are what you are hunting. Anything else that must be noticed borrows an
+// orb's hue rather than inventing a brighter one.
 
 // ---------------------------------------------------------------------------
-// THE SEVEN. Rainbow order, orb 1 to orb 7. These are the most saturated things
-// in the game and that is deliberate: the eye goes to saturation, so the thing
-// you are hunting should be the brightest thing on screen.
+// THE EIGHT
+// ---------------------------------------------------------------------------
+export const GRASS = 0x62a34d; // the dominant green: meadow, open ground
+export const FOLIAGE = 0x2f6b34; // deep green: canopy, forest floor, reeds
+export const BARK = 0x6b4a2a; // warm brown: wood, dirt, earth
+export const STONE = 0x9aa3ab; // cool grey: rock, cliff, steel
+export const SAND = 0xc9bfa0; // pale warm: high ground, peaks, skin
+export const WATER = 0x3f8fbf; // the lake, the sky, and (darkened) the suit
+export const BRASS = 0xc9a15a; // warm metal: trim, lanterns, the Keeper
+export const INK = 0x1b1a17; // near-black: eyes, and the darkest accents
+
+// ---------------------------------------------------------------------------
+// THE SEVEN. Rainbow order, orb 1 to orb 7, and the only saturated things here.
 // ---------------------------------------------------------------------------
 export const ORB = [0xff6b6b, 0xffa94d, 0xffe066, 0x8ce99a, 0x66d9e8, 0x748ffc, 0xda77f2];
 
 // ---------------------------------------------------------------------------
-// CORE — the handful that carry the whole look, and the ones to keep.
+// Mixing. Everything below this line is derived; nothing below declares a hex.
 // ---------------------------------------------------------------------------
-export const BRASS = 0xc9a15a; // metal, trim, lantern cages, UI borders
-export const MINT = 0x8ff5c8; // the finder, the Keeper's eyes: "this is a system"
-export const CREAM = 0xf6efdf; // panels and paper
-export const INK = 0x1b1a17; // eyes, text, the darkest thing
-export const SASH = 0xe0553d; // the one warm red, on the player and one villager
-export const BARK = 0x6b4a2a; // wood everywhere
-export const STONE = 0x9aa3ab; // rock and steel
-export const SKIN = 0xd9a878; // faces
+const ch = (c, i) => (c >> (16 - 8 * i)) & 255;
+
+/** Blend two colours. t = 0 gives a, t = 1 gives b. */
+export function mix(a, b, t) {
+  const r = Math.round(ch(a, 0) + (ch(b, 0) - ch(a, 0)) * t);
+  const g = Math.round(ch(a, 1) + (ch(b, 1) - ch(a, 1)) * t);
+  const bl = Math.round(ch(a, 2) + (ch(b, 2) - ch(a, 2)) * t);
+  return (r << 16) | (g << 8) | bl;
+}
+
+const WHITE_ = 0xffffff;
+export const lighten = (c, t) => mix(c, WHITE_, t);
+export const darken = (c, t) => mix(c, INK, t);
+
+/**
+ * Pulls a colour toward the grey of the same brightness — the move that keeps
+ * scenery quiet so the orbs stay loud.
+ */
+export function mute(c, t) {
+  const grey = Math.round(0.299 * ch(c, 0) + 0.587 * ch(c, 1) + 0.114 * ch(c, 2));
+  return mix(c, (grey << 16) | (grey << 8) | grey, t);
+}
+
+export const WHITE = WHITE_;
 
 // ---------------------------------------------------------------------------
-// GROUND, by region. Two shades each: the terrain mottles between them.
+// GROUND, by region. Two shades each; the terrain mottles between them.
 // ---------------------------------------------------------------------------
-export const GROUND_MEADOW = [0x55984a, 0x6ab558];
-export const GROUND_FOREST = [0x2c6b38, 0x3a7d45];
-export const GROUND_HIGHLAND = [0x8a8f76, 0x9ba190];
-export const GROUND_WETLAND = [0x4a8f6a, 0x5aa47c];
-export const GROUND_BURN = [0x6b5f45, 0x7d6f52];
+export const GROUND_MEADOW = [darken(GRASS, 0.12), lighten(GRASS, 0.12)];
+export const GROUND_FOREST = [FOLIAGE, mix(FOLIAGE, GRASS, 0.35)];
+export const GROUND_HIGHLAND = [
+  mute(mix(SAND, STONE, 0.5), 0.3),
+  lighten(mix(SAND, STONE, 0.4), 0.1),
+];
+export const GROUND_WETLAND = [mix(FOLIAGE, WATER, 0.28), mix(GRASS, WATER, 0.25)];
+export const GROUND_BURN = [mix(BARK, SAND, 0.25), mix(BARK, SAND, 0.45)];
 
-export const ROCK_FACE = 0x7a7164; // what steep ground blends toward
-export const DISTANT_HILLS = 0x6f8570; // the ring of scenery you can never reach
-export const WATER = 0x3f8fbf;
-export const GROUND_BOUNCE = 0x6f8a5e; // light coming back UP off the grass
+export const ROCK_FACE = mute(mix(STONE, BARK, 0.45), 0.25);
+export const DISTANT_HILLS = mute(mix(FOLIAGE, STONE, 0.35), 0.35);
+export const GROUND_BOUNCE = mute(GRASS, 0.35);
 
 // ---------------------------------------------------------------------------
-// SKY AND LIGHT
+// SKY AND LIGHT. All from WATER, which is the only blue the game owns.
 // ---------------------------------------------------------------------------
-export const DAY_HORIZON = 0xbfe0f5;
-export const DAY_ZENITH = 0x4a90d9;
-export const NIGHT_HORIZON = 0x2a3560;
-export const NIGHT_ZENITH = 0x070d24;
-export const FOG_DAY = 0x8fc7ff;
-export const FOG_NIGHT = 0x0a0f2a;
-export const SUN = 0xfff0d0; // warm, not white — a white sun looks like a lamp
-export const SKY_FILL = 0xe6f2ff;
-export const AMBIENT = 0xbdd4e8;
-export const WHITE = 0xffffff; // orb lights borrow the orb's own colour; this is the default
+export const DAY_HORIZON = lighten(WATER, 0.72);
+export const DAY_ZENITH = mix(WATER, darken(WATER, 0.35), 0.5);
+export const NIGHT_HORIZON = darken(mix(WATER, INK, 0.55), 0.35);
+export const NIGHT_ZENITH = darken(mix(WATER, INK, 0.8), 0.6);
+export const FOG_DAY = lighten(WATER, 0.55);
+export const FOG_NIGHT = darken(mix(WATER, INK, 0.8), 0.55);
+export const SUN = lighten(mix(BRASS, SAND, 0.6), 0.55); // warm, never white
+export const SKY_FILL = lighten(WATER, 0.85);
+export const AMBIENT = lighten(mix(WATER, STONE, 0.5), 0.55);
 
 // ---------------------------------------------------------------------------
 // PROPS — the remap applied to the glTF kit, which shipped orange bark and
-// turquoise leaves. See PALETTE in props.js for how these are matched.
+// turquoise leaves.
 // ---------------------------------------------------------------------------
-export const LEAF = 0x63b04a;
-export const LEAF_DARK = 0x2f6b34;
-export const GRASS_TUFT = 0x7cbf5a;
-export const BARK_DARK = 0x55381f;
-export const WOOD_INNER = 0xc9a882;
-export const DIRT = 0x7a6142;
-export const STONE_DARK = 0x767c84;
-export const PROP_DEFAULT = 0xa8a8a8;
+export const LEAF = mix(FOLIAGE, GRASS, 0.55);
+export const LEAF_DARK = darken(FOLIAGE, 0.15);
+export const GRASS_TUFT = lighten(GRASS, 0.18);
+export const BARK_DARK = darken(BARK, 0.3);
+export const WOOD_INNER = lighten(mix(BARK, SAND, 0.6), 0.15);
+export const DIRT = mix(BARK, SAND, 0.3);
+export const STONE_DARK = darken(STONE, 0.2);
+export const PROP_DEFAULT = mute(STONE, 0.6);
+export const LEAF_PROP = mix(FOLIAGE, GRASS, 0.35);
 
 // ---------------------------------------------------------------------------
-// THE PLAYER
+// THE PLAYER. The suit is the deepest blue the palette can make, so the red
+// sash reads as the one warm thing on him.
 // ---------------------------------------------------------------------------
-export const SUIT = 0x2b2d5c;
-export const SUIT_CLOAK = 0x5b2c83; // the Violet suit, once bought and worn
-export const FUR = 0x7a4f2b;
-export const HAT_BRIM = 0xd9b86a;
-export const HAT_TOP = 0xcfa955;
-export const LANTERN_LIGHT = 0xffd27a;
+export const SUIT = mix(WATER, INK, 0.56);
+export const SUIT_CLOAK = mute(ORB[6], 0.45); // the Violet suit, once worn
+export const SASH = darken(mute(ORB[0], 0.45), 0.12); // his one accent, kept below the orbs
+export const FUR = mix(BARK, SAND, 0.15);
+export const SKIN = lighten(mix(SAND, BARK, 0.25), 0.15);
+export const HAT_BRIM = mix(SAND, BRASS, 0.5);
+export const HAT_TOP = mix(BRASS, SAND, 0.35);
+export const LANTERN_LIGHT = lighten(BRASS, 0.35);
 
 // ---------------------------------------------------------------------------
-// THE SEVEN VILLAGERS — a coat, a hat and a skin tone each. Their silhouettes
-// differ too; colour alone should never be the only way to tell them apart.
+// THE SEVEN VILLAGERS
+//
+// Each one wears a muted version of the orb they camp beside — Bram by orb 1 in
+// red, the Pilgrim by orb 7 in violet. They are former seekers who stopped where
+// their colour is, so the fiction and the palette say the same thing, and not
+// one new hex is needed to dress all seven.
+//
+// Muted, not saturated: they are people, and the orbs are the prize.
 // ---------------------------------------------------------------------------
+const coat = (n) => mute(ORB[n], 0.55);
+const villagerSkin = (t) => lighten(mix(SAND, BARK, 0.2 + t * 0.25), 0.2 - t * 0.1);
+
 export const VILLAGER = {
-  bram: { coat: 0x6b8e23, hat: 0x5a3d1e, skin: 0xd9a878 },
-  nell: { coat: 0x9b59b6, hat: 0xf6efdf, skin: 0xf1c9a5 },
-  pip: { coat: 0x3d8fc9, hat: 0xe0553d, skin: 0xe8bb90 },
-  marla: { coat: 0x8a6a3a, hat: 0x7f8c8d, skin: 0xc98f63 },
-  tarrow: { coat: 0x7f8c8d, hat: 0x1b1a17, skin: 0xdcb894 },
-  sable: { coat: 0x1b1a17, hat: 0xc9a15a, skin: 0xd9a878 },
-  pilgrim: { coat: 0xd9d9d9, hat: 0x2b2d5c, skin: 0xcfa07a },
+  bram: { coat: darken(coat(0), 0.25), hat: BARK_DARK, skin: villagerSkin(0.2) },
+  nell: { coat: coat(1), hat: lighten(SAND, 0.5), skin: villagerSkin(0) },
+  pip: { coat: coat(4), hat: mute(ORB[0], 0.2), skin: villagerSkin(0.1) },
+  marla: { coat: darken(coat(2), 0.35), hat: STONE, skin: villagerSkin(0.5) },
+  tarrow: { coat: STONE, hat: INK, skin: villagerSkin(0.15) },
+  sable: { coat: INK, hat: BRASS, skin: villagerSkin(0.2) },
+  pilgrim: { coat: lighten(mute(ORB[6], 0.75), 0.35), hat: SUIT, skin: villagerSkin(0.35) },
 };
 
 // Shared villager gear.
-export const STEEL = 0x9aa3ab;
-export const STRAW = 0xcfa955;
-export const BOOT = 0x4a4038;
-export const WHISKERS = 0xe8e8e8;
-export const LEATHER = 0x8a6a3a;
-export const STRAP = 0x5a3d1e;
-export const LEAF_PROP = 0x3d8f45;
+export const STEEL = lighten(STONE, 0.1);
+export const STRAW = mix(BRASS, SAND, 0.35);
+export const BOOT = darken(BARK, 0.45);
+export const WHISKERS = lighten(SAND, 0.55);
+export const LEATHER = mix(BARK, BRASS, 0.3);
+export const STRAP = BARK_DARK;
 
 // ---------------------------------------------------------------------------
-// THE KEEPER — the dragon is the only thing allowed to be this bright.
+// THE KEEPER — pale gold, the one thing allowed to be brighter than the ground.
 // ---------------------------------------------------------------------------
-export const DRAGON_SCALE = 0xf1e2b5;
-export const DRAGON_BELLY = 0xfff5d8;
-export const DRAGON_DARK = 0x2a2320;
-export const DRAGON_WING = 0xe6cf95;
-export const DRAGON_SPARK = 0xfff3c4;
-export const DRAGON_LIGHT = 0xffe9b0;
+export const DRAGON_SCALE = lighten(mix(BRASS, SAND, 0.6), 0.35);
+export const DRAGON_BELLY = lighten(SAND, 0.55);
+export const DRAGON_DARK = darken(mix(BARK, INK, 0.5), 0.2);
+export const DRAGON_WING = lighten(mix(BRASS, SAND, 0.45), 0.2);
+export const DRAGON_SPARK = lighten(BRASS, 0.7);
+export const DRAGON_LIGHT = lighten(BRASS, 0.5);
 
 // ---------------------------------------------------------------------------
-// PICKUPS
+// PICKUPS — saturated, because they are things to walk towards.
 // ---------------------------------------------------------------------------
-export const CRATE = 0x8a6a3a;
-export const WISH_TOKEN = 0xffe9b0;
-export const WISH_GLOW = 0xfff0c8;
+export const CRATE = mix(BARK, BRASS, 0.35);
+export const WISH_TOKEN = lighten(BRASS, 0.5);
+export const WISH_GLOW = lighten(BRASS, 0.7);
 
 // ---------------------------------------------------------------------------
-// SHOP ITEMS — the swatch shown beside each item in the trader and the satchel.
+// UI — the HUD's own colours, matched to style.css.
+// ---------------------------------------------------------------------------
+export const MINT = 0x8ff5c8; // the finder: a system colour, deliberately apart
+export const CREAM = lighten(SAND, 0.65); // panels and paper
+
+// ---------------------------------------------------------------------------
+// SHOP ITEMS — each swatch is the orb hue nearest what the item does, so the
+// trader's shelf reads as part of the same world.
 // ---------------------------------------------------------------------------
 export const ITEM = {
-  boots: 0x66d9e8,
-  lens: 0x8ce99a,
-  grip: 0xe0553d,
-  lantern: 0xffe066,
-  hat: 0xd9b86a,
-  cloak: 0x9b59b6,
-  charm: 0xc9a15a,
-  bell: 0xdddddd,
+  boots: ORB[4],
+  lens: ORB[3],
+  grip: ORB[0],
+  lantern: ORB[2],
+  hat: mix(SAND, BRASS, 0.5),
+  cloak: ORB[6],
+  charm: BRASS,
+  bell: lighten(STONE, 0.35),
 };

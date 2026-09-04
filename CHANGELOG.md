@@ -4,6 +4,18 @@ Notable changes, newest first. Dates are the day the work landed.
 
 ## Unreleased
 
+### Stage 2 — the polish pass
+
+**Changed**
+
+- The palette is eight colours plus the seven orbs. Everything else in the game
+  is mixed from those, down from 79 distinct hexes.
+- Each villager now wears a muted version of the orb they camp beside, so the
+  seven of them are colour-coded to the fiction.
+- The orbs are now provably the most saturated things on screen: nothing else
+  exceeds 38%, the dullest orb is 40%.
+- sRGB output stated explicitly rather than inherited from the library default.
+
 ### Stage 1 — audit and foundations (3 September 2026)
 
 Groundwork only: no change to how the game looks or plays, except where noted.
