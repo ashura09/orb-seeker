@@ -12,6 +12,7 @@ import { worn, toggleWorn, wearIfRoom, slots, wornCount } from './loadout.js';
 import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
 import { emit, on, EVENTS } from './events.js';
+import { plantWish } from './wishstones.js';
 
 // {g, kind:'item'|'wish', id?, text?, phase}
 export const pickups = [];
@@ -71,9 +72,13 @@ export function collectPickup(p, idx) {
       put ? 2 : 3,
     );
   } else {
-    save.wishes.push({ text: p.g.userData.text, cycle: save.cycles });
+    // The wish is planted where its token was standing, so the stone marks the
+    // spot you actually walked to -- not an arbitrary place the game chose.
+    const wish = { text: p.g.userData.text, cycle: save.cycles };
+    save.wishes.push(wish);
+    plantWish(wish, p.g.position.x, p.g.position.z);
     persist();
-    toast(`Wish kept: “${p.g.userData.text}”`, 3);
+    toast(`Wish kept: “${p.g.userData.text}”. A stone marks it.`, 3);
   }
   bump($('satchelBtn'));
   if (navigator.vibrate) navigator.vibrate([30, 30, 60]);

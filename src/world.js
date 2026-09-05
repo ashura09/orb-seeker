@@ -19,6 +19,7 @@ import { heightAt, surfaceHeightAt, setNoiseOffset } from './terrain.js';
 import { shapeGround } from './ground.js';
 import { buildHorizon } from './horizon.js';
 import { scatterScenery, obstacles } from './scatter.js';
+import { emit, EVENTS } from './events.js';
 import { fillWater, waterLevel, waterRadius, isInWater } from './water.js';
 
 // Where the named places are, and a counter that changes whenever the valley is
@@ -45,6 +46,11 @@ export function buildWorld(seed) {
   buildHorizon(rng);
   scatterScenery(rng);
   fillWater();
+  // Announced rather than called: wish stones need the finished terrain and the
+  // obstacle list, but they must not be imported from here -- wishstones.js
+  // imports THIS file, and a cycle between them would be a real one. The bus
+  // exists for exactly this shape of dependency.
+  emit(EVENTS.WORLD_BUILT);
 }
 
 // The public face of the valley. Everything outside imports from here, which is

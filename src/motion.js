@@ -20,6 +20,8 @@ import { WORLD_R, obstacles, surfaceHeightAt, isInWater } from './world.js';
 import { worn } from './loadout.js';
 import { orbs, collect, updateOrbLights, updateVanish } from './orbs.js';
 import { updateBurst } from './burst.js';
+import { updateWishStones, readNearbyWish } from './wishstones.js';
+import { toast } from './ui.js';
 import { pickups, collectPickup } from './inventory.js';
 import { updateWanderers } from './wanderers.js';
 
@@ -117,6 +119,9 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
       if (Math.hypot(p.g.position.x - player.position.x, p.g.position.z - player.position.z) < 1.5)
         collectPickup(p, i);
     }
+    // Standing near a wish stone tells you what you wished for. Only while
+    // playing: it would be absurd to read out over a duel or the ceremony.
+    readNearbyWish(player.position.x, player.position.z, toast);
     updateWanderers(dt);
   }
   updateOrbLights();
@@ -124,6 +129,7 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
   // if collecting the seventh one opened the ceremony half a second ago.
   updateVanish(dt);
   updateBurst(dt);
+  updateWishStones(dt);
   tailSegs.forEach((s, i) => {
     const k = i + 1;
     s.position.set(

@@ -1,4 +1,3 @@
-
 ## Verifying a change in a running Vite dev server (and the trap in it)
 
 The dev server serves ES modules, so the browser console can reach the game's
@@ -8,8 +7,8 @@ real modules and drive them:
     o.collect(o.orbs[0]);        // a genuine collection, real code path
 
 **The trap.** After you edit a file, Vite's HMR serves the entry as
-`/src/main.js?t=1788560560425`. That query string makes it a *different module
-URL*, so `import('/src/state.js')` from the console loads a SECOND, FRESH COPY of
+`/src/main.js?t=1788560560425`. That query string makes it a _different module
+URL_, so `import('/src/state.js')` from the console loads a SECOND, FRESH COPY of
 the whole game. It looks like it is working: `collect()` runs, the toast appears,
 the counter dot lights — because those write to the DOM, which is shared. But the
 3D scene you are looking at belongs to the first copy and never changes.

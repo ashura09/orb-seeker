@@ -335,6 +335,23 @@ export const CONFIG = {
     shakeDecay: 9, // how fast the jolt dies. Higher = sharper, less wobble.
   },
 
+  // ---------------------------------------------------------------------------
+  // WISH STONES. A wish, standing in the valley where you made it.
+  // ---------------------------------------------------------------------------
+  wishes: {
+    max: 40, // instance capacity; beyond this the oldest stones stop being drawn
+    height: 1.9, // metres of shaft, before the collar and cap
+    radius: 0.55, // how wide it is to walk into, and for the camera to dodge
+    // Low on purpose. `emissive` is a MATERIAL property, and the stone is one
+    // merged mesh, so this lifts the shaft exactly as much as the cap: at 0.35
+    // the stones read as ghostly white obelisks rather than rock with a lit top.
+    // At 0.1 they are stone by day and still faintly findable at night.
+    emissive: 0.1,
+    riseSeconds: 1.1, // how long a new stone takes to grow out of the ground
+    readRadius: 4.5, // walk this close and it tells you what you wished for
+    legacyRing: 25, // where wishes made before stones existed are planted
+  },
+
   duel: {
     // The duel really does last this long now. It used to say ten seconds while
     // the opponent's bar filled in at most 4.44 -- so the clock never ran out,

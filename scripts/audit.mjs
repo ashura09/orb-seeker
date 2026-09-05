@@ -85,6 +85,25 @@ try {
   const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
 
   say(`\n  Orb Seeker — performance budget\n  ${url}/?bench\n`);
+  // Measure a PLAYED save, not a brand-new one.
+  //
+  // This gate used to open the game with empty storage, so it measured a world
+  // with no wish stones in it -- a state that stops being true the first time
+  // anyone finishes a cycle. "Within budget" that only holds for a save nobody
+  // has played is not an assurance, it is a blind spot.
+  //
+  // These wishes carry no coordinates on purpose: wishstones.js then places them
+  // from a hash of their own text, which is deterministic, so the reading stays
+  // reproducible AND it exercises the path that saves from before stones take.
+  await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('orbseeker.save.v2') || '{}');
+    s.wishes = ['a bigger treehouse', 'that Nan gets better', 'snow', 'a dog', 'to fly'].map(
+      (text) => ({ text, cycle: 0 }),
+    );
+    localStorage.setItem('orbseeker.save.v2', JSON.stringify(s));
+  });
+
   const normal = await measure(page, `${url}/?bench&stats`);
   results.push({ mode: 'normal', ...normal });
 

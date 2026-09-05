@@ -11,20 +11,21 @@ everything else passes — write it down before fixing, so it does not get lost.
 
 ## The two-minute pass
 
-| #   | Step                                                                                                             | Passes if                                                                                    |
-| --- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 1   | **Move.** Left thumb on the joystick, walk in a circle. Right thumb to look around.                              | The monkey walks and turns, the camera follows smoothly, and it does not clip inside a tree. |
-| 2   | **Zoom.** Pinch out, then in.                                                                                    | The view pulls back and pushes in, and the zoom you chose is still there after you let go.   |
-| 3   | **Jump.** Tap Jump next to a rock or a log.                                                                      | He leaves the ground, clears the low thing, and lands without sticking.                      |
-| 4   | **Map.** Tap the radar.                                                                                          | The map opens, shows only ground you have walked, and closes again.                          |
-| 5   | **Collect.** Walk into an orb.                                                                                   | Counter goes up, the dot lights, a message appears, the phone buzzes.                        |
-| 6   | **Duel.** Let a villager catch you and tap through it.                                                           | Their line appears, the bars fill, a result shows, and fragments are added.                  |
-| 7   | **Buy.** Open the trader, buy the cheapest item, then walk over the crate.                                       | Fragments go down, the crate appears, picking it up shows the item in the satchel.           |
-| 8   | **Wear.** In the satchel, take something off and put it back on.                                                 | The monkey visibly changes both times.                                                       |
-| 9   | **Ceremony.** Gather all seven orbs, make a wish, pick up the token.                                             | The Keeper arrives, the wish is accepted, the token can be collected.                        |
-| 10  | **Reload, and save persists.** Fully close the tab, reopen the link.                                             | Fragments, items, worn items and wishes are all still there.                                 |
-| 11  | **Install to home screen.** iPhone: Share → Add to Home Screen. Android: menu → Install app. Open from the icon. | It opens fullscreen with no browser bar, and the game plays.                                 |
-| 12  | **Background it.** Switch apps for ten seconds, come back.                                                       | It resumes where it was, without lurching forward, and the battery is not noticeably warmer. |
+| #   | Step                                                                                                             | Passes if                                                                                                             |
+| --- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Move.** Left thumb on the joystick, walk in a circle. Right thumb to look around.                              | The monkey walks and turns, the camera follows smoothly, and it does not clip inside a tree.                          |
+| 2   | **Zoom.** Pinch out, then in.                                                                                    | The view pulls back and pushes in, and the zoom you chose is still there after you let go.                            |
+| 3   | **Jump.** Tap Jump next to a rock or a log.                                                                      | He leaves the ground, clears the low thing, and lands without sticking.                                               |
+| 4   | **Map.** Tap the radar.                                                                                          | The map opens, shows only ground you have walked, and closes again.                                                   |
+| 5   | **Collect.** Walk into an orb.                                                                                   | Counter goes up, the dot lights, a message appears, the phone buzzes.                                                 |
+| 6   | **Duel.** Let a villager catch you and tap through it.                                                           | Their line appears, the bars fill, a result shows, and fragments are added.                                           |
+| 7   | **Buy.** Open the trader, buy the cheapest item, then walk over the crate.                                       | Fragments go down, the crate appears, picking it up shows the item in the satchel.                                    |
+| 8   | **Wear.** In the satchel, take something off and put it back on.                                                 | The monkey visibly changes both times.                                                                                |
+| 9   | **Ceremony.** Gather all seven orbs, make a wish, pick up the token.                                             | The Keeper arrives, the wish is accepted, the token can be collected.                                                 |
+| 9b  | **Wish stones.** After the ceremony, look where you picked each token up.                                        | A stone stands there, it grew rather than appeared, you cannot walk through it, and standing near it names your wish. |
+| 10  | **Reload, and save persists.** Fully close the tab, reopen the link.                                             | Fragments, items, worn items and wishes are all still there.                                                          |
+| 11  | **Install to home screen.** iPhone: Share → Add to Home Screen. Android: menu → Install app. Open from the icon. | It opens fullscreen with no browser bar, and the game plays.                                                          |
+| 12  | **Background it.** Switch apps for ten seconds, come back.                                                       | It resumes where it was, without lurching forward, and the battery is not noticeably warmer.                          |
 
 ## Performance check (do this one on the oldest phone you can find)
 
@@ -39,7 +40,7 @@ Bench does not pin the _window_, and the frustum follows it: the same build read
 | Reading    |             Budget | Notes                                                                      |
 | ---------- | -----------------: | -------------------------------------------------------------------------- |
 | Triangles  |     under **300k** | 276k at normal, 107k in low. Biggest lever is `CONFIG.world.props`.        |
-| Draw calls |      under **150** | 147 at normal quality, 70 in low. Checked by `npm run audit`.              |
+| Draw calls |      under **150** | **149** at normal, 71 in low — one to spare. Checked by `npm run audit`.   |
 | FPS        | at or above **45** | Below this for five seconds and the game drops to low graphics on its own. |
 
 **The budget is now enforced, not just written down.** Run it:
@@ -48,8 +49,17 @@ Bench does not pin the _window_, and the frustum follows it: the same build read
 
 It starts the game headless on `?bench`, reads the stats overlay in both normal
 and low graphics, and exits non-zero if draw calls or triangles are over budget,
-or if anything logged a console error. Current: 147 calls and 276.1k triangles
-normal, 70 and 106.9k low.
+or if anything logged a console error. Current: 149 calls and 276.6k triangles
+normal, 71 and 107.2k low.
+
+It seeds five wishes into the save before measuring, so it reads a PLAYED world
+with wish stones standing in it. It used to open an empty save, which measured a
+state that stops being true the first time anyone finishes a cycle.
+
+**There is one draw call of headroom left.** The next feature that adds an object
+has to find room first. The known win is the player: still about 31 meshes, the
+largest single object in the game. Its static parts can be merged, though the
+suit recolours when the cloak is worn, so those parts have to stay separate.
 
 It deliberately does NOT assert frame rate. Headless Chromium renders in software
 with no GPU, where this scene reports about 10 fps against 120 in a real browser.

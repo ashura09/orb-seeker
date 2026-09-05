@@ -194,7 +194,7 @@ The duel was unwinnable above tier 3 and told the player the wrong duration.
 - The consolation payment for losing raised from 1 fragment to 3.
 - The rules line no longer says "Ten seconds" -- it reads the number from the
   config, because hand-typed durations go quietly false.
-- The balance test used to assert tier 7 needed *more* than 10 taps a second: it
+- The balance test used to assert tier 7 needed _more_ than 10 taps a second: it
   ratified the bug. It now asserts what a nine-year-old can do.
 
 ## Duel curve widened, and it now measures the player
@@ -234,3 +234,38 @@ repeated moment in the game.
   four arrays and seven objects every frame -- roughly 700 throwaway objects a
   second -- against CLAUDE.md's no-per-frame-allocation rule. Now an in-place
   insertion sort into two fixed arrays.
+
+## A wish now stands in the valley
+
+A wish was a string in `save.wishes` and nothing else: you gathered seven orbs,
+summoned a dragon, typed what you wanted, and the world was exactly as before.
+The only trace was a line of text inside a menu — the one place a nine-year-old
+will never look again.
+
+- Each kept wish raises a standing stone with a gold cap, on the spot where you
+  picked its token up. It grows out of the ground over a second rather than
+  appearing, per CLAUDE.md's art rule.
+- Walk within 4.5m and it tells you what you wished for.
+- They are solid: pushed into the shared obstacle list, so you cannot walk
+  through one and the camera dodges them like any other scenery.
+- They survive reloads and world re-rolls. Wishes saved before this existed are
+  placed from a hash of their own text, so they land somewhere stable rather than
+  in a heap at the origin.
+- One `InstancedMesh`, so it is 2 draw calls (mesh plus shadow) whether you have
+  one wish or forty, and 0 when you have none.
+
+Three faults found by running it, none of which a test or a read would catch:
+
+- `InstancedMesh.computeBoundingSphere()` throws on a geometry whose own bounding
+  sphere is null. The game crashed on the FIRST wish of any save.
+- `mergeGeometries` returns `null` rather than complaining when asked to mix
+  indexed and non-indexed geometry, so an `OctahedronGeometry` cap produced a null
+  geometry and a crash three calls away with nothing pointing back at the cause.
+- `emissive` is a material property, not a vertex one, so lighting the cap lit the
+  whole shaft: the stones read as ghostly white obelisks rather than rock.
+
+### The budget gate now measures a played save
+
+`npm run audit` opened an empty save, so it measured a world with no wish stones
+in it. "Within budget" that only holds for a save nobody has played is a blind
+spot, not an assurance. It now seeds five wishes first: **149 calls of 150.**
