@@ -34,6 +34,7 @@ export const EVENTS = {
   LOADOUT_CHANGED: 'loadout:changed', // something put on or taken off (payload: item id)
   JUMP: 'player:jump', // the player asked to jump
   WORLD_BUILT: 'world:built', // the valley finished being generated or re-rolled
+  LEVEL_UP: 'progress:level-up', // a Seeker level was crossed (payload: {level, rank, newRank})
 };
 
 const listeners = new Map();

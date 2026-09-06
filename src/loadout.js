@@ -19,12 +19,19 @@
 // the monkey exists; player.js listens and updates itself. That is what keeps
 // the loadout usable from anywhere -- a menu, a hotkey, a future NPC that
 // steals your hat -- without any of them importing each other.
-import { CONFIG } from './config.js';
 import { save, persist, owned } from './save.js';
 import { emit, EVENTS } from './events.js';
+import { levelFromXp, slotsForLevel } from './rules.js';
 
-/** How many things you may wear at once. 0 means no limit. */
-export const slots = () => CONFIG.loadout.slots;
+/**
+ * How many things you may wear at once.
+ *
+ * This used to read `CONFIG.loadout.slots`, which was 0 -- meaning no limit --
+ * for the entire life of the game. An entire working system granted nothing.
+ * Slots now come from your rank, which makes them the main reward for levelling
+ * and gives the climb something concrete to hand you.
+ */
+export const slots = () => slotsForLevel(levelFromXp(save.xp));
 
 /**
  * Is this item actually on you? Note the `owned` check: the worn list could

@@ -452,7 +452,46 @@ export const CONFIG = {
   // 4 and the shop stops being a checklist and starts being a decision: boots
   // OR lens, the bell that draws villagers to you OR the quiet of going without.
   // Everything needed for that is already here; the number is the whole switch.
-  loadout: { slots: 0 },
+  loadout: { slots: 0 }, // superseded by rank: see progress.ranks below and loadout.js
+
+  // ---------------------------------------------------------------------------
+  // PROGRESSION — see docs/GAME-DESIGN.md section 4.
+  //
+  // One number that only ever goes up, earned for playing at all rather than
+  // playing well. This is what turns a re-rolled valley from a reset into a step
+  // forward, and it is what finally gives the equipment slots a job: for the
+  // whole life of the game `loadout.slots` was 0, so a complete working system
+  // granted nothing. Slots now come from your rank.
+  // ---------------------------------------------------------------------------
+  progress: {
+    maxLevel: 30,
+
+    // XP to go from level n to n+1 = curveBase + curveStep * n. Reaching 30 costs
+    // 14,790 XP, about 35 valleys: weeks of play for a child, not an afternoon
+    // and not months.
+    curveBase: 60,
+    curveStep: 30,
+
+    xp: {
+      orb: 10, // seven a valley -- the 30-second beat must always pay something
+      duelWinBase: 10,
+      duelWinPerTier: 5, // hard camps pay more, so the difficulty curve has a point
+      duelLoss: 5, // losing is never a wasted minute, same rule as the consolation
+      valley: 150, // the biggest single award, so FINISHING beats grinding
+      perfectOrder: 100, // gives the 1-to-7 rule teeth for the first time
+    },
+
+    // Rank thresholds carry their own slot count, so there is one source of truth
+    // for "what does level 12 get me" instead of two lists to keep in step.
+    ranks: [
+      { from: 1, name: 'Wanderer', slots: 1 },
+      { from: 5, name: 'Finder', slots: 2 },
+      { from: 10, name: 'Seeker', slots: 3 },
+      { from: 15, name: 'Orbkeeper', slots: 3 },
+      { from: 20, name: 'Valewarden', slots: 4 },
+      { from: 25, name: 'Dragonfriend', slots: 5 },
+    ],
+  },
 
   // ---------- how the image is developed ----------
   //

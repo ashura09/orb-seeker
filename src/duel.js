@@ -12,6 +12,7 @@ import { tierRate, duelLoot } from './rules.js';
 import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { voiceOf } from './voice.js';
+import { addXp } from './progress.js';
 
 const duelEl = $('duel');
 const D = CONFIG.duel;
@@ -173,6 +174,15 @@ export function endDuel(won) {
   $('resultRate').textContent = rate
     ? `${rate.toFixed(1)} taps a second${isRecord ? ' — your best yet' : ''}`
     : '';
+  // XP for the duel. Winning scales with the camp's tier so the difficulty curve
+  // buys you something beyond fragments; losing still pays, on the same
+  // principle as the consolation fragments -- a lost duel is not a wasted
+  // minute, and a child who loses every fight still climbs.
+  const X = CONFIG.progress.xp;
+  addXp(
+    won ? X.duelWinBase + X.duelWinPerTier * duel.w.tier : X.duelLoss,
+    won ? 'a duel won' : 'a duel fought',
+  );
   addFragments(loot);
   duel.w.cooldown = CONFIG.wanderers.cooldown;
   pickTarget(duel.w);

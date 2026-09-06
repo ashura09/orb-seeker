@@ -15,6 +15,7 @@ import { on, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { keeperGreeting } from './voice.js';
 import { keeper, ringOrbs, buildKeeper } from './dragon.js';
+import { addXp } from './progress.js';
 
 export function beginEnding() {
   G.state = 'ending';
@@ -94,6 +95,11 @@ $('claimBtn').addEventListener('click', () => {
   );
   ringOrbs.forEach(({ m }) => scene.remove(m));
   ringOrbs.length = 0;
+  // The valley is finished: the biggest single award in the game, so completing
+  // a run always beats grinding one. Perfect order pays again on top -- the
+  // first time the 1-to-7 rule has been worth anything but a cosmetic label.
+  addXp(CONFIG.progress.xp.valley, 'a valley completed');
+  if (G.orderKept) addXp(CONFIG.progress.xp.perfectOrder, 'a perfect order');
   save.cycles++;
   persist();
   toast('Walk over the tokens to keep your wishes', 3);

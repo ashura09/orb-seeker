@@ -21,6 +21,7 @@ import { spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored } from './map.js';
+import './progress.js';
 import { initGraphics, watchFrameRate } from './graphics.js';
 import { updateDayNight, updateStates } from './gathering.js';
 import { updatePlayer } from './motion.js';
@@ -237,4 +238,23 @@ window.addEventListener('resize', () => {
   resizeBloom(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+});
+
+// ---------------------------------------------------------------------------
+// The level-up moment.
+//
+// Announced from the top layer rather than inside progress.js, which would then
+// have to import the UI and stop being testable. Crossing into a new RANK is the
+// louder of the two events -- "you are an Orbkeeper" lands harder on a
+// nine-year-old than "you are level 15" -- so it gets its own line and a longer
+// buzz.
+// ---------------------------------------------------------------------------
+on(EVENTS.LEVEL_UP, ({ level, rank, newRank, reason }) => {
+  if (newRank) {
+    toast(`Level ${level}. You are a ${rank.name} now — ${rank.slots} slots.`, 4);
+    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 120]);
+  } else {
+    toast(`Level ${level}, for ${reason}.`, 2.5);
+    if (navigator.vibrate) navigator.vibrate([30, 50, 60]);
+  }
 });

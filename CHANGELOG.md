@@ -269,3 +269,35 @@ Three faults found by running it, none of which a test or a read would catch:
 `npm run audit` opened an empty save, so it measured a world with no wish stones
 in it. "Within budget" that only holds for a save nobody has played is a blind
 spot, not an assurance. It now seeds five wishes first: **149 calls of 150.**
+
+## Seeker levels — steps 1 and 2 of the design spec
+
+`docs/GAME-DESIGN.md` sections 4 and 7. The game had no reason to play a second
+valley. XP is the answer, and it is earned for playing at all rather than playing
+well: a child who loses every duel still climbs.
+
+- **XP** from orbs (10), duels (10 + 5×tier won, 5 lost), completing a valley
+  (150) and perfect order (100 — the first time that rule has been worth anything
+  but a cosmetic label).
+- **30 levels**, curve `60 + 30 × level`, about 35 valleys to the cap. Six ranks
+  from Wanderer to Dragonfriend, with a HUD chip showing rank, level and the way
+  to the next one.
+- **Equipment slots finally do something.** `CONFIG.loadout.slots` was `0` —
+  meaning no limit — for the life of the game, so a complete working system
+  granted nothing. Slots now come from your rank: 1 at level 1, 5 by level 25.
+- **A returning save is never punished.** Past play converts to XP once
+  (wins, cycles and items), with a floor of level 5 for anyone who has played at
+  all. Nothing is ever taken off: a player over the cap keeps everything they
+  chose and simply cannot add more until they are under it.
+- 0 draw calls. Still 149 of 150 — this is all save fields, rules and HUD.
+
+Two things the tests caught, and one the browser did:
+
+- Wiring slots through `progress.js` made `loadout.js` import the renderer, so a
+  module that had always been testable stopped loading in node. The migration
+  moved to `save.js` beside the `worn` migration it mirrors, and `loadout.js` now
+  reads the level from pure arithmetic in `rules.js`.
+- The old loadout tests asserted "slots are unlimited by default" — they encoded
+  the inert system rather than a rule. Rewritten around rank.
+- The rank chip was laid straight on top of the fragment pouch. The whole left
+  column is restacked.

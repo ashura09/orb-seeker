@@ -9,6 +9,7 @@ import { emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { pickOrbSpots } from './rules.js';
 import { burstAt } from './burst.js';
+import { addXp } from './progress.js';
 import { shakeCamera } from './camera.js';
 
 const C = CONFIG.collect;
@@ -233,6 +234,7 @@ export function collect(o) {
   startVanish(o);
   burstAt(o.mesh.position.x, o.mesh.position.y, o.mesh.position.z, o.color);
   shakeCamera(C.shake);
+  addXp(CONFIG.progress.xp.orb, 'an orb found');
   dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);
   showOrder(G.orderKept, G.found);

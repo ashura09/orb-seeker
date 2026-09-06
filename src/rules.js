@@ -33,6 +33,62 @@ export const tierRate = (tier) => CONFIG.duel.opponentBase + tier * CONFIG.duel.
  * (flawless first, then the variance), so a fixed random sequence produces the same
  * results as before this was extracted.
  */
+// ---------------------------------------------------------------------------
+// PROGRESSION ARITHMETIC
+//
+// Here rather than in progress.js for the usual reason: progress.js touches the
+// DOM and the save, so it cannot be imported in node. These five functions are
+// the whole level system and `npm test` checks them in milliseconds.
+// ---------------------------------------------------------------------------
+
+/** XP needed to go from `level` to the next one. */
+export const xpToNextLevel = (level) =>
+  CONFIG.progress.curveBase + CONFIG.progress.curveStep * level;
+
+/** Total XP a player must have earned to BE this level. Level 1 costs nothing. */
+export function totalXpForLevel(level) {
+  let sum = 0;
+  for (let n = 1; n < level; n++) sum += xpToNextLevel(n);
+  return sum;
+}
+
+/**
+ * The level a given amount of XP buys.
+ *
+ * Counted up rather than solved algebraically. The closed form exists, but it
+ * bakes in the shape of the curve, and this has to keep agreeing with
+ * xpToNextLevel even if somebody changes that curve. Thirty iterations, run when
+ * XP changes and not per frame.
+ */
+export function levelFromXp(xp) {
+  const { maxLevel } = CONFIG.progress;
+  let level = 1;
+  let spent = 0;
+  while (level < maxLevel && xp >= spent + xpToNextLevel(level)) {
+    spent += xpToNextLevel(level);
+    level++;
+  }
+  return level;
+}
+
+/** How far into the current level you are: {into, need}. Capped at max level. */
+export function levelProgress(xp) {
+  const level = levelFromXp(xp);
+  if (level >= CONFIG.progress.maxLevel) return { into: 1, need: 1 };
+  return { into: xp - totalXpForLevel(level), need: xpToNextLevel(level) };
+}
+
+/** The rank entry for a level -- the last threshold at or below it. */
+export function rankFor(level) {
+  const { ranks } = CONFIG.progress;
+  let found = ranks[0];
+  for (const r of ranks) if (level >= r.from) found = r;
+  return found;
+}
+
+/** How many things this level may wear at once. */
+export const slotsForLevel = (level) => rankFor(level).slots;
+
 export function duelLoot(tier, random = Math.random) {
   const D = CONFIG.duel;
   const flawless = random() < D.flawlessChance;

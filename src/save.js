@@ -25,6 +25,8 @@
 //
 // This file is storage only -- it remembers, it does not judge. The rules about
 // what you are allowed to wear live in loadout.js.
+import { totalXpForLevel } from './rules.js';
+
 export const SAVE_KEY = 'orbseeker.save.v2';
 
 export const save = {
@@ -69,6 +71,33 @@ for (const k of ['fragments', 'wins', 'cycles', 'bestTaps']) {
   if (!Number.isFinite(save[k])) save[k] = 0;
 }
 if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;
+// `xp` is deliberately NOT among the defaults above. progress.js has to be able
+// to tell an old save (no xp at all) from a new one (xp of 0), because an old
+// save has play behind it that must be converted into levels -- otherwise a
+// finished item collection suddenly exceeds a level-1 slot cap. So only guard
+// against a corrupt value here, and leave a missing one missing.
+//
+// A save from before levels existed has play behind it that has to become XP.
+// `loadout.slots` was 0 -- meaning NO limit -- for the life of the game, so a
+// returning player is very likely wearing more than a level-1 rank now allows;
+// starting them at zero would make a finished collection feel confiscated.
+// Generous on purpose: too generous costs a few free levels, too stingy costs a
+// child their things.
+//
+// This lives here, next to the `worn` migration it mirrors, and NOT in
+// progress.js -- loadout.js has to know its slot count without importing the
+// renderer, or it stops being testable.
+if (!Number.isFinite(save.xp)) {
+  const ownedCount = Object.keys(save.items).filter((id) => save.items[id] === 'owned').length;
+  const played = (save.wins || 0) * 20 + (save.cycles || 0) * 150 + ownedCount * 60;
+  const hasHistory = ownedCount > 0 || (save.wins || 0) > 0 || (save.cycles || 0) > 0;
+  // A floor of level 5 for anyone who has played at all. Without it, a veteran
+  // with a full item collection could land on rank Wanderer and its single slot,
+  // unable to change gear until they had climbed for hours. The floor is a flat,
+  // explainable rule rather than a formula tuned to one person's save.
+  const floor = hasHistory ? totalXpForLevel(5) : 0;
+  save.xp = Math.max(Number.isFinite(played) ? played : 0, floor);
+}
 
 if (!Array.isArray(save.worn)) {
   save.worn = Object.keys(save.items).filter((id) => save.items[id] === 'owned');

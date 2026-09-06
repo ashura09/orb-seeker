@@ -4,7 +4,17 @@
 // src/rules.js imports neither three.js nor the DOM.
 import { describe, it, expect } from 'vitest';
 import { CONFIG } from '../src/config.js';
-import { pickOrbSpots, duelLoot, tierRate } from '../src/rules.js';
+import {
+  pickOrbSpots,
+  duelLoot,
+  tierRate,
+  xpToNextLevel,
+  totalXpForLevel,
+  levelFromXp,
+  levelProgress,
+  rankFor,
+  slotsForLevel,
+} from '../src/rules.js';
 
 /** A random() that plays back a fixed list, so a result can be predicted exactly. */
 function scripted(values) {
@@ -171,5 +181,85 @@ describe('duel tier maths', () => {
       const tier = 1 + (run % 7);
       expect(duelLoot(tier).loot).toBeGreaterThanOrEqual(CONFIG.duel.lootBase + tier);
     }
+  });
+});
+
+describe('seeker levels', () => {
+  const { maxLevel, ranks } = CONFIG.progress;
+
+  it('starts everyone at level 1 with nothing earned', () => {
+    expect(levelFromXp(0)).toBe(1);
+    expect(totalXpForLevel(1)).toBe(0);
+  });
+
+  it('agrees with its own curve at every single step', () => {
+    // levelFromXp counts up rather than solving algebraically, so the real risk
+    // is that it drifts out of step with totalXpForLevel. Check the boundary from
+    // both sides at every level: one XP short is the level below, exactly enough
+    // is the level itself.
+    for (let n = 2; n <= maxLevel; n++) {
+      const need = totalXpForLevel(n);
+      expect(levelFromXp(need)).toBe(n);
+      expect(levelFromXp(need - 1)).toBe(n - 1);
+    }
+  });
+
+  it('never exceeds the cap, however much XP is thrown at it', () => {
+    expect(levelFromXp(totalXpForLevel(maxLevel))).toBe(maxLevel);
+    expect(levelFromXp(999_999_999)).toBe(maxLevel);
+  });
+
+  it('takes roughly 35 valleys to max out', () => {
+    // The design target in docs/GAME-DESIGN.md is weeks of play for a child --
+    // not one afternoon, and not months. A valley is worth about 150 for the
+    // completion, 70 for its orbs and 100 for the duels along the way.
+    const perValley = CONFIG.progress.xp.valley + 7 * CONFIG.progress.xp.orb + 100;
+    const valleys = totalXpForLevel(maxLevel) / perValley;
+    expect(valleys).toBeGreaterThan(25);
+    expect(valleys).toBeLessThan(55);
+  });
+
+  it('gets harder to climb at a steady rate, never accelerating', () => {
+    // The property that matters is that the curve is LINEAR, not exponential.
+    // Each level costs a fixed amount more than the one before it, so the climb
+    // never turns into a wall -- which is where a nine-year-old puts the phone
+    // down. A constant second difference is exactly that statement.
+    const step = xpToNextLevel(2) - xpToNextLevel(1);
+    for (let n = 2; n < maxLevel; n++) {
+      expect(xpToNextLevel(n)).toBeGreaterThan(xpToNextLevel(n - 1));
+      expect(xpToNextLevel(n) - xpToNextLevel(n - 1)).toBe(step);
+    }
+    // And the whole span stays within an order of magnitude: the last level is
+    // harder than the first, but not a different kind of task.
+    expect(xpToNextLevel(maxLevel - 1)).toBeLessThan(xpToNextLevel(1) * 12);
+  });
+
+  it('reports progress within a level that never goes backwards or past full', () => {
+    for (let xp = 0; xp < totalXpForLevel(maxLevel); xp += 37) {
+      const { into, need } = levelProgress(xp);
+      expect(into).toBeGreaterThanOrEqual(0);
+      expect(into).toBeLessThanOrEqual(need);
+    }
+    // At the cap the bar reads full rather than dividing by a level that is not there.
+    expect(levelProgress(totalXpForLevel(maxLevel)).into).toBe(1);
+  });
+
+  it('hands out slots that only ever increase, ending at five', () => {
+    let previous = 0;
+    for (let n = 1; n <= maxLevel; n++) {
+      const s = slotsForLevel(n);
+      expect(s).toBeGreaterThanOrEqual(previous);
+      previous = s;
+    }
+    expect(slotsForLevel(1)).toBe(1);
+    expect(slotsForLevel(maxLevel)).toBe(5);
+  });
+
+  it('names a rank for every level, including past the cap', () => {
+    for (let n = 1; n <= maxLevel + 5; n++) {
+      expect(rankFor(n).name.length).toBeGreaterThan(0);
+    }
+    expect(rankFor(1).name).toBe(ranks[0].name);
+    expect(rankFor(maxLevel).name).toBe(ranks[ranks.length - 1].name);
   });
 });

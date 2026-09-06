@@ -118,11 +118,15 @@ canvas#c {
     0 0 0 2px var(--brass-dark),
     0 4px 10px rgba(0, 0, 0, 0.3);
 }
+/* The left column, top to bottom: orb counter, rank chip, fragments, satchel.
+   The rank chip was inserted between the counter and the pouch, so both buttons
+   move down by its height plus a gap -- otherwise the pouch sits directly on top
+   of the chip, which is exactly what it did on the first run. */
 #pouch {
-  top: calc(var(--top) + 42px);
+  top: calc(var(--top) + 74px);
 }
 #satchelBtn {
-  top: calc(var(--top) + 92px);
+  top: calc(var(--top) + 124px);
 }
 .gem {
   width: 14px;
@@ -599,4 +603,55 @@ canvas#c {
   font-size: 14px;
   color: var(--mint);
   opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------------
+   The Seeker rank chip: name, level, and the way to the next one.
+
+   Sits under the orb counter and is deliberately quiet -- it is a thing you
+   glance at between runs, not something competing with the orbs for attention.
+   Not a button: there is nothing to tap, so it takes no pointer events and
+   stays out of the way of the thumb that is trying to walk.
+   --------------------------------------------------------------------------- */
+#progress {
+  position: absolute;
+  top: calc(var(--top) + 32px);
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--face);
+  border: 2px solid var(--brass-dark);
+  color: var(--mint);
+  font:
+    600 12px/1 'Trebuchet MS',
+    system-ui,
+    sans-serif;
+  pointer-events: none;
+  opacity: 0.92;
+}
+#rankName {
+  letter-spacing: 0.04em;
+}
+#lvlNum {
+  color: var(--brass);
+  font-variant-numeric: tabular-nums;
+}
+/* The bar is short on purpose. It says "some of the way" at a glance; the exact
+   number lives in the tooltip and on the score screen, where there is room. */
+#xpTrack {
+  width: 46px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+#xpFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: var(--brass);
+  transition: width 0.45s ease;
 }
