@@ -89,6 +89,47 @@ export function rankFor(level) {
 /** How many things this level may wear at once. */
 export const slotsForLevel = (level) => rankFor(level).slots;
 
+// ---------------------------------------------------------------------------
+// VALLEY CODES
+//
+// The world is generated deterministically from a seed, which means the same
+// number makes the same valley on any phone, anywhere, with no server involved.
+// That turns "play my exact valley" into a code a child can read out loud -- so
+// it has to survive being read out loud.
+//
+// The alphabet therefore drops the characters people confuse when copying by
+// hand: no O or 0, no I or 1, no S or 5. Everything is uppercased on the way in,
+// so a code typed in lowercase still works.
+// ---------------------------------------------------------------------------
+const ALPHABET = 'ABCDEFGHJKLMNPQRTUVWXYZ23456789'; // 31 symbols, no lookalikes
+
+/** A seed as a short, sayable code: VALE-7K2M. */
+export function seedCode(seed) {
+  let n = Math.abs(Math.floor(seed)) % 31 ** 6;
+  let out = '';
+  for (let i = 0; i < 6; i++) {
+    out = ALPHABET[n % 31] + out;
+    n = Math.floor(n / 31);
+  }
+  return `VALE-${out.slice(0, 3)}${out.slice(3)}`;
+}
+
+/** A code back to its seed, or null if it is not one. Forgiving about case and spacing. */
+export function seedFromCode(code) {
+  const body = String(code || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .replace(/^VALE/, '');
+  if (body.length !== 6) return null;
+  let n = 0;
+  for (const ch of body) {
+    const i = ALPHABET.indexOf(ch);
+    if (i < 0) return null;
+    n = n * 31 + i;
+  }
+  return n;
+}
+
 export function duelLoot(tier, random = Math.random) {
   const D = CONFIG.duel;
   const flawless = random() < D.flawlessChance;

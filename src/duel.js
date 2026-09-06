@@ -9,7 +9,7 @@ import { addFragments } from './ui.js';
 import { joy, stickEl } from './input.js';
 import { pickTarget } from './wanderers.js';
 import { tierRate, duelLoot } from './rules.js';
-import { on, EVENTS } from './events.js';
+import { on, emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { voiceOf } from './voice.js';
 import { addXp } from './progress.js';
@@ -183,6 +183,7 @@ export function endDuel(won) {
     won ? X.duelWinBase + X.duelWinPerTier * duel.w.tier : X.duelLoss,
     won ? 'a duel won' : 'a duel fought',
   );
+  emit(EVENTS.DUEL_ENDED, { won, tier: duel.w.tier, taps: rate });
   addFragments(loot);
   duel.w.cooldown = CONFIG.wanderers.cooldown;
   pickTarget(duel.w);

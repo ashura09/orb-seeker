@@ -22,6 +22,7 @@ import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored } from './map.js';
 import './progress.js';
+import './run.js';
 import { initGraphics, watchFrameRate } from './graphics.js';
 import { updateDayNight, updateStates } from './gathering.js';
 import { updatePlayer } from './motion.js';

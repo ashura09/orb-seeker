@@ -37,6 +37,7 @@ export function addXp(amount, reason = '') {
   level = now;
   persist();
   renderProgress();
+  emit(EVENTS.XP_GAINED, { amount, reason });
   if (gained) {
     // The rank only changes at some levels, and being told you are now an
     // Orbkeeper matters more than being told you are level 10 -- so the payload

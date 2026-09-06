@@ -35,6 +35,9 @@ export const EVENTS = {
   JUMP: 'player:jump', // the player asked to jump
   WORLD_BUILT: 'world:built', // the valley finished being generated or re-rolled
   LEVEL_UP: 'progress:level-up', // a Seeker level was crossed (payload: {level, rank, newRank})
+  XP_GAINED: 'progress:xp', // any XP award      (payload: {amount, reason})
+  ORB_COLLECTED: 'orbs:collected', // one orb taken     (payload: the orb)
+  DUEL_ENDED: 'duel:ended', // a duel finished   (payload: {won, tier, taps})
 };
 
 const listeners = new Map();

@@ -161,11 +161,62 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
+**Built so far: steps 1, 2 and 3** — seeker levels, slots by rank, and the run score screen with its valley code.
+
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150
 draw calls — does not touch the part of the game that is actually missing. The plan is
 cheap because what Orb Seeker lacks was never geometry.
 
-## 10. Open decisions
+## 10. Ownership and showing off (deferred — and not as NFTs)
+
+Ashura asked for wishes and items to be "treated as NFTs": usable in game, and
+showable to friends. Decomposed, that is five separate wants, and only one of
+them needs a blockchain.
+
+| What you want                     | Needs a chain? | How we do it instead                                         |
+| --------------------------------- | -------------- | ------------------------------------------------------------ |
+| "These are **mine**"              | no             | The save, plus a signed share code.                          |
+| **Show them** to a friend         | no             | The Seeker Card (below).                                     |
+| **Rarity** — some are hard to get | no             | Rarity is a game rule. Scarcity from difficulty, not supply. |
+| **Trading** with a friend         | no             | Room-code trading, gated by the child-safety rules.          |
+| **Resale for real money**         | yes            | **Forbidden by `CLAUDE.md`.**                                |
+
+**Why literal NFTs are not on the table for this game.** An NFT needs a wallet; a
+wallet needs an account and usually a payment method and identity checks. Children
+cannot legally hold one in most places, a wallet address is personal data under
+COPPA and the UK Age Appropriate Design Code, and attaching real money value to
+items in a game aimed at nine-year-olds is exactly the "spending pressure aimed at
+players" that `CLAUDE.md` forbids in its non-negotiable list. There is also a
+plain engineering objection: an asset whose permanence depends on a chain and a
+marketplace both still existing is less durable than a row in localStorage.
+
+**What we build instead, when we get to it.**
+
+1. **Provenance, free.** Every valley has a seed, so a wish can record the valley
+   it was made in and the date. "Made in VALE-2RRWYR, 6 September" is a real,
+   checkable origin story — the part of an NFT that actually feels good — and it
+   costs one field on an object we already save.
+2. **The Seeker Card.** The end-of-run score screen (step 3, built) grown into a
+   shareable card: rank, level, items worn, wishes made, best time, taps per
+   second, Turnings. Encoded into a code like the valley code, so a friend can
+   render your card without you having an account.
+3. **Rarity as a rule.** Some items drop only from a perfect-order run, or only
+   above a certain Turning. That produces genuine scarcity through skill, which
+   is the kind a child can be proud of.
+4. **Trading** by room code, much later, with no value attached — you swap
+   because your friend wants the hat, not because it is worth anything.
+
+**The honest limit.** A share code can be forged: a child can type any code and
+claim any card. Without a server there is no way to prove one is genuine, and a
+server means accounts, which means personal data. For bragging rights that trade
+is clearly right. If provable ownership ever became the point, it would need
+infrastructure that the child-safety rules currently rule out — which is a reason
+to keep this as bragging rights.
+
+**Status: recorded, not scheduled.** Nothing here blocks the build order, and
+items 1 and 2 mostly fall out of work already planned.
+
+## 11. Open decisions
 
 1. **Web game, or eventually Roblox?** Everything here works on the web. Chasing Roblox
    earnings means rebuilding in Luau with this document as the brief.

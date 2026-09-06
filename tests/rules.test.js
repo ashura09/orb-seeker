@@ -14,6 +14,8 @@ import {
   levelProgress,
   rankFor,
   slotsForLevel,
+  seedCode,
+  seedFromCode,
 } from '../src/rules.js';
 
 /** A random() that plays back a fixed list, so a result can be predicted exactly. */
@@ -261,5 +263,60 @@ describe('seeker levels', () => {
     }
     expect(rankFor(1).name).toBe(ranks[0].name);
     expect(rankFor(maxLevel).name).toBe(ranks[ranks.length - 1].name);
+  });
+});
+
+describe('valley codes', () => {
+  it('survives a round trip for any seed', () => {
+    for (const seed of [0, 1, 7, 42, 999, 123456, 887503681, 2 ** 31 - 1]) {
+      const code = seedCode(seed);
+      const back = seedFromCode(code);
+      // The code carries six symbols of a 31-letter alphabet, so seeds wrap
+      // above 31^6. What must hold is that the code and the seed agree about
+      // which valley they mean.
+      expect(seedCode(back)).toBe(code);
+    }
+  });
+
+  it('is forgiving about how a child types it', () => {
+    const code = seedCode(12345);
+    const seed = seedFromCode(code);
+    expect(seedFromCode(code.toLowerCase())).toBe(seed);
+    expect(seedFromCode(code.replace('-', ''))).toBe(seed);
+    expect(seedFromCode(` ${code} `)).toBe(seed);
+    expect(seedFromCode(code.replace('VALE-', ''))).toBe(seed);
+  });
+
+  it('never uses both halves of a look-alike pair', () => {
+    // O/0, I/1 and S/5 are the pairs that ruin a code shouted across a
+    // playground or copied off a screen. The rule is not that neither may
+    // appear -- it is that only ONE of each pair may, so hearing "five" or
+    // seeing a round symbol can only mean one thing.
+    const used = new Set();
+    for (let seed = 0; seed < 600; seed++) {
+      const body = seedCode(seed * 7919).replace('VALE-', '');
+      expect(body).toHaveLength(6);
+      for (const ch of body) used.add(ch);
+    }
+    for (const [a, b] of [
+      ['O', '0'],
+      ['I', '1'],
+      ['S', '5'],
+    ]) {
+      expect(used.has(a) && used.has(b)).toBe(false);
+    }
+  });
+
+  it('refuses nonsense rather than inventing a valley', () => {
+    expect(seedFromCode('')).toBe(null);
+    expect(seedFromCode('nope')).toBe(null);
+    expect(seedFromCode('VALE-TOOLONGXX')).toBe(null);
+    expect(seedFromCode('VALE-OOOOOO')).toBe(null); // O is not in the alphabet
+  });
+
+  it('gives different valleys different codes', () => {
+    const seen = new Set();
+    for (let i = 0; i < 500; i++) seen.add(seedCode(i));
+    expect(seen.size).toBe(500);
   });
 });

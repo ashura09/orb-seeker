@@ -235,6 +235,7 @@ export function collect(o) {
   burstAt(o.mesh.position.x, o.mesh.position.y, o.mesh.position.z, o.color);
   shakeCamera(C.shake);
   addXp(CONFIG.progress.xp.orb, 'an orb found');
+  emit(EVENTS.ORB_COLLECTED, o);
   dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);
   showOrder(G.orderKept, G.found);
