@@ -10,6 +10,7 @@
 // UPGRADE-NOTES.md, "Merging beats instancing for characters".
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildSkeleton, villagerBones, makeAnimator } from './rig.js';
 import * as P from './palette.js';
 import { scene, mat, bakeIntoVertices, CHARACTER_MAT } from './state.js';
 
@@ -68,6 +69,11 @@ const VILLAGER_MAT = CHARACTER_MAT;
 
 export function buildWanderer(w) {
   const g = new THREE.Group();
+  // The same seven bones the monkey uses, at this villager's build. Everything
+  // below hangs off them instead of off the group, so the clips that drive him
+  // drive them too -- seven villagers and one player sharing one downloaded file.
+  const bones = buildSkeleton(villagerBones(w.build));
+  g.add(bones.root);
   // Anything that never moves goes here and is merged into a single mesh at the
   // end. Arms and legs are added to `g` directly, because the frame loop rotates
   // them and a merged mesh cannot bend.
@@ -107,8 +113,7 @@ export function buildWanderer(w) {
     // A limb is a Group the frame loop rotates. Inside it, the hand does not move
     // relative to the arm and the foot does not move relative to the leg -- so
     // each limb's two parts merge into one mesh, and only the Group animates.
-    const arm = new THREE.Group();
-    arm.position.set(side * 0.38 * s, 1.16 * s, 0);
+    const arm = bones[side < 0 ? 'arm-left' : 'arm-right'];
     const upper = new THREE.Mesh(GEO.arm, cloth);
     upper.position.y = -0.27;
     const hand = new THREE.Mesh(GEO.hand, skin);
@@ -116,11 +121,9 @@ export function buildWanderer(w) {
     arm.add(
       new THREE.Mesh(mergeGeometries([upper, hand].map(bakeIntoVertices), false), VILLAGER_MAT),
     );
-    g.add(arm);
     limbs.arms.push(arm);
 
-    const leg = new THREE.Group();
-    leg.position.set(side * 0.15 * s, 0.46 * s, 0);
+    const leg = bones[side < 0 ? 'leg-left' : 'leg-right'];
     const thigh = new THREE.Mesh(GEO.leg, BOOT);
     thigh.position.y = -0.21;
     const foot = new THREE.Mesh(GEO.foot, WOOD);
@@ -128,7 +131,6 @@ export function buildWanderer(w) {
     leg.add(
       new THREE.Mesh(mergeGeometries([thigh, foot].map(bakeIntoVertices), false), VILLAGER_MAT),
     );
-    g.add(leg);
     limbs.legs.push(leg);
   });
 
@@ -201,7 +203,21 @@ export function buildWanderer(w) {
   }
 
   // Six-or-so coloured parts collapse into one mesh, one material, one draw call.
-  g.add(new THREE.Mesh(mergeGeometries(statics.map(bakeIntoVertices), false), VILLAGER_MAT));
+  //
+  // It hangs off the TORSO bone rather than the group, so a clip that leans the
+  // body leans the head, the hat and whatever they are carrying along with it.
+  // Offset back down by the bone's own height so everything lands exactly where
+  // it was drawn -- rigging a villager must not move a single vertex of them.
+  //
+  // Deliberately NOT split into head and torso pieces the way the monkey is. That
+  // would double the villagers' draw calls, seven times over, to gain a head that
+  // can turn on its own. Not worth it for someone you mostly see walking.
+  const solidMesh = new THREE.Mesh(
+    mergeGeometries(statics.map(bakeIntoVertices), false),
+    VILLAGER_MAT,
+  );
+  solidMesh.position.y = -0.46 * s;
+  bones.torso.add(solidMesh);
 
   g.traverse((o) => {
     if (o.isMesh) {
@@ -210,5 +226,5 @@ export function buildWanderer(w) {
     }
   });
   scene.add(g);
-  return { g, limbs };
+  return { g, limbs, anim: makeAnimator(bones.root) };
 }

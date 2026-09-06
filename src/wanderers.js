@@ -13,11 +13,12 @@ import { WORLD_R, surfaceHeightAt } from './world.js';
 import { buildWanderer } from './wandererBody.js';
 
 export const wanderers = WANDERERS.map((w, i) => {
-  const { g, limbs } = buildWanderer(w);
+  const { g, limbs, anim } = buildWanderer(w);
   return {
     ...w,
     g,
     limbs,
+    anim,
     tier: i + 1,
     hx: 0,
     hz: 0,
@@ -55,13 +56,11 @@ export function pickTarget(w) {
 }
 homeWanderers();
 
-// Swings arms and legs while walking, and settles them when standing still.
+// Says what a villager is doing; the animator works out whether that is a change
+// and cross-fades if so. This replaced four lines of Math.sin per villager -- the
+// same metronome the monkey had, run seven more times.
 function animateLimbs(w, moving) {
-  const swing = moving ? Math.sin(w.bob) : 0;
-  w.limbs.arms[0].rotation.x = swing * 0.55;
-  w.limbs.arms[1].rotation.x = -swing * 0.55;
-  w.limbs.legs[0].rotation.x = -swing * 0.5;
-  w.limbs.legs[1].rotation.x = swing * 0.5;
+  w.anim.setAnim(moving ? 'walk' : 'idle');
 }
 
 export function updateWanderers(dt) {
@@ -77,6 +76,7 @@ export function updateWanderers(dt) {
   if (G.crawling) hear *= W.crawlHearingMultiplier;
   if (G.whistleT > 0) hear = Math.max(hear, W.whistleRange);
   for (const w of wanderers) {
+    w.anim.update(dt); // advances whichever clip this villager is playing
     w.cooldown = Math.max(0, w.cooldown - dt);
     const pdx = player.position.x - w.g.position.x,
       pdz = player.position.z - w.g.position.z,
@@ -101,6 +101,7 @@ export function updateWanderers(dt) {
       animateLimbs(w, true);
     } else {
       w.g.position.y = surfaceHeightAt(w.g.position.x, w.g.position.z);
+      animateLimbs(w, false);
       w.wait -= dt;
       if (w.wait <= 0) pickTarget(w);
       animateLimbs(w, false);

@@ -81,20 +81,100 @@ export const BONES = {
   head: { parent: 'torso', at: [0, 0.89, 0] },
 };
 
-/** Build the skeleton. Plain Object3Ds: nothing here is skinned, the monkey's
- *  parts are rigid and simply hang off bones, exactly as they did off groups. */
-export function buildSkeleton() {
+/**
+ * The villagers' proportions. Same seven bones, different measurements -- which
+ * is the whole point of building the skeleton from numbers rather than importing
+ * somebody else's: seven villagers of different builds share one set of clips.
+ *
+ * `s` is the villager's build, the scale they were already drawn at.
+ */
+export const villagerBones = (s) => ({
+  root: { parent: null, at: [0, 0, 0] },
+  'leg-left': { parent: 'root', at: [-0.15 * s, 0.46 * s, 0] },
+  'leg-right': { parent: 'root', at: [0.15 * s, 0.46 * s, 0] },
+  torso: { parent: 'root', at: [0, 0.46 * s, 0] },
+  'arm-left': { parent: 'torso', at: [-0.38 * s, 0.7 * s, 0] },
+  'arm-right': { parent: 'torso', at: [0.38 * s, 0.7 * s, 0] },
+  head: { parent: 'torso', at: [0, 1.02 * s, 0] },
+});
+
+/** Build a skeleton. Plain Object3Ds: nothing here is skinned, the parts hanging
+ *  off these bones are rigid and simply follow them, as they did off groups. */
+export function buildSkeleton(spec = BONES) {
   const bones = {};
-  for (const [name, def] of Object.entries(BONES)) {
+  for (const [name, def] of Object.entries(spec)) {
     const b = new THREE.Object3D();
     b.name = name;
     b.position.fromArray(def.at);
     bones[name] = b;
   }
-  for (const [name, def] of Object.entries(BONES)) {
+  for (const [name, def] of Object.entries(spec)) {
     if (def.parent) bones[def.parent].add(bones[name]);
   }
   return bones;
+}
+
+// ---------------------------------------------------------------------------
+// One fetch, shared by everybody.
+//
+// The player and all seven villagers play the same clips. AnimationClips are
+// immutable once built and a mixer never writes back to them, so eight mixers
+// can share one set -- and the file is downloaded and retargeted exactly once.
+// ---------------------------------------------------------------------------
+let shared = null;
+export function sharedClips() {
+  shared ||= loadClips();
+  return shared;
+}
+
+// Clips that play once and hold, rather than looping forever.
+const ONCE = new Set(['jump', 'pick-up', 'emote-yes', 'emote-no', 'die']);
+
+/**
+ * A little animation controller: what is playing, and how to change it.
+ *
+ * Used by the monkey and by every villager, so the cross-fade rules live in one
+ * place. `setAnim` is safe to call every frame -- repeating the current clip does
+ * nothing, which lets callers simply state what a character is doing without
+ * tracking what it was doing before.
+ */
+export function makeAnimator(rootBone) {
+  const mixer = new THREE.AnimationMixer(rootBone);
+  let actions = null;
+  let current = '';
+  let pending = 'idle';
+
+  sharedClips()
+    .then((clips) => {
+      actions = {};
+      for (const [name, clip] of Object.entries(clips)) actions[name] = mixer.clipAction(clip);
+      current = '';
+      api.setAnim(pending);
+    })
+    .catch((err) => {
+      // A missing skeleton must never take the game with it: characters keep the
+      // pose their geometry was authored in and simply do not move.
+      console.warn('character animations could not be loaded; standing pose only:', err);
+    });
+
+  const api = {
+    setAnim(name, fade = 0.18) {
+      pending = name;
+      if (!actions || current === name) return;
+      const next = actions[name];
+      if (!next) return;
+      const prev = current && actions[current];
+      next.reset();
+      next.setLoop(ONCE.has(name) ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+      next.clampWhenFinished = ONCE.has(name);
+      next.fadeIn(fade).play();
+      if (prev) prev.fadeOut(fade);
+      current = name;
+    },
+    update: (dt) => mixer.update(dt),
+    current: () => current,
+  };
+  return api;
 }
 
 /**

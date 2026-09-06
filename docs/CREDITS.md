@@ -18,6 +18,9 @@ Full licence texts ship beside the models in `public/models/`.
 
 ### What we use Mini Characters for
 
+**All eight characters** — the monkey and the seven villagers — share this one
+file, downloaded and retargeted once.
+
 Only the **skeleton and the animation clips** — `seeker.glb` is loaded for its
 seven bones (root, torso, head, two arms, two legs) and its 32 clips: idle, walk,
 sprint, jump, fall, crouch, pick-up, emotes and more. Kenney's own character

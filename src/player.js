@@ -16,7 +16,7 @@ import { scene, mat, glow, pointLight, bakeIntoVertices, CHARACTER_MAT } from '.
 import { worn } from './loadout.js';
 // aliased: setCrawlPose already has a parameter called `on`.
 import { on as onEvent, EVENTS } from './events.js';
-import { buildSkeleton, loadClips } from './rig.js';
+import { buildSkeleton, makeAnimator } from './rig.js';
 
 export const player = new THREE.Group();
 
@@ -172,57 +172,20 @@ scene.add(player);
 // pose the geometry was authored in -- which is exactly how he looked before
 // this file had a skeleton, so nothing regresses while the file is in flight.
 // ---------------------------------------------------------------------------
-const mixer = new THREE.AnimationMixer(bones.root);
-let actions = null;
-let current = '';
-let pending = 'idle';
-
-loadClips()
-  .then((clips) => {
-    actions = {};
-    for (const [name, clip] of Object.entries(clips)) {
-      const a = mixer.clipAction(clip);
-      a.enabled = true;
-      actions[name] = a;
-    }
-    current = '';
-    setAnim(pending);
-  })
-  .catch((err) => {
-    // A missing skeleton must not take the game with it: he keeps his authored
-    // pose and the old hand-swung fallback in motion.js stays switched off.
-    console.warn('character animations could not be loaded; standing pose only:', err);
-  });
-
-// Clips that play once and hold rather than looping forever.
-const ONCE = new Set(['jump', 'pick-up', 'emote-yes', 'emote-no', 'die']);
+const anim = makeAnimator(bones.root);
 
 /**
  * Cross-fade to a clip. Safe to call every frame: repeating the current one does
  * nothing, which is what lets motion.js simply state what the monkey is doing
  * and never track what he was doing before.
  */
-export function setAnim(name, fade = 0.18) {
-  pending = name;
-  if (!actions || current === name) return;
-  const next = actions[name];
-  if (!next) return;
-  const prev = current && actions[current];
-  next.reset();
-  next.setLoop(ONCE.has(name) ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
-  next.clampWhenFinished = ONCE.has(name);
-  next.fadeIn(fade).play();
-  if (prev) prev.fadeOut(fade);
-  current = name;
-}
+export const setAnim = anim.setAnim;
 
 /** Called once a frame from motion.js. */
-export function updateAnim(dt) {
-  mixer.update(dt);
-}
+export const updateAnim = anim.update;
 
 /** What the monkey is currently doing, for anything that needs to know. */
-export const currentAnim = () => current;
+export const currentAnim = anim.current;
 
 // ---------------------------------------------------------------------------
 // Crawling and jumping are now animations rather than hand-set rotations. Both

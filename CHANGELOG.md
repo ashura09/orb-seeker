@@ -373,3 +373,26 @@ Retargeting faults, both found by looking:
 - Damping hard enough to fix that flattened the walk — he strode along with his
   arms hanging dead. Damping is now per clip: standing damped hard, moving barely
   at all.
+
+## The villagers get the same skeleton
+
+All seven now hang off the same seven bones as the monkey and play the same
+clips, downloaded and retargeted **once** and shared by eight characters.
+
+- **No extra draw calls at all — still 141.** Their static parts were already one
+  merged mesh; it now hangs off the torso bone rather than the group, offset back
+  down by the bone's own height so not one vertex moved. Their arms and legs were
+  already groups at the shoulder and hip, which is exactly where the bones are.
+- Deliberately _not_ split into head and torso pieces the way the monkey is. That
+  would double seven villagers' draw calls to buy a head that turns on its own —
+  not worth it for someone you mostly see walking past.
+- `animateLimbs` was four lines of `Math.sin` per villager: the same metronome
+  the monkey had, run seven more times. It is now one line stating what they are
+  doing.
+- Villagers standing still now play `idle` instead of freezing mid-stride.
+
+A measurement correction: an earlier note here said the walk left arms "hanging
+dead". That was wrong — it came from reading `rotation.x`, and the swing is on a
+combined axis. Measured properly as quaternion spread it is **77° of arm and 92°
+of leg**. The per-clip damping stays, because idle genuinely did need it and walk
+genuinely did not.
