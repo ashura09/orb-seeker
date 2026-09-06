@@ -191,7 +191,7 @@ does not ship.**
 | Crawl           | Nothing, and no proposal is convincing. Adding stealth to justify a button is the exact mistake this document exists to stop.                                       | **cut**   |
 | Map / radar     | Navigation, and why exploring feels directed.                                                                                                                       | keep      |
 
-## 8. The first sixty seconds
+## 8. The first sixty seconds — built
 
 | Time   | What happens                                                                                     |
 | ------ | ------------------------------------------------------------------------------------------------ |
@@ -220,7 +220,8 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1, 2 and 3**, plus the ladder and titles — seeker levels, slots by rank, and the run score screen with its valley code.
+**Built so far: steps 1, 2, 3 and 4**, plus the ladder, titles, the rigged
+characters and the content pipeline — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150
 draw calls — does not touch the part of the game that is actually missing. The plan is

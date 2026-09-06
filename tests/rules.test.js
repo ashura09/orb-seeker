@@ -385,3 +385,42 @@ describe('the ladder', () => {
     expect(ladderFor(firstTry).tier).toBe('Ember');
   });
 });
+
+describe('the first valley', () => {
+  const at = (p, x, z) => Math.hypot(p.x - x, p.z - z);
+
+  it('normally keeps every orb well away from where you stand', () => {
+    const spots = pickOrbSpots({ playerX: 0, playerZ: 0 });
+    for (const s of spots) {
+      expect(at(s, 0, 0)).toBeGreaterThanOrEqual(CONFIG.orbs.minDistanceFromPlayer);
+    }
+  });
+
+  it('puts orb ONE within sight for a newcomer', () => {
+    // Time to first action is the strongest predictor there is, and the game
+    // used to open with a nine-line wall of text and a 48-metre walk.
+    const d = CONFIG.onboarding.firstOrbDistance;
+    const spots = pickOrbSpots({ playerX: 0, playerZ: 0, nearFirst: d });
+    expect(at(spots[0], 0, 0)).toBeCloseTo(d, 6);
+  });
+
+  it('makes it orb ONE and not merely the nearest orb', () => {
+    // spots[0] becomes orb 1. If the close one were any other number the player
+    // would break the 1-to-7 order rule in their first fifteen seconds, without
+    // ever having been told there was an order.
+    const d = CONFIG.onboarding.firstOrbDistance;
+    const spots = pickOrbSpots({ playerX: 12, playerZ: -30, nearFirst: d });
+    expect(at(spots[0], 12, -30)).toBeCloseTo(d, 6);
+    // and the other six are still scattered properly
+    for (const s of spots.slice(1)) {
+      expect(at(s, 12, -30)).toBeGreaterThan(d);
+    }
+  });
+
+  it('leaves every other valley alone', () => {
+    const spots = pickOrbSpots({ playerX: 0, playerZ: 0, nearFirst: 0 });
+    for (const s of spots) {
+      expect(at(s, 0, 0)).toBeGreaterThanOrEqual(CONFIG.orbs.minDistanceFromPlayer);
+    }
+  });
+});

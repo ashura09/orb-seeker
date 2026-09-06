@@ -210,6 +210,9 @@ export function pickOrbSpots(opts = {}) {
   const O = CONFIG.orbs;
   const {
     count = 7,
+    // Metres from the player to put ORB ONE. Zero means the normal scatter.
+    // Only ever set for a player's first valley -- see CONFIG.onboarding.
+    nearFirst = 0,
     inner = O.innerRadius,
     outer = O.outerRadius,
     minSpacing = O.minSpacing,
@@ -241,6 +244,18 @@ export function pickOrbSpots(opts = {}) {
   for (let i = spots.length - 1; i > 0; i--) {
     const j = (random() * (i + 1)) | 0;
     [spots[i], spots[j]] = [spots[j], spots[i]];
+  }
+
+  // A first valley starts with orb ONE within sight. It must be orb one and not
+  // merely the nearest orb: the order rule rewards collecting 1 to 7 in sequence,
+  // so dropping a stranger's number at the player's feet would have them break it
+  // in the first fifteen seconds without ever being told there was an order.
+  //
+  // Done after the shuffle, because the shuffle is what decides which number goes
+  // where, and index 0 is orb one.
+  if (nearFirst > 0) {
+    const a = random() * Math.PI * 2;
+    spots[0] = { x: playerX + Math.cos(a) * nearFirst, z: playerZ + Math.sin(a) * nearFirst };
   }
   return spots;
 }

@@ -10,6 +10,7 @@ import { worn } from './loadout.js';
 import { orbs, collect, updateOrbLights, updateVanish } from './orbs.js';
 import { updateBurst } from './burst.js';
 import { updateWishStones, readNearbyWish } from './wishstones.js';
+import { updateOnboarding } from './onboarding.js';
 import { toast } from './ui.js';
 import { pickups, collectPickup } from './inventory.js';
 import { updateWanderers } from './wanderers.js';
@@ -125,6 +126,7 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
   updateBurst(dt);
   updateWishStones(dt);
   updateAnim(dt); // advances whichever clip is playing
+  updateOnboarding(dt); // only does anything during a player's first valley
   updateTail(G.t);
   if (cosmetics.charm) cosmetics.charm.rotation.z += dt * 1.5;
 }

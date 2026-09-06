@@ -147,7 +147,14 @@ export function placeOrbs(random = Math.random) {
   // Far-flung spots, well apart, dealt out shuffled so an orb's number tells you
   // nothing about where it is. The algorithm lives in rules.js, where it can be
   // tested without a renderer.
-  const spots = pickOrbSpots({ playerX: player.position.x, playerZ: player.position.z, random });
+  const spots = pickOrbSpots({
+    playerX: player.position.x,
+    playerZ: player.position.z,
+    random,
+    // Only on a first valley, and never on the bench, whose whole job is to
+    // produce the same numbers every run.
+    nearFirst: save.taught || G.bench ? 0 : CONFIG.onboarding.firstOrbDistance,
+  });
   orbs.forEach((o, i) => {
     o.x = spots[i].x;
     o.z = spots[i].z;

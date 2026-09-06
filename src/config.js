@@ -272,6 +272,23 @@ export const CONFIG = {
   },
 
   // ---------- the seven orbs ----------
+  // ---------------------------------------------------------------------------
+  // THE FIRST SIXTY SECONDS — docs/GAME-DESIGN.md section 8.
+  //
+  // The strongest single predictor in everything researched about what succeeds
+  // is TIME TO FIRST ACTION: breakout games get you to a clear, repeatable
+  // activity inside the first minute. Orb Seeker opened with a nine-line wall of
+  // text and then put the nearest objective 48 metres away.
+  //
+  // All of this applies to a player's FIRST valley only. Once they know the
+  // game, a free orb at the door is not a welcome, it is a chore skipped.
+  // ---------------------------------------------------------------------------
+  onboarding: {
+    firstOrbDistance: 13, // metres: visible from where you stand, reachable in ~15s
+    bramAfter: 3.5, // seconds after that first orb before Bram comes over
+    bramFrom: 16, // how far away he starts walking in from
+  },
+
   orbs: {
     minDistanceFromPlayer: 30, // never spawn one on top of you
     minSpacing: 45, // metres between orbs, so they feel scattered

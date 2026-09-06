@@ -42,6 +42,7 @@ export const save = {
   cycles: 0,
   worn: null,
   lowGraphics: false,
+  taught: false, // has this player been through the first sixty seconds?
 };
 
 // A save that cannot be read is a new game, which is survivable. A save that
@@ -75,6 +76,10 @@ for (const k of ['fragments', 'wins', 'cycles', 'bestTaps', 'orbsEver', 'bestRun
   if (!Number.isFinite(save[k])) save[k] = 0;
 }
 if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;
+// A save from before onboarding existed belongs to somebody who has played, so
+// they are taught by definition -- nobody should be handed a tutorial on their
+// fiftieth valley.
+if (typeof save.taught !== 'boolean') save.taught = (save.cycles || 0) > 0 || (save.wins || 0) > 0;
 // Titles are ids, and an id that is not a string can only have come from a
 // corrupt save -- dropping it costs one badge, keeping it crashes the list.
 if (!Array.isArray(save.titles)) save.titles = [];

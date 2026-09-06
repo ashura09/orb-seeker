@@ -456,3 +456,33 @@ Rewritten, it immediately failed — first on Marla's "Four." and Sable's "Six."
 which are **orb numbers and good writing**, then on Nell's "the second is mine",
 which is also an orb. It now matches only a number followed by "seconds", and I
 checked it both ways: it catches "Ten seconds" and allows all four of those.
+
+## The first sixty seconds
+
+The strongest single predictor in everything researched about what succeeds is
+**time to first action**. Orb Seeker opened with a nine-line wall of text about
+orbs, wanderers, fragments, the Keeper and wishes — and then put the nearest thing
+to do 48 metres away.
+
+The minute now runs: **one line**, an orb already in sight, and a duel you are
+meant to win.
+
+- The start card says _"Something is glowing over the rise."_ and nothing else.
+- **Orb one spawns 13 metres away**, on screen. It has to be orb _one_, not
+  merely the nearest orb: the order rule rewards 1-to-7, so dropping a stranger's
+  number at a newcomer's feet would have them break it in the first fifteen
+  seconds without ever being told there was an order.
+- Collecting it explains what an orb is — **after** they have picked one up.
+  A nine-year-old will not read a paragraph about a mechanic they have not met.
+- Bram then walks in from 16 metres for the gentlest duel in the game. He is
+  walked in rather than dropped beside you, so the first duel is something you
+  see coming.
+- All of it gated on `save.taught`. A returning player gets _"The valley has
+  shifted. The seven are scattered again."_ and a normal 41-metre walk — a free
+  orb at the door is not a welcome once you know the game.
+- Saves made before this existed are marked taught if they have any history, so
+  nobody is handed a tutorial on their fiftieth valley.
+
+Verified by playing it: one line, orb at 13m on screen, collect, explanation,
+Bram arrives at 2.2m, tier-1 duel with his own line. Then reloaded and confirmed
+the returning-player path. Four new tests cover the placement.

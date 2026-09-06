@@ -21,6 +21,7 @@ import { spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored } from './map.js';
+import { openingLine, openingButton } from './onboarding.js';
 import './progress.js';
 import './run.js';
 import { initGraphics, watchFrameRate } from './graphics.js';
@@ -135,6 +136,11 @@ function recallAWish() {
   const pick = candidates[(Math.random() * candidates.length) | 0];
   echoToast(wishEcho(pick.text, save.cycles - pick.cycle));
 }
+
+// The card says one thing and then gets out of the way. What an orb IS gets
+// explained after the player has picked one up -- see onboarding.js.
+$('introLine').textContent = openingLine();
+$('startBtn').textContent = openingButton();
 
 $('startBtn').addEventListener('click', () => {
   $('start').classList.add('hidden');
