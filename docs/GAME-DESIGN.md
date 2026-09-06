@@ -153,6 +153,13 @@ tested. No server.
 
 **Badges** at 10, 50 and 100 completions — the long goal that outlasts the level cap.
 
+> **Status: items and titles are done.** `content/items.json` and
+> `content/titles.json` are live, loaded and validated by `src/content.js`. A bad
+> row throws at startup naming the id and the reason, because moving data into
+> JSON without checking it only moves the mistakes somewhere quieter. Colours in
+> content files are palette NAMES, never hex, so CLAUDE.md's art rule survives the
+> move. Villagers and dialogue are next.
+
 ## 6. Seed codes — the social layer
 
 The strongest asset in the project, already built: **the valley is generated

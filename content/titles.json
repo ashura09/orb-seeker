@@ -1,0 +1,101 @@
+{
+  "$comment": "Named achievements. `when` is a list of [field, operator, value] tests, all of which must hold. Fields come from the context titles.js assembles; operators are >=, >, <=, <, ==, !=, in. Every title should name a SPECIFIC ACT rather than a grinding threshold — 'beat the camp at orb seven' is a story, 'play 200 valleys' is a chore with a badge taped to it.",
+  "titles": [
+    {
+      "id": "first-light",
+      "name": "First Light",
+      "hint": "Find your first orb.",
+      "when": [["orbsEver", ">=", 1]]
+    },
+    {
+      "id": "in-order",
+      "name": "In Order",
+      "hint": "Gather all seven in order, 1 to 7.",
+      "when": [["perfectOrder", "==", true]]
+    },
+    {
+      "id": "fleet",
+      "name": "Fleet",
+      "hint": "Finish a valley in under eight minutes.",
+      "when": [
+        ["finished", "==", true],
+        ["seconds", "<", 480]
+      ]
+    },
+    {
+      "id": "unhurried",
+      "name": "The Unhurried",
+      "hint": "Take more than twenty-five minutes over one valley.",
+      "when": [["seconds", ">", 1500]]
+    },
+    {
+      "id": "untouched",
+      "name": "Untouched",
+      "hint": "Finish a valley without losing a duel.",
+      "when": [
+        ["finished", "==", true],
+        ["duelsLost", "==", 0]
+      ]
+    },
+    {
+      "id": "fast-hands",
+      "name": "Fast Hands",
+      "hint": "Reach seven taps a second in a duel.",
+      "when": [["bestTaps", ">=", 7]]
+    },
+    {
+      "id": "blur",
+      "name": "Blur",
+      "hint": "Reach nine taps a second in a duel.",
+      "when": [["bestTaps", ">=", 9]]
+    },
+    {
+      "id": "camp-breaker",
+      "name": "Camp Breaker",
+      "hint": "Beat the camp beside orb seven.",
+      "when": [["beatTier", ">=", 7]]
+    },
+    {
+      "id": "stonecutter",
+      "name": "Stonecutter",
+      "hint": "Raise ten wish stones.",
+      "when": [["wishes", ">=", 10]]
+    },
+    {
+      "id": "sevenfold",
+      "name": "Sevenfold",
+      "hint": "Complete seven valleys.",
+      "when": [["valleys", ">=", 7]]
+    },
+    {
+      "id": "old-hand",
+      "name": "Old Hand",
+      "hint": "Reach level ten.",
+      "when": [["level", ">=", 10]]
+    },
+    {
+      "id": "keepers-guest",
+      "name": "Keeper's Guest",
+      "hint": "Reach level twenty-five.",
+      "when": [["level", ">=", 25]]
+    },
+    {
+      "id": "collector",
+      "name": "The Collector",
+      "hint": "Own every item in the trader's cart.",
+      "when": [["ownsEverything", "==", true]]
+    },
+    {
+      "id": "rainbow",
+      "name": "Walked the Rainbow",
+      "hint": "Climb the ladder to Violet.",
+      "when": [["tier", "in", ["Violet", "Keeper's Own"]]]
+    },
+    {
+      "id": "keepers-own",
+      "name": "Keeper's Own",
+      "hint": "Reach the top of the ladder.",
+      "when": [["tier", "==", "Keeper's Own"]]
+    }
+  ]
+}

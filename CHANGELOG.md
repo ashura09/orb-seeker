@@ -396,3 +396,27 @@ dead". That was wrong — it came from reading `rotation.x`, and the swing is on
 combined axis. Measured properly as quaternion spread it is **77° of arm and 92°
 of leg**. The per-clip damping stays, because idle genuinely did need it and walk
 genuinely did not.
+
+## Content moves out of the code
+
+Adding a hat to the shop used to mean editing JavaScript. It now means adding a
+line to `content/items.json`.
+
+- `content/items.json` and `content/titles.json` hold the shop and the fifteen
+  achievements. `src/content.js` loads and **validates** both.
+- **The validation is the point.** Moving data into JSON without checking it just
+  moves the mistakes somewhere quieter: a title whose condition named a
+  misspelt field would never fire, and would look exactly like one nobody had
+  earned yet. A bad row now throws at startup with the id and the reason.
+- Titles carry a tiny condition language — `[field, operator, value]`, all of
+  which must hold. Small enough that a wrong operator or unknown field is caught
+  on load; expressive enough for every achievement we have.
+- **Colours in content files are palette names, never hex.** `"color": "boots"`
+  resolves through `palette.js`; an unknown name is an error. A content file
+  carrying its own `#ff0000` would have quietly ended CLAUDE.md's art rule the
+  first time anyone was in a hurry.
+- Seven new tests cover exactly this, including that a condition naming a
+  non-existent field refuses to load and says which title is wrong.
+
+This is the half of the tooling plan that is portable: a JSON list of items is as
+readable to Roblox's Luau, or to PlayCanvas, as it is to us.

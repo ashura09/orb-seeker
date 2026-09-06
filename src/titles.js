@@ -20,105 +20,43 @@ import { emit, EVENTS } from './events.js';
 // From items.js, not shop.js: shop.js builds the trader's UI, and importing it
 // here would drag the DOM into a module that is otherwise pure enough to test.
 import { ITEMS } from './items.js';
+import { loadTitles } from './content.js';
 
 /**
- * The whole set. `test` is given a context assembled at check time; anything it
- * needs must be in that object, so a title can never quietly depend on module
- * state that happens to be lying around.
+ * Every field a title's condition may test.
  *
- * `hint` is shown for titles not yet earned. Hidden achievements are a small
- * cruelty in a children's game -- if you cannot see what to aim at, the list is
- * just a record of what you missed.
+ * Declared here rather than in content.js because this file is what assembles the
+ * context -- content.js has no business knowing what an orb is. A title naming
+ * anything not on this list throws at startup with the id and the typo, instead
+ * of quietly never firing and looking like an achievement nobody has earned.
  */
-export const TITLES = [
-  {
-    id: 'first-light',
-    name: 'First Light',
-    hint: 'Find your first orb.',
-    test: (c) => c.orbsEver >= 1,
-  },
-  {
-    id: 'in-order',
-    name: 'In Order',
-    hint: 'Gather all seven in order, 1 to 7.',
-    test: (c) => c.perfectOrder,
-  },
-  {
-    id: 'fleet',
-    name: 'Fleet',
-    hint: 'Finish a valley in under eight minutes.',
-    test: (c) => c.seconds > 0 && c.seconds < 480,
-  },
-  {
-    id: 'unhurried',
-    name: 'The Unhurried',
-    hint: 'Take more than twenty-five minutes over one valley.',
-    // Deliberately the opposite of Fleet. A game that only rewards speed tells a
-    // child there is a wrong way to enjoy it.
-    test: (c) => c.seconds > 1500,
-  },
-  {
-    id: 'untouched',
-    name: 'Untouched',
-    hint: 'Finish a valley without losing a duel.',
-    test: (c) => c.finished && c.duelsLost === 0,
-  },
-  {
-    id: 'fast-hands',
-    name: 'Fast Hands',
-    hint: 'Reach seven taps a second in a duel.',
-    test: (c) => c.bestTaps >= 7,
-  },
-  {
-    id: 'blur',
-    name: 'Blur',
-    hint: 'Reach nine taps a second in a duel.',
-    test: (c) => c.bestTaps >= 9,
-  },
-  {
-    id: 'camp-breaker',
-    name: 'Camp Breaker',
-    hint: 'Beat the camp beside orb seven.',
-    test: (c) => c.beatTier >= 7,
-  },
-  {
-    id: 'stonecutter',
-    name: 'Stonecutter',
-    hint: 'Raise ten wish stones.',
-    test: (c) => c.wishes >= 10,
-  },
-  {
-    id: 'sevenfold',
-    name: 'Sevenfold',
-    hint: 'Complete seven valleys.',
-    test: (c) => c.valleys >= 7,
-  },
-  { id: 'old-hand', name: 'Old Hand', hint: 'Reach level ten.', test: (c) => c.level >= 10 },
-  {
-    id: 'keepers-guest',
-    name: "Keeper's Guest",
-    hint: 'Reach level twenty-five.',
-    test: (c) => c.level >= 25,
-  },
-  {
-    id: 'collector',
-    name: 'The Collector',
-    hint: 'Own every item in the trader’s cart.',
-    test: (c) => c.itemsOwned >= c.itemsTotal,
-  },
-  {
-    id: 'rainbow',
-    name: 'Walked the Rainbow',
-    hint: 'Climb the ladder to Violet.',
-    test: (c) => c.tier === 'Violet' || c.tier === "Keeper's Own",
-  },
-  {
-    id: 'keepers-own',
-    name: "Keeper's Own",
-    hint: 'Reach the top of the ladder.',
-    test: (c) => c.tier === "Keeper's Own",
-  },
+const FIELDS = [
+  'orbsEver',
+  'valleys',
+  'wishes',
+  'bestTaps',
+  'ownsEverything',
+  'perfectOrder',
+  'finished',
+  'seconds',
+  'duelsLost',
+  'beatTier',
+  'level',
+  'tier',
 ];
+
+/**
+ * The whole set, read from content/titles.json and compiled to predicates.
+ *
+ * Every title names a SPECIFIC ACT, never a threshold of grinding. "Beat the camp
+ * at orb seven" is a story; "play 200 valleys" is a chore with a badge taped to
+ * it, and a nine-year-old can tell the difference.
+ *
+ * Hints are shown for titles not yet earned. Hidden achievements are a small
+ * cruelty in a children's game -- if you cannot see what to aim at, the list is
+ * only a record of what you missed.
+ */
+export const TITLES = loadTitles(FIELDS);
 
 const byId = new Map(TITLES.map((t) => [t.id, t]));
 
@@ -182,8 +120,10 @@ export function baseContext() {
     valleys: save.cycles || 0,
     wishes: (save.wishes || []).length,
     bestTaps: save.bestTaps || 0,
-    itemsOwned: ITEMS.filter((i) => owned(i.id)).length,
-    itemsTotal: ITEMS.length,
+    // A single boolean rather than two numbers to compare: the condition
+    // language deliberately cannot compare one field against another, and
+    // keeping it that small is worth more than the generality.
+    ownsEverything: ITEMS.every((i) => owned(i.id)),
     // Run-shaped fields default to "no run just happened", so a check fired by a
     // level-up cannot accidentally award a run title.
     perfectOrder: false,

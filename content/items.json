@@ -1,0 +1,61 @@
+{
+  "$comment": "The trader's stock. Add an item by adding a row here — no code. `color` names a key in palette.js's ITEM table, never a hex: CLAUDE.md's rule is that every colour in the game comes from the palette, and letting content files carry raw hex would quietly end that.",
+  "items": [
+    {
+      "id": "boots",
+      "name": "Swift boots",
+      "desc": "Walk 40% faster.",
+      "cost": 12,
+      "color": "boots"
+    },
+    {
+      "id": "lens",
+      "name": "Long lens",
+      "desc": "Finder sees 50% farther.",
+      "cost": 10,
+      "color": "lens"
+    },
+    {
+      "id": "grip",
+      "name": "Duelist grip",
+      "desc": "Each tap counts more in duels.",
+      "cost": 18,
+      "color": "grip"
+    },
+    {
+      "id": "lantern",
+      "name": "Brass lantern",
+      "desc": "Carry your own light for the dark.",
+      "cost": 8,
+      "color": "lantern"
+    },
+    {
+      "id": "hat",
+      "name": "Straw hat",
+      "desc": "A wide hat, worn over the hood.",
+      "cost": 6,
+      "color": "hat"
+    },
+    {
+      "id": "cloak",
+      "name": "Violet suit",
+      "desc": "A new color for your ninja suit.",
+      "cost": 9,
+      "color": "cloak"
+    },
+    {
+      "id": "charm",
+      "name": "Orbit charm",
+      "desc": "A small ring that circles your sash.",
+      "cost": 14,
+      "color": "charm"
+    },
+    {
+      "id": "bell",
+      "name": "Silver bell",
+      "desc": "Wanderers hear you and seek you from farther.",
+      "cost": 16,
+      "color": "bell"
+    }
+  ]
+}
