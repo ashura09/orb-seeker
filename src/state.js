@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import * as P from './palette.js';
 import { randomSeed } from './rng.js';
 import { CONFIG } from './config.js';
+import { seedFromCode } from './rules.js';
 
 // ---------- three.js r185 compatibility ----------
 // The original loaded three r128 from a CDN. Three things changed since; see
@@ -30,6 +31,27 @@ export const hex = (c) => '#' + c.toString(16).padStart(6, '0');
 
 // The shared mutable state. `state` is the game mode the original tracked:
 // start | play | duel | shop | satchel | ending | wish
+/**
+ * Which valley to build.
+ *
+ * A code in the address bar wins over everything: that is somebody arriving to
+ * walk a friend's exact valley, which is the whole reason codes exist. `?seed=`
+ * stays behind it for development, and `?bench` pins its own.
+ *
+ * Written as a function rather than a chain of `??` because `Number()` returns
+ * NaN and not null for nonsense, so a nullish chain would have silently accepted
+ * `?seed=banana` as a valley. ESLint caught that; it would have been a puzzling
+ * blank world otherwise.
+ */
+function chosenSeed() {
+  const q = new URLSearchParams(location.search);
+  const fromCode = seedFromCode(q.get('valley'));
+  if (fromCode !== null) return fromCode;
+  const raw = Number(q.get('seed'));
+  if (Number.isFinite(raw) && raw !== 0) return raw;
+  return q.has('bench') ? CONFIG.bench.seed : randomSeed();
+}
+
 export const G = {
   state: 'start',
   t: 0, // seconds since load, used by every animation
@@ -54,9 +76,9 @@ export const G = {
   // ?bench pins the scene so performance numbers are comparable between runs.
   // See CONFIG.bench and the note in UPGRADE-NOTES.md.
   bench: new URLSearchParams(location.search).has('bench'),
-  worldSeed:
-    Number(new URLSearchParams(location.search).get('seed')) ||
-    (new URLSearchParams(location.search).has('bench') ? CONFIG.bench.seed : randomSeed()),
+  worldSeed: chosenSeed(),
+  // True when you got here by code rather than into a fresh valley of your own.
+  visiting: seedFromCode(new URLSearchParams(location.search).get('valley')) !== null,
   found: 0, // orbs collected this cycle
   orderKept: true, // still collecting 1..7 in order?
   night: 0, // 0 = day, 1 = night; eased every frame

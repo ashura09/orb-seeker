@@ -50,6 +50,24 @@
         <h1>Orb Seeker</h1>
         <p id="introLine">Something is glowing over the rise.</p>
         <button id="startBtn">Go and see</button>
+        <div class="codebox">
+          <button id="haveCode" class="linkbtn">Someone sent me a valley</button>
+          <div id="codeEntry" hidden>
+            <input
+              id="codeInput"
+              type="text"
+              inputmode="latin"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="12"
+              placeholder="VALE-XXXXXX"
+              aria-label="Valley code"
+            />
+            <button id="codeGo">Walk it</button>
+            <p id="codeError" class="seedhint"></p>
+          </div>
+        </div>
       </div>
     </div>
 

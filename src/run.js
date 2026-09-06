@@ -139,7 +139,25 @@ function showCard() {
   list.innerHTML = '';
   list.append(row('Valley score', String(scored), climbed ? 'a new best' : `best ${wasRating}`));
 
-  list.append(row('Time', clock(elapsed)));
+  // Your best on THIS valley, which is what makes a shared code worth racing.
+  // Kept per seed, so two children with the same code are comparing the same walk
+  // rather than two different worlds.
+  const seedKey = String(G.worldSeed);
+  const previousBest = save.bestBySeed[seedKey];
+  const beatIt = run.orbs >= 7 && (previousBest === undefined || seconds < previousBest);
+  if (beatIt) save.bestBySeed[seedKey] = seconds;
+
+  list.append(
+    row(
+      'Time',
+      clock(elapsed),
+      previousBest === undefined
+        ? 'first time in this valley'
+        : beatIt
+          ? `beat your ${clock(previousBest * 1000)}`
+          : `your best here ${clock(previousBest * 1000)}`,
+    ),
+  );
   list.append(
     row(
       'Orbs',
@@ -171,6 +189,11 @@ function showCard() {
   // The valley code. Shown last and given its own line, because it is the only
   // thing on this card that another person can act on.
   $('scoreSeed').textContent = seedCode(G.worldSeed);
+  // Someone who arrived by code is being told what to do with it; someone in
+  // their own valley is being offered something to send.
+  document.querySelector('#score .seedhint').textContent = G.visiting
+    ? 'You walked a valley someone sent you. Send your time back.'
+    : 'Send it to a friend and they walk the same valley.';
   $('scoreTitle').textContent = G.orderKept ? 'A perfect gathering' : 'The seven, gathered';
   // Announced so the daily quests can count it without run.js knowing they exist.
   emit(EVENTS.RUN_COMPLETE, {

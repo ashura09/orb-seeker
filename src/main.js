@@ -22,6 +22,7 @@ import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored } from './map.js';
 import { openingLine, openingButton } from './onboarding.js';
+import { seedFromCode, seedCode } from './rules.js';
 import './progress.js';
 import './run.js';
 import { initGraphics, watchFrameRate } from './graphics.js';
@@ -63,9 +64,16 @@ setCamDist(save.camDist ?? CAM.distance);
 loadProps()
   .then(() => {
     buildWorld(G.worldSeed);
-    // On the bench everything is seeded from the world seed, so orbs and the
-    // villagers camped beside them are in the same place on every run.
-    const rand = G.bench ? makeRng(G.worldSeed ^ 0x5eed) : undefined;
+    // ALWAYS seeded from the world seed, not just on the bench.
+    //
+    // This used to be bench-only, and the valley code feature was born broken
+    // because of it: two people entering the same code got the same hills and
+    // then hunted orbs in completely different places, which makes racing a
+    // shared valley meaningless. The terrain was deterministic and the things
+    // you actually look for were not.
+    //
+    // A seed names a WHOLE valley or it names nothing worth sending.
+    const rand = makeRng(G.worldSeed ^ 0x5eed);
     placeOrbs(rand);
     homeWanderers(rand);
     if (G.bench) enterBench(); // the terrain exists now, so the player can be stood on it
@@ -264,4 +272,38 @@ on(EVENTS.LEVEL_UP, ({ level, rank, newRank, reason }) => {
     toast(`Level ${level}, for ${reason}.`, 2.5);
     if (navigator.vibrate) navigator.vibrate([30, 50, 60]);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Walking somebody else's valley.
+//
+// The world is generated from a seed, so a code is all it takes to stand in the
+// identical valley: same orbs, same camps, same hills. No server, no accounts,
+// no chat to moderate -- it satisfies every child-safety rule in CLAUDE.md by
+// construction rather than by policing, and it works over a text message.
+//
+// Entering one reloads with the code in the address bar rather than rebuilding
+// the world in place. A reload is the one way to be certain nothing survives
+// from the valley before it, and it also makes the address bar shareable.
+// ---------------------------------------------------------------------------
+$('haveCode').addEventListener('click', () => {
+  const box = $('codeEntry');
+  box.hidden = !box.hidden;
+  if (!box.hidden) $('codeInput').focus();
+});
+
+function goToValley() {
+  const raw = $('codeInput').value;
+  const seed = seedFromCode(raw);
+  if (seed === null) {
+    // Says what is wrong rather than just refusing. The alphabet has no O, I or
+    // S in it precisely because those are what people mistype.
+    $('codeError').textContent = 'That is not a valley code. They look like VALE-7K2M9P.';
+    return;
+  }
+  location.search = `?valley=${encodeURIComponent(seedCode(seed).replace('VALE-', ''))}`;
+}
+$('codeGo').addEventListener('click', goToValley);
+$('codeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') goToValley();
 });

@@ -888,3 +888,41 @@ canvas#c {
 .quest.done .qbar i {
   opacity: 0.5;
 }
+
+/* ---------------------------------------------------------------------------
+   Entering a valley code on the start card.
+
+   Hidden behind a link, because it is the second thing anybody does and the
+   first is to press the big button. Kept small so it never competes with it.
+   --------------------------------------------------------------------------- */
+.codebox {
+  margin-top: 14px;
+}
+#codeEntry {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+#codeInput {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--brass-dark);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  font:
+    bold 16px/1 'Trebuchet MS',
+    monospace; /* 16px: anything smaller makes iOS zoom the page */
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+#codeEntry .seedhint {
+  flex: 1 0 100%;
+  margin: 0;
+  min-height: 1.2em;
+  color: var(--brass-dark);
+}

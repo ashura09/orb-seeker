@@ -515,3 +515,36 @@ The validator earned its keep immediately: adding the Errands badges made
 `titles.json` name a field the test's copy of the field list did not have, and
 the whole suite refused to load. The real fault was the duplication, so the list
 now has one home and the test imports it.
+
+## Send someone your valley
+
+The start card now takes a code. _"Someone sent me a valley"_ opens a box, you
+type `VALE-BUCHJ3` — lowercase and without the prefix both work — and you are
+standing in the identical valley.
+
+- Entering a code reloads with `?valley=CODE` rather than rebuilding in place. A
+  reload is the one certain way that nothing survives from the valley before it,
+  and it makes the address bar itself shareable.
+- The score card keeps **your best time per seed**, so a shared valley is
+  something to race. It says "first time in this valley", "beat your 7:41" or
+  "your best here 6:12", and tells a visitor to send their time back.
+- No server, no accounts, no chat. It satisfies every child-safety rule in
+  `CLAUDE.md` by construction rather than by policing, and it works over a text
+  message.
+
+### The feature shipped broken and testing caught it
+
+Terrain was seeded from the world seed. **Orb placement was not** — it used
+`Math.random` unless running on the bench. So two children entering the same code
+got the same hills and then hunted orbs in completely different places, which
+makes racing a shared valley pointless. The deterministic part was the scenery;
+the part you actually look for was random.
+
+Orbs and villagers are now seeded from the world seed always, not just on the
+bench. Verified by loading the same code twice: all seven orb positions and
+Bram's camp match to the decimal. Three tests now hold that invariant, because
+**a seed names a whole valley or it names nothing worth sending.**
+
+ESLint caught a second one on the way: the seed was chosen with a `??` chain, and
+`Number()` returns `NaN` rather than null for nonsense — so `?seed=banana` would
+have been accepted and produced a puzzling blank world.

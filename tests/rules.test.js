@@ -4,6 +4,7 @@
 // src/rules.js imports neither three.js nor the DOM.
 import { describe, it, expect } from 'vitest';
 import { CONFIG } from '../src/config.js';
+import { makeRng } from '../src/rng.js';
 import {
   pickOrbSpots,
   duelLoot,
@@ -422,5 +423,32 @@ describe('the first valley', () => {
     for (const s of spots) {
       expect(at(s, 0, 0)).toBeGreaterThanOrEqual(CONFIG.orbs.minDistanceFromPlayer);
     }
+  });
+});
+
+describe('a valley code names the whole valley', () => {
+  // The invariant the sharing feature rests on, and the one it shipped without.
+  // Terrain was seeded from the world seed but orb placement was not, so two
+  // children entering the same code got the same hills and then hunted orbs in
+  // entirely different places -- which makes racing a shared valley pointless.
+  const spotsFor = (seed) =>
+    pickOrbSpots({ playerX: 0, playerZ: 0, random: makeRng(seed ^ 0x5eed) });
+
+  it('puts every orb in the same place for the same seed', () => {
+    const a = spotsFor(44395589);
+    const b = spotsFor(44395589);
+    expect(a).toEqual(b);
+  });
+
+  it('puts them somewhere else for a different seed', () => {
+    expect(spotsFor(44395589)).not.toEqual(spotsFor(44395590));
+  });
+
+  it('survives the trip through a code and back', () => {
+    // What actually happens when a friend types what you sent them.
+    const seed = 44395589;
+    const roundTripped = seedFromCode(seedCode(seed));
+    expect(spotsFor(roundTripped)).toEqual(spotsFor(roundTripped));
+    expect(seedCode(roundTripped)).toBe(seedCode(seed));
   });
 });

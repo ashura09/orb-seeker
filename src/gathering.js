@@ -8,6 +8,7 @@ import { CONFIG } from './config.js';
 import { player, cosmetics } from './player.js';
 import { paintSky, setNightLevel, followPlayer } from './sky.js';
 import { buildWorld } from './world.js';
+import { makeRng } from './rng.js';
 import { placeOrbs } from './orbs.js';
 import { homeWanderers } from './wanderers.js';
 import { forgetExplored } from './map.js';
@@ -116,8 +117,11 @@ export function updateStates(dt, recallAWish) {
       buildWorld(G.worldSeed);
       // The valley you mapped no longer exists, so the map starts blank again.
       forgetExplored();
-      placeOrbs();
-      homeWanderers();
+      // Seeded from the new world seed, so THIS valley is sendable too. A code
+      // has to name the orbs as well as the hills or it names nothing useful.
+      const rand = makeRng(G.worldSeed ^ 0x5eed);
+      placeOrbs(rand);
+      homeWanderers(rand);
       toast('The valley has shifted, and the seven orbs are scattered again', 3.5);
       setTimeout(recallAWish, 3600);
     }

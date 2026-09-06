@@ -160,7 +160,7 @@ tested. No server.
 > content files are palette NAMES, never hex, so CLAUDE.md's art rule survives the
 > move. Villagers and dialogue are next.
 
-## 6. Seed codes — the social layer
+## 6. Seed codes — built
 
 The strongest asset in the project, already built: **the valley is generated
 deterministically from a seed.** The same seed makes the same valley on any phone.
@@ -220,7 +220,7 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1 to 5**, plus the ladder, titles, the rigged
+**Built so far: steps 1 to 6**, plus the ladder, titles, the rigged
 characters and the content pipeline — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150
