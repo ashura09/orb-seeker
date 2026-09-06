@@ -3,7 +3,7 @@
 // startup with the id and the reason, rather than producing a title nobody can
 // ever earn or a shop item with no colour.
 import { describe, it, expect } from 'vitest';
-import { ITEMS, loadTitles } from '../src/content.js';
+import { ITEMS, loadTitles, loadVillagers } from '../src/content.js';
 import * as P from '../src/palette.js';
 
 const FIELDS = [
@@ -105,5 +105,60 @@ describe('titles, from content/titles.json', () => {
     }
     expect(message).toMatch(/titles\.json/);
     expect(message).toMatch(/"[a-z-]+"/); // the id of the row that is wrong
+  });
+});
+
+describe('villagers, from content/villagers.json', () => {
+  const HEADWEAR = ['cap', 'brim', 'hood', 'kerchief', 'none'];
+  const PROPS = ['axe', 'hammer', 'blade', 'staff', 'satchel', 'basket'];
+  const seven = loadVillagers(HEADWEAR, PROPS);
+
+  it('loads exactly seven, one per orb, in tier order', () => {
+    expect(seven).toHaveLength(7);
+    seven.forEach((w, i) => expect(w.tier).toBe(i + 1));
+  });
+
+  it('gives every one of them a face and a voice', () => {
+    for (const w of seven) {
+      expect(typeof w.color).toBe('number');
+      expect(typeof w.hat).toBe('number');
+      expect(typeof w.skin).toBe('number');
+      expect(w.build).toBeGreaterThan(0);
+      for (const line of ['challenge', 'theyWin', 'theyLose']) {
+        expect(w.voice[line].length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('never states a duel duration in dialogue', () => {
+    // The rules line said "Ten seconds" for months after the duel became four,
+    // and the fallback voice line said it too. A DURATION written into prose is a
+    // number that goes stale silently, so no villager may state one. Orb numbers
+    // ("Four. Halfway, near enough.") are fine, and so is "the second is mine" --
+    // Nell means the second ORB. Only a NUMBER followed by "seconds" is a clock.
+    for (const w of seven) {
+      for (const line of Object.values(w.voice)) {
+        expect(line).not.toMatch(
+          /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+seconds?\b/i,
+        );
+      }
+    }
+  });
+
+  it('refuses headwear or a prop that nothing can build', () => {
+    // A villager asking for a hat nobody makes would otherwise walk around
+    // bare-headed with nothing said about it.
+    expect(() => loadVillagers(['none'], PROPS)).toThrow(/nothing knows how to build/);
+    expect(() => loadVillagers(HEADWEAR, ['axe'])).toThrow(/nothing knows how to build/);
+  });
+
+  it('names the offending villager in the error', () => {
+    let message = '';
+    try {
+      loadVillagers(['none'], PROPS);
+    } catch (e) {
+      message = e.message;
+    }
+    expect(message).toMatch(/villagers\.json/);
   });
 });

@@ -8,66 +8,27 @@
 //
 // The seven villagers are former seekers who never finished. Each one camps
 // beside the furthest orb they ever reached, which is why the one by orb 7 is
-// so much harder than the one by orb 1 — their difficulty IS their story.
-// So each voice belongs to someone who got exactly that far and stopped:
+// so much harder than the one by orb 1 -- their difficulty IS their story.
 //
-//   Bram    (1) never really tried. Warm about it.
-//   Nell    (2) found something she liked better than wishing.
-//   Pip     (3) rushed, broke the order, still insists it was fine.
-//   Marla   (4) got halfway on sheer strength. Says little.
-//   Tarrow  (5) has watched many seekers pass. Kind, and a little sad.
-//   Sable   (6) failed at the sixth twice, and it still stings.
-//   Pilgrim (7) reached the seventh and chose not to wish. Barely speaks.
-//
-// Keyed by the `short` name in wanderers.js.
+// That brief, and each villager's lines, now live in content/villagers.json,
+// beside the person they belong to. What is left here is the writing that has
+// LOGIC in it: the Keeper picks its greeting from how many gatherings you have
+// finished, and an old wish is phrased by how long ago you made it. Those are
+// functions, not lists, so they stay in code.
 
-export const VILLAGER_VOICE = {
-  Bram: {
-    challenge:
-      'One orb. That is all I ever carried out of this valley. Let us see if your arms are better than mine were.',
-    theyWin: 'Ha! Still in me somewhere. Go on — the rest of them are worse than me.',
-    theyLose: 'Quick hands. I wish I had had them when it counted.',
-  },
-  Nell: {
-    challenge:
-      'The second is mine. Not that I wanted the others — there are better things growing out here than wishes.',
-    theyWin: 'Patience beats hurry. Ask the moss, it has been here longer.',
-    theyLose: 'Off you go, then. Mind the nettles down by the water.',
-  },
-  Pip: {
-    challenge:
-      'Third! Third, and I would have had the lot, only I grabbed them out of order like a fool. Come on, quickly.',
-    theyWin: 'Too slow! Everyone is always too slow.',
-    theyLose:
-      'Fine. You are quick. Do not be quick about the order, though. That is how you end up camped by the third.',
-  },
-  Marla: {
-    challenge: 'Four. Halfway, near enough. You will not rush me.',
-    theyWin: 'Hands like stone. I did say.',
-    theyLose: 'Hm. Good. Take it.',
-  },
-  Tarrow: {
-    challenge:
-      'The fifth. I have watched a great many people walk past me, and rather fewer walk back. Let us see which you are.',
-    theyWin: 'No shame in it. I have lost at this spot more times than you have stood on it.',
-    theyLose: 'Go on, then. And when it asks you — think before you speak.',
-  },
-  Sable: {
-    challenge: 'Six. Twice I stood here, and twice I turned around. You will do no better.',
-    theyWin: 'As I thought. The sixth keeps its own.',
-    theyLose: 'Again? Then go. Go and see what is past it, and come back and tell me.',
-  },
-  'the Pilgrim': {
-    challenge: 'I have been where you are going.',
-    theyWin: 'Then you are not ready. Good.',
-    theyLose: 'Go. Ask carefully.',
-  },
-};
+// Built from content/villagers.json, where each villager's lines sit beside their
+// face. Keyed by `short` because that is what the duel panel has to hand.
+import { WANDERERS } from './villagers.js';
+
+export const VILLAGER_VOICE = Object.fromEntries(WANDERERS.map((w) => [w.short, w.voice]));
 
 // Falls back rather than crashing if a name is ever added to wanderers.js
 // without a voice here.
+// Says no number. The old fallback promised "Ten seconds", which stayed true
+// until the duel was rebalanced to four and then quietly lied -- the same fault
+// as the rules line, in the one place nobody thinks to look.
 const FALLBACK = {
-  challenge: 'A duel, then. Ten seconds.',
+  challenge: 'A duel, then. Tap as fast as you can.',
   theyWin: 'Better luck further out.',
   theyLose: 'Well fought.',
 };

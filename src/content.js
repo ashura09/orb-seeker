@@ -24,6 +24,7 @@
 import * as P from './palette.js';
 import itemsFile from '../content/items.json';
 import titlesFile from '../content/titles.json';
+import villagersFile from '../content/villagers.json';
 
 /** Throw with a message that says which row is wrong and why. */
 function bad(file, id, why) {
@@ -110,6 +111,85 @@ export function loadTitles(fields) {
       name: raw.name,
       hint: raw.hint,
       test: (ctx) => tests.every((t) => t(ctx)),
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// VILLAGERS
+//
+// Who they are, what they look like and what they say, in one row each. They
+// used to be split across villagers.js and voice.js, with a comment warning that
+// the `short` name had to be kept in step across THREE files -- a coupling a
+// person was expected to maintain by remembering it. Now one `id` drives the
+// palette lookup and the voice sits beside the face it belongs to, so the
+// warning is not needed rather than merely repeated.
+// ---------------------------------------------------------------------------
+
+/**
+ * @param headwear  the styles wandererBody.js can actually build
+ * @param props     the carried things it can actually build
+ *
+ * Both are passed in for the same reason the title fields are: this file has no
+ * idea how a hat is made, and a villager asking for headwear nobody can build
+ * would otherwise walk around bare-headed with nothing said about it.
+ */
+export function loadVillagers(headwear, props) {
+  const hats = new Set(headwear);
+  const carried = new Set(props);
+  const list = villagersFile.villagers;
+
+  if (list.length !== 7) {
+    throw new Error(
+      `content/villagers.json: there must be exactly 7 villagers, one per orb — found ${list.length}`,
+    );
+  }
+
+  const seen = new Set();
+  return list.map((raw, i) => {
+    const id = raw.id || '(missing id)';
+    for (const key of ['id', 'name', 'short']) {
+      if (typeof raw[key] !== 'string' || !raw[key]) {
+        bad('villagers.json', id, `needs a non-empty "${key}"`);
+      }
+    }
+    if (seen.has(raw.id)) bad('villagers.json', id, 'appears twice');
+    seen.add(raw.id);
+
+    // The id is what fetches their coat, hat and skin, so a typo here would
+    // otherwise produce a villager with no colours at all.
+    if (!(raw.id in P.VILLAGER)) {
+      bad('villagers.json', id, "is not in palette.js's VILLAGER table");
+    }
+    if (!Number.isFinite(raw.build) || raw.build <= 0) {
+      bad('villagers.json', id, 'needs a build greater than 0');
+    }
+    if (!hats.has(raw.headwear)) {
+      bad('villagers.json', id, `wears "${raw.headwear}", which nothing knows how to build`);
+    }
+    if (!carried.has(raw.prop)) {
+      bad('villagers.json', id, `carries "${raw.prop}", which nothing knows how to build`);
+    }
+    for (const line of ['challenge', 'theyWin', 'theyLose']) {
+      if (typeof raw.voice?.[line] !== 'string' || !raw.voice[line]) {
+        bad('villagers.json', id, `needs something to say for "${line}"`);
+      }
+    }
+
+    const paint = P.VILLAGER[raw.id];
+    return {
+      id: raw.id,
+      name: raw.name,
+      short: raw.short,
+      tier: i + 1, // their position in the file IS their tier: first camps by orb 1
+      build: raw.build,
+      headwear: raw.headwear,
+      prop: raw.prop,
+      beard: !!raw.beard,
+      color: paint.coat,
+      hat: paint.hat,
+      skin: paint.skin,
+      voice: { ...raw.voice },
     };
   });
 }

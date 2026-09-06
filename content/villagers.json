@@ -1,0 +1,105 @@
+{
+  "$comment": "The seven, in tier order: villager 1 camps beside orb 1. Who they are, what they look like and what they say, all in one place — they used to be split across villagers.js and voice.js with a warning to keep the spellings in step across three files. `id` is the key into palette.js's VILLAGER table and supplies coat, hat and skin, so no colour is written here.",
+  "$writing": "They are former seekers who never finished. Each camps beside the furthest orb they ever reached, which is why the one by orb 7 is so much harder than the one by orb 1 — their difficulty IS their story. Write each voice as somebody who got exactly that far and stopped.",
+  "villagers": [
+    {
+      "id": "bram",
+      "name": "Bram the Woodcutter",
+      "short": "Bram",
+      "note": "Never really tried. Warm about it.",
+      "build": 1.1,
+      "headwear": "cap",
+      "prop": "axe",
+      "voice": {
+        "challenge": "One orb. That is all I ever carried out of this valley. Let us see if your arms are better than mine were.",
+        "theyWin": "Ha! Still in me somewhere. Go on — the rest of them are worse than me.",
+        "theyLose": "Quick hands. I wish I had had them when it counted."
+      }
+    },
+    {
+      "id": "nell",
+      "name": "Nell the Herbalist",
+      "short": "Nell",
+      "note": "Found something she liked better than wishing.",
+      "build": 0.92,
+      "headwear": "kerchief",
+      "prop": "basket",
+      "voice": {
+        "challenge": "The second is mine. Not that I wanted the others — there are better things growing out here than wishes.",
+        "theyWin": "Patience beats hurry. Ask the moss, it has been here longer.",
+        "theyLose": "Off you go, then. Mind the nettles down by the water."
+      }
+    },
+    {
+      "id": "pip",
+      "name": "Pip the Courier",
+      "short": "Pip",
+      "note": "Rushed, broke the order, still insists it was fine.",
+      "build": 0.85,
+      "headwear": "cap",
+      "prop": "satchel",
+      "voice": {
+        "challenge": "Third! Third, and I would have had the lot, only I grabbed them out of order like a fool. Come on, quickly.",
+        "theyWin": "Too slow! Everyone is always too slow.",
+        "theyLose": "Fine. You are quick. Do not be quick about the order, though. That is how you end up camped by the third."
+      }
+    },
+    {
+      "id": "marla",
+      "name": "Marla Stonehand",
+      "short": "Marla",
+      "note": "Got halfway on sheer strength. Says little.",
+      "build": 1.18,
+      "headwear": "none",
+      "prop": "hammer",
+      "voice": {
+        "challenge": "Four. Halfway, near enough. You will not rush me.",
+        "theyWin": "Hands like stone. I did say.",
+        "theyLose": "Hm. Good. Take it."
+      }
+    },
+    {
+      "id": "tarrow",
+      "name": "Old Tarrow",
+      "short": "Tarrow",
+      "note": "Has watched many seekers pass. Kind, and a little sad.",
+      "build": 0.95,
+      "headwear": "brim",
+      "prop": "staff",
+      "beard": true,
+      "voice": {
+        "challenge": "The fifth. I have watched a great many people walk past me, and rather fewer walk back. Let us see which you are.",
+        "theyWin": "No shame in it. I have lost at this spot more times than you have stood on it.",
+        "theyLose": "Go on, then. And when it asks you — think before you speak."
+      }
+    },
+    {
+      "id": "sable",
+      "name": "Sable the Fencer",
+      "short": "Sable",
+      "note": "Failed at the sixth twice, and it still stings.",
+      "build": 1.0,
+      "headwear": "none",
+      "prop": "blade",
+      "voice": {
+        "challenge": "Six. Twice I stood here, and twice I turned around. You will do no better.",
+        "theyWin": "As I thought. The sixth keeps its own.",
+        "theyLose": "Again? Then go. Go and see what is past it, and come back and tell me."
+      }
+    },
+    {
+      "id": "pilgrim",
+      "name": "The Grey Pilgrim",
+      "short": "the Pilgrim",
+      "note": "Reached the seventh and chose not to wish. Barely speaks.",
+      "build": 1.05,
+      "headwear": "hood",
+      "prop": "staff",
+      "voice": {
+        "challenge": "I have been where you are going.",
+        "theyWin": "Then you are not ready. Good.",
+        "theyLose": "Go. Ask carefully."
+      }
+    }
+  ]
+}

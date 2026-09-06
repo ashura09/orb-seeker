@@ -420,3 +420,39 @@ line to `content/items.json`.
 
 This is the half of the tooling plan that is portable: a JSON list of items is as
 readable to Roblox's Luau, or to PlayCanvas, as it is to us.
+
+## The seven move into a content file
+
+`content/villagers.json` now holds who each villager is, what they look like and
+everything they say — one row each, name and build and headwear and voice
+together.
+
+- They were split across `villagers.js` and `voice.js`, with a comment warning
+  that the `short` name had to be kept in step across **three** files. One `id`
+  now fetches their coat, hat and skin from the palette, and their lines sit
+  beside the face they belong to, so the warning is unnecessary rather than
+  merely repeated.
+- `villagers.js` shrank to a declaration of what `wandererBody.js` can actually
+  build — the headwear and props — handed to the loader. A villager asking for a
+  hat nothing can make is now an error at startup instead of somebody walking
+  around bare-headed with nothing said about it.
+- The writing brief (they are former seekers who stopped at the furthest orb they
+  reached, so their difficulty IS their story) moved into the content file, beside
+  the writing. What stayed in `voice.js` is the writing with logic in it: the
+  Keeper's greeting depends on how many valleys you have finished, and a wish is
+  phrased by how long ago you made it. Those are functions, not lists.
+- Fixed a stale line: the fallback duel voice still promised **"Ten seconds"**,
+  months after the duel became four. Same fault as the rules line, in the one
+  place nobody thinks to look.
+
+### A test that could not fail
+
+The new "no duel duration in dialogue" test was worthless when written: the `\b`
+word boundaries in its regex had been mangled into literal backspace characters,
+so the pattern was `/\x08(ten|four|…)\x08/i` and matched nothing. It passed, and
+would have passed forever.
+
+Rewritten, it immediately failed — first on Marla's "Four." and Sable's "Six.",
+which are **orb numbers and good writing**, then on Nell's "the second is mine",
+which is also an orb. It now matches only a number followed by "seconds", and I
+checked it both ways: it catches "Ten seconds" and allows all four of those.
