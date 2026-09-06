@@ -337,3 +337,39 @@ Four faults caught by looking at it:
   chips behind a cream halo. The card is now a proper column — heading, scrolling
   body, fixed footer — so the only way out can never be hidden or on top of
   anything.
+
+## The monkey gets a skeleton
+
+The game had no animation. Arms and legs were swung by writing `Math.sin` into
+their rotations every frame — a metronome: both arms on one sine wave, both legs
+on its inverse, the same swing at every speed, and nothing at all for jumping,
+landing, crouching or standing still.
+
+He now hangs off seven bones driven by real animation clips, and **he is the same
+monkey**: same geometry, same colours, same heights. Hood, headband, scarf tail,
+ears, muzzle, sash and tail all kept.
+
+- `seeker.glb` (Kenney Mini Characters, CC0) is loaded for its **skeleton shape
+  and its 32 clips only** — its meshes are discarded. Swapping the monkey for a
+  generic blocky human would have lost more character than animation gained.
+- **The bones are ours, not theirs.** Kenney's figure has hips at 51% of head
+  height; the monkey's sit at 28%. Parenting him to their skeleton would have
+  quietly re-proportioned him into somebody else. We build seven bones at his
+  measurements and give them Kenney's names — a clip that says "rotate the left
+  arm" works on an arm of any length.
+- Translation tracks are dropped for the same reason: they are in Kenney's
+  centimetres. Every rotation is kept.
+- `idle`, `walk`, `sprint`, `jump`, `fall` and `crouch` are wired to what the
+  player is actually doing. Boots now visibly matter — the sprint clip is the
+  first time buying them changed anything on screen.
+- **141 draw calls, down from 149.** The tail was six spheres and six calls; it
+  is now one `InstancedMesh` with the ripple intact.
+
+Retargeting faults, both found by looking:
+
+- The idle clip left him standing with his arms splayed like a scarecrow. Kenney's
+  shoulders assume short stubby arms; the monkey's are twice as long relative to
+  his body, so the same angle swings much wider. Limb rotations are now damped.
+- Damping hard enough to fix that flattened the walk — he strode along with his
+  arms hanging dead. Damping is now per clip: standing damped hard, moving barely
+  at all.

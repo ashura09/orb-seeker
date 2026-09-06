@@ -4,18 +4,7 @@
 // LOOKS like lives in player.js; what the camera does about it lives in camera.js.
 import { G } from './state.js';
 import { CONFIG } from './config.js';
-import {
-  player,
-  armL,
-  armR,
-  handL,
-  handR,
-  legL,
-  legR,
-  tailSegs,
-  cosmetics,
-  setAirPose,
-} from './player.js';
+import { player, cosmetics, setAirPose, setAnim, updateAnim, updateTail } from './player.js';
 import { WORLD_R, obstacles, surfaceHeightAt, isInWater } from './world.js';
 import { worn } from './loadout.js';
 import { orbs, collect, updateOrbLights, updateVanish } from './orbs.js';
@@ -34,6 +23,7 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
   if (G.state === 'play') {
     const len = Math.hypot(mx, my);
     let moving = false;
+    let fast = false;
     if (len > 0.08) {
       // Wading slows you, so water is something you feel rather than something
       // you only look at -- and it gives the wetland a cost as well as a look.
@@ -51,6 +41,10 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
       player.rotation.y = Math.atan2(vx, vz);
       bob += dt * P.bobRate * k;
       moving = true;
+      // Boots make him properly quick, and the sprint clip is the only way that
+      // ever showed on screen -- the old sine wave swung at the same angle
+      // whatever your speed, so buying boots looked like nothing.
+      fast = k > 1.05;
     }
     const pr = Math.hypot(player.position.x, player.position.z);
     if (pr > WORLD_R) {
@@ -91,17 +85,17 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
       // the walk bounce rides on top of the terrain rather than on top of zero
       player.position.y = feetGround + Math.abs(Math.sin(bob)) * P.bobHeight;
     }
-    // arms swing, tail sways -- but not in mid-air, where the jump pose owns
-    // the same rotations and the walk cycle would overwrite it every frame.
-    if (!G.airborne) {
-      armL.rotation.x = moving ? Math.sin(bob) * 0.6 : 0;
-      armR.rotation.x = moving ? -Math.sin(bob) * 0.6 : 0;
-      handL.position.z = Math.sin(armL.rotation.x) * 0.3;
-      handR.position.z = Math.sin(armR.rotation.x) * 0.3;
-      // legs swing opposite the arms, which is what walking looks like
-      legL.rotation.x = moving ? -Math.sin(bob) * 0.5 : 0;
-      legR.rotation.x = moving ? Math.sin(bob) * 0.5 : 0;
-    }
+    // What he is DOING, stated once a frame. player.js decides whether that is a
+    // change and cross-fades if so, so nothing here has to remember what he was
+    // doing last frame.
+    //
+    // This replaces four lines of Math.sin. Those were a metronome: both arms on
+    // one sine wave, both legs on its inverse, the same swing at every speed, and
+    // nothing whatsoever for jumping, landing, crouching or standing still.
+    if (G.airborne) setAnim(G.vy > 0 ? 'jump' : 'fall');
+    else if (G.crawling) setAnim('crouch');
+    else if (moving) setAnim(fast ? 'sprint' : 'walk');
+    else setAnim('idle');
     for (const o of orbs) {
       if (o.found) continue;
       o.mesh.position.y = surfaceHeightAt(o.x, o.z) + 1.1 + Math.sin(G.t * 2 + o.phase) * 0.25;
@@ -130,13 +124,7 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
   updateVanish(dt);
   updateBurst(dt);
   updateWishStones(dt);
-  tailSegs.forEach((s, i) => {
-    const k = i + 1;
-    s.position.set(
-      Math.sin(G.t * 3 - k * 0.6) * 0.06 * k,
-      0.35 + k * 0.06 + Math.sin(G.t * 2 + k) * 0.02,
-      -0.38 - k * 0.09,
-    );
-  });
+  updateAnim(dt); // advances whichever clip is playing
+  updateTail(G.t);
   if (cosmetics.charm) cosmetics.charm.rotation.z += dt * 1.5;
 }

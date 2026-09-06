@@ -5,10 +5,10 @@ under. **Nothing enters `public/` without a line here.**
 
 ## 3D models
 
-| Asset                       | Source                                    | Licence |
-| --------------------------- | ----------------------------------------- | ------- |
-| Nature Kit (2.1) — 58 props | [Kenney](https://kenney.nl) | CC0 |
-| Mini Characters (1.0) — the rig and its animations | [Kenney](https://kenney.nl) | CC0 |
+| Asset                                              | Source                      | Licence |
+| -------------------------------------------------- | --------------------------- | ------- |
+| Nature Kit (2.1) — 58 props                        | [Kenney](https://kenney.nl) | CC0     |
+| Mini Characters (1.0) — the rig and its animations | [Kenney](https://kenney.nl) | CC0     |
 
 **CC0** means public domain: free for personal, educational and commercial use,
 with no attribution required. We credit anyway, because it costs nothing and the
