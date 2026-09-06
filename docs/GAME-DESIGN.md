@@ -55,7 +55,7 @@ Every session must satisfy all three at once.
 | **8 minutes**  | The run   | One valley, spawn to ceremony. Ends on a **score screen**: time, order, duels, taps/sec, XP.                             |
 | **Weeks**      | The climb | Seeker levels, ranks, daily quests, the Turning.                                                                         |
 
-## 4. Seeker levels
+## 4. Seeker levels, the ladder, and titles
 
 XP is earned by playing at all, not by playing well.
 
@@ -87,6 +87,58 @@ loss. Rename it **the Turning**, attach a reward, and it becomes the reason to c
 Keep everything — level, items, badges, wish stones — and choose one **modifier** for the
 new valley (Night Valley, Thin Woods, Rich Vein, Fierce Camps), each unlocked by play.
 Turning count shows on the HUD as a row of marks.
+
+### The ladder — a skill rank, separate from the level
+
+Rocket League keeps three things apart that are easy to confuse, and Orb Seeker
+now does too:
+
+| Thing      | Measures                     | Where         |
+| ---------- | ---------------------------- | ------------- |
+| **Level**  | how much you have played     | `progress.js` |
+| **Ladder** | how well you play            | `rules.js`    |
+| **Titles** | specific things you once did | `titles.js`   |
+
+**The tiers are the seven orbs, in rainbow order** — Ember, Amber, Sunlit,
+Verdant, Tidewater, Indigo, Violet — each split into three divisions, then
+**Keeper's Own** above them all with no divisions, the way Supersonic Legend has
+none. Climbing the ladder is literally walking the rainbow, and the names need no
+explaining to a child who has spent the game collecting them.
+
+Rating comes from a **valley score**: 300 base, 20 an orb, 400 for perfect order,
+60 a duel won, −40 a duel lost, and one point for every second under a fifteen
+minute par. Time is the main lever, which is what makes a shared valley code worth
+racing on. **Going over par costs nothing** — a child who wanders must never watch
+a number fall for enjoying themselves.
+
+**The ladder never goes down.** Rating is your best run ever, not a rolling
+average. This is a deliberate departure from Rocket League, where demotion is half
+the tension; for nine-year-olds the sting is not worth it. One line in
+`config.ladder` to reverse if Ashura disagrees.
+
+Bands are even by design. The first draft made Ember 700 wide against 250 for
+every tier above it, so a beginner's divisions were the slowest to climb —
+backwards, since the early steps are the ones that must arrive quickly.
+
+### Titles
+
+Fifteen named achievements, each recording **a specific act rather than a
+threshold of grinding**. "Beat the camp at orb seven" is a story; "play 200
+valleys" is a chore with a badge taped to it, and a child can tell the difference.
+
+They include **In Order**, **Fleet** (a valley under eight minutes), **The
+Unhurried** (over twenty-five — deliberately the opposite, because a game that
+only rewards speed tells a child there is a wrong way to enjoy it), **Untouched**,
+**Fast Hands**, **Blur**, **Camp Breaker**, **Stonecutter**, **The Collector** and
+**Keeper's Own**.
+
+Hints are always visible for titles not yet earned. Hidden achievements are a
+small cruelty here: if you cannot see what to aim at, the list is only a record of
+what you missed.
+
+Titles are also the honest answer to the NFT question in section 10 — they are
+unforgeable in the only way that matters to a child, because you either did the
+thing or you did not.
 
 ## 5. Daily quests
 
@@ -161,7 +213,7 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1, 2 and 3** — seeker levels, slots by rank, and the run score screen with its valley code.
+**Built so far: steps 1, 2 and 3**, plus the ladder and titles — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150
 draw calls — does not touch the part of the game that is actually missing. The plan is

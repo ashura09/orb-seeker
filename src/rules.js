@@ -130,6 +130,58 @@ export function seedFromCode(code) {
   return n;
 }
 
+// ---------------------------------------------------------------------------
+// THE LADDER
+// ---------------------------------------------------------------------------
+
+/**
+ * Score one finished valley.
+ *
+ * @param r  {seconds, orbs, perfectOrder, duelsWon, duelsLost}
+ */
+export function runScore(r) {
+  const S = CONFIG.ladder.score;
+  const speed = Math.max(0, S.parSeconds - (r.seconds || 0)) * S.perSecondUnder;
+  return Math.max(
+    0,
+    Math.round(
+      S.base +
+        (r.orbs || 0) * S.perOrb +
+        (r.perfectOrder ? S.perfectOrder : 0) +
+        (r.duelsWon || 0) * S.duelWon +
+        (r.duelsLost || 0) * S.duelLost +
+        speed,
+    ),
+  );
+}
+
+/**
+ * Where a rating sits on the ladder: {tier, division, name, next}.
+ *
+ * `next` is the rating that earns the next step -- null at the top. Showing the
+ * near step rather than the far one is the whole point of divisions: there is
+ * always something close enough to be worth one more run.
+ */
+export function ladderFor(rating) {
+  const { tiers, divisions, apex } = CONFIG.ladder;
+  if (rating >= apex.from) {
+    return { tier: apex.name, division: '', name: apex.name, next: null };
+  }
+  let i = 0;
+  for (let n = 0; n < tiers.length; n++) if (rating >= tiers[n].from) i = n;
+  const tier = tiers[i];
+  const top = i + 1 < tiers.length ? tiers[i + 1].from : apex.from;
+  const band = (top - tier.from) / divisions.length;
+  const d = Math.min(divisions.length - 1, Math.floor((rating - tier.from) / band));
+  const next = Math.round(tier.from + band * (d + 1));
+  return {
+    tier: tier.name,
+    division: divisions[d],
+    name: `${tier.name} ${divisions[d]}`,
+    next,
+  };
+}
+
 export function duelLoot(tier, random = Math.random) {
   const D = CONFIG.duel;
   const flawless = random() < D.flawlessChance;

@@ -10,6 +10,7 @@ import { CONFIG } from './config.js';
 import { pickOrbSpots } from './rules.js';
 import { burstAt } from './burst.js';
 import { addXp } from './progress.js';
+import { save } from './save.js';
 import { shakeCamera } from './camera.js';
 
 const C = CONFIG.collect;
@@ -235,6 +236,7 @@ export function collect(o) {
   burstAt(o.mesh.position.x, o.mesh.position.y, o.mesh.position.z, o.color);
   shakeCamera(C.shake);
   addXp(CONFIG.progress.xp.orb, 'an orb found');
+  save.orbsEver = (save.orbsEver || 0) + 1;
   emit(EVENTS.ORB_COLLECTED, o);
   dots[orbs.indexOf(o)].classList.add('on');
   if (navigator.vibrate) navigator.vibrate(40);

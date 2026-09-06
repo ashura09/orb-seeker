@@ -16,6 +16,8 @@ import {
   slotsForLevel,
   seedCode,
   seedFromCode,
+  runScore,
+  ladderFor,
 } from '../src/rules.js';
 
 /** A random() that plays back a fixed list, so a result can be predicted exactly. */
@@ -318,5 +320,68 @@ describe('valley codes', () => {
     const seen = new Set();
     for (let i = 0; i < 500; i++) seen.add(seedCode(i));
     expect(seen.size).toBe(500);
+  });
+});
+
+describe('the ladder', () => {
+  const perfect = { seconds: 300, orbs: 7, perfectOrder: true, duelsWon: 7, duelsLost: 0 };
+  const scrappy = { seconds: 1200, orbs: 7, perfectOrder: false, duelsWon: 0, duelsLost: 4 };
+
+  it('rewards a better run with a better score', () => {
+    expect(runScore(perfect)).toBeGreaterThan(runScore(scrappy));
+  });
+
+  it('never scores below zero, however badly it went', () => {
+    expect(runScore({ seconds: 99999, orbs: 0, duelsWon: 0, duelsLost: 50 })).toBe(0);
+    expect(runScore({})).toBeGreaterThanOrEqual(0);
+  });
+
+  it('never punishes taking your time', () => {
+    // Slower earns less, but a slow run must never be worth LESS than the same
+    // run even slower -- a child who wanders should not watch a number fall.
+    let previous = Infinity;
+    for (let s = 0; s < 2000; s += 50) {
+      const score = runScore({ ...scrappy, seconds: s });
+      expect(score).toBeLessThanOrEqual(previous);
+      previous = score;
+    }
+    // And past par it simply stops changing rather than going negative.
+    expect(runScore({ ...scrappy, seconds: 5000 })).toBe(runScore({ ...scrappy, seconds: 1000 }));
+  });
+
+  it('climbs through every tier and division in order, and never repeats a name', () => {
+    const seen = [];
+    for (let r = 0; r <= 2200; r += 5) {
+      const name = ladderFor(r).name;
+      if (name !== seen[seen.length - 1]) seen.push(name);
+    }
+    // Seven tiers of three divisions, then the apex: 22 distinct steps.
+    expect(seen.length).toBe(22);
+    expect(new Set(seen).size).toBe(22);
+    expect(seen[0]).toBe('Ember I');
+    expect(seen[seen.length - 1]).toBe("Keeper's Own");
+  });
+
+  it('always names a nearer step to aim at, until the very top', () => {
+    for (let r = 0; r < 2000; r += 25) {
+      const at = ladderFor(r);
+      expect(at.next).toBeGreaterThan(r);
+      // The next step must be reachable, not a distant tier: divisions exist so
+      // there is always something close enough to be worth one more run.
+      expect(at.next - r).toBeLessThan(200);
+    }
+    expect(ladderFor(5000).next).toBe(null);
+  });
+
+  it('puts a first, ordinary valley near the bottom and not at the top', () => {
+    // A ladder a beginner starts halfway up is not a ladder.
+    const firstTry = runScore({
+      seconds: 900,
+      orbs: 7,
+      perfectOrder: false,
+      duelsWon: 1,
+      duelsLost: 2,
+    });
+    expect(ladderFor(firstTry).tier).toBe('Ember');
   });
 });

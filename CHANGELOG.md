@@ -301,3 +301,39 @@ Two things the tests caught, and one the browser did:
   the inert system rather than a rule. Rewritten around rank.
 - The rank chip was laid straight on top of the fragment pouch. The whole left
   column is restacked.
+
+## A ladder and titles, the Rocket League way
+
+Three things Rocket League keeps apart, which this game had conflated into one:
+the **level** says how much you have played, the **ladder** says how well, and
+**titles** record specific things you once did.
+
+- **The ladder tiers are the seven orbs in rainbow order** — Ember, Amber,
+  Sunlit, Verdant, Tidewater, Indigo, Violet — each in three divisions, with
+  **Keeper's Own** above them and no divisions, the way Supersonic Legend has
+  none. Climbing it is literally walking the rainbow.
+- Rating comes from a **valley score**: 300 base, 20 an orb, 400 for perfect
+  order, 60 a duel won, −40 a duel lost, and a point per second under a fifteen
+  minute par. **Going over par costs nothing** — a child who wanders must never
+  watch a number fall for enjoying themselves.
+- **It never goes down.** Rating is your best run, not an average. A deliberate
+  departure from Rocket League: demotion is half its tension, and for a
+  nine-year-old that sting is not worth it. One config line to reverse.
+- **Fifteen titles**, each naming a specific act rather than a grind threshold,
+  including The Unhurried for taking more than twenty-five minutes — because a
+  game that only rewards speed tells a child there is a wrong way to enjoy it.
+  Hints for unearned titles are always visible.
+- Both appear on the run card, with the promotion animated once and skipped
+  under `prefers-reduced-motion`.
+
+Four faults caught by looking at it:
+
+- Ember spanned 700 rating against 250 for every tier above, so a beginner's
+  divisions were the **slowest** to climb. Bands evened.
+- The card auto-wore the _first_ title earned, handing someone "First Light" in
+  the same breath as "Walked the Rainbow". It now wears the best of the batch.
+- Onward fell below the fold again once the card grew.
+- The sticky-footer fix for that was worse: it floated the button over the title
+  chips behind a cream halo. The card is now a proper column — heading, scrolling
+  body, fixed footer — so the only way out can never be hidden or on top of
+  anything.

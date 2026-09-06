@@ -38,6 +38,7 @@ export const EVENTS = {
   XP_GAINED: 'progress:xp', // any XP award      (payload: {amount, reason})
   ORB_COLLECTED: 'orbs:collected', // one orb taken     (payload: the orb)
   DUEL_ENDED: 'duel:ended', // a duel finished   (payload: {won, tier, taps})
+  TITLES_EARNED: 'titles:earned', // one or more titles awarded (payload: [title])
 };
 
 const listeners = new Map();

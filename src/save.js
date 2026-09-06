@@ -33,6 +33,10 @@ export const save = {
   fragments: 0,
   wins: 0,
   bestTaps: 0, // fastest taps-per-second ever managed in a duel
+  orbsEver: 0, // orbs collected across every valley, for titles
+  bestRun: 0, // best valley score ever, which is the ladder rating
+  titles: [], // ids of achievements earned
+  title: null, // the one on show, or null
   items: {},
   wishes: [],
   cycles: 0,
@@ -67,10 +71,15 @@ if (typeof save.items !== 'object' || save.items === null || Array.isArray(save.
 }
 if (!Array.isArray(save.wishes)) save.wishes = [];
 save.wishes = save.wishes.filter((w) => w && typeof w.text === 'string');
-for (const k of ['fragments', 'wins', 'cycles', 'bestTaps']) {
+for (const k of ['fragments', 'wins', 'cycles', 'bestTaps', 'orbsEver', 'bestRun']) {
   if (!Number.isFinite(save[k])) save[k] = 0;
 }
 if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;
+// Titles are ids, and an id that is not a string can only have come from a
+// corrupt save -- dropping it costs one badge, keeping it crashes the list.
+if (!Array.isArray(save.titles)) save.titles = [];
+save.titles = save.titles.filter((t) => typeof t === 'string');
+if (typeof save.title !== 'string') save.title = null;
 // `xp` is deliberately NOT among the defaults above. progress.js has to be able
 // to tell an old save (no xp at all) from a new one (xp of 0), because an old
 // save has play behind it that must be converted into levels -- otherwise a

@@ -742,3 +742,99 @@ canvas#c {
   font-size: 12px;
   opacity: 0.62;
 }
+
+/* ---------------------------------------------------------------------------
+   The ladder badge and the titles won.
+
+   The ladder is where you sit on skill, which is a different question from the
+   Seeker level in the HUD -- that one only says how much you have played. This
+   is the line a child reads first, so it is the biggest thing on the card after
+   the heading.
+   --------------------------------------------------------------------------- */
+.ladder {
+  margin: 6px 0 2px;
+}
+#scoreRank {
+  font:
+    bold 26px/1.1 'Trebuchet MS',
+    system-ui,
+    sans-serif;
+  color: var(--brass-dark);
+  letter-spacing: 0.01em;
+}
+/* A promotion is the whole reason to read this card, so it gets the one piece of
+   motion on it -- once, briefly, and never on a repeat viewing. */
+#scoreRank.promoted {
+  animation: promote 0.7s ease-out;
+}
+@keyframes promote {
+  0% {
+    transform: scale(0.86);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scoreRank.promoted {
+    animation: none;
+  }
+}
+#scoreRankNote {
+  font-size: 12px;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+
+.titleshead {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+#scoreTitles {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+#scoreTitles li {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--face);
+  color: var(--mint);
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* The card grows with what you achieved -- five new titles make it far taller
+   than one -- so pinning the only way out to the bottom is the sole way to keep
+   the promise that the primary action is never hidden. Tightening padding just
+   moves the problem to the next player who has a very good run. */
+/* Sticky was the wrong tool: it pinned the button to the visible bottom, which
+   put it floating on top of the title chips behind a cream halo -- worse than
+   the problem it solved. The right shape is a card that is a column: a heading,
+   a body that scrolls, and a footer that does not. Then the only way out is
+   always on screen and never on top of anything. */
+#score .card {
+  display: flex;
+  flex-direction: column;
+}
+#scoreBody {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* without this a flex child refuses to shrink and never scrolls */
+}
+#scoreDone {
+  flex: 0 0 auto;
+  margin-top: 12px;
+}

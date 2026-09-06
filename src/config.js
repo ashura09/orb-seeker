@@ -352,6 +352,57 @@ export const CONFIG = {
     legacyRing: 25, // where wishes made before stones existed are planted
   },
 
+  // ---------------------------------------------------------------------------
+  // THE LADDER — a skill rank, separate from the Seeker level.
+  //
+  // The level says how much you have PLAYED; it only ever climbs. This says how
+  // WELL, and it is the Rocket League shape Ashura asked for: tiers, each split
+  // into three divisions, so there is always a nearer step than the next tier.
+  //
+  // The tiers are the seven orbs in rainbow order, because that is already the
+  // spine of the game -- climbing the ladder is literally walking the rainbow,
+  // and the names need no explaining to a child who has been collecting them.
+  //
+  // IT NEVER GOES DOWN. Rating is your BEST run ever, not a rolling average, so a
+  // bad afternoon cannot take a rank away from a nine-year-old. That is a
+  // deliberate departure from Rocket League, where demotion is half the tension;
+  // for this audience the sting is not worth it. Easy to reverse -- see
+  // docs/GAME-DESIGN.md.
+  // ---------------------------------------------------------------------------
+  ladder: {
+    // How a finished valley is scored. Time is the main lever, which is what
+    // makes a shared valley code worth racing on.
+    score: {
+      base: 300,
+      perOrb: 20,
+      perfectOrder: 400,
+      duelWon: 60,
+      duelLost: -40,
+      // Seconds under `parSeconds` are worth `perSecondUnder` each; over it,
+      // nothing is deducted. You cannot lose points for taking your time.
+      parSeconds: 900,
+      perSecondUnder: 1,
+    },
+    divisions: ['I', 'II', 'III'],
+    // Rating needed to enter each tier. Divisions split each band into thirds.
+    // Bands are kept even. The first draft made Ember 700 wide against 250 for
+    // everything above it, so a beginner's divisions were the SLOWEST to climb --
+    // exactly backwards, since the early steps are the ones that have to arrive
+    // quickly enough to show what the ladder is for.
+    tiers: [
+      { name: 'Ember', from: 0 },
+      { name: 'Amber', from: 450 },
+      { name: 'Sunlit', from: 700 },
+      { name: 'Verdant', from: 950 },
+      { name: 'Tidewater', from: 1200 },
+      { name: 'Indigo', from: 1450 },
+      { name: 'Violet', from: 1700 },
+    ],
+    // Above the last tier there are no divisions, the way Supersonic Legend has
+    // none: you are simply there, and it is meant to be rare.
+    apex: { name: "Keeper's Own", from: 2000 },
+  },
+
   duel: {
     // The duel really does last this long now. It used to say ten seconds while
     // the opponent's bar filled in at most 4.44 -- so the clock never ran out,
