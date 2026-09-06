@@ -486,3 +486,32 @@ meant to win.
 Verified by playing it: one line, orb at 13m on screen, collect, explanation,
 Bram arrives at 2.2m, tier-1 duel with his own line. Then reloaded and confirmed
 the returning-player path. Four new tests cover the placement.
+
+## Daily quests
+
+Three a day — one easy, one medium, one hard — on a twenty-four hour reset, worth
+40, 90 and 200 XP. The reason to open it tomorrow, and it costs no geometry.
+
+- **Today's three come from hashing the date.** There is no server and never will
+  be for this, so the same day has to produce the same three on any device with
+  nothing stored and nothing to sync. It also means a child cannot reroll a hard
+  quest by refreshing, which they absolutely would.
+- Counters reset with the day. Yesterday's half-finished walk does not carry
+  over, because a quest you are already most of the way through is not a reason
+  to come back.
+- `bestCampBeaten` takes the maximum rather than a sum: beating orb seven's camp
+  once is the achievement, not beating orb one's seven times.
+- Shown inside the satchel rather than behind a button of their own — screen space
+  on a phone is the scarcest thing this game has. A finished quest is struck
+  through and reads "done", not "3/3": a finished thing should stop looking like
+  a sum to check.
+- **Errands I, II and III** at 10, 50 and 100 lifetime completions, added as
+  ordinary titles rather than a second system.
+- `content/quests.json` is the pool. A quest naming a counter nothing keeps is
+  refused at startup — it would otherwise sit at zero forever and look merely
+  difficult rather than broken.
+
+The validator earned its keep immediately: adding the Errands badges made
+`titles.json` name a field the test's copy of the field list did not have, and
+the whole suite refused to load. The real fault was the duplication, so the list
+now has one home and the test imports it.

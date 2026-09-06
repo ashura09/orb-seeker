@@ -1,0 +1,80 @@
+{
+  "$comment": "Daily quests, three a day: one easy, one medium, one hard, on a 24-hour reset. Taken from 99 Nights in the Forest, which added exactly this and climbed. `metric` is a counter quests.js keeps for the day; `goal` is how much of it. Add a quest by adding a row — but only using a metric already in the list, or the loader will refuse it.",
+  "$metrics": "orbs (collected today), duelsWon, duelsFought, metres (walked), valleys (finished), perfectValleys (in 1-7 order), flawlessValleys (no duel lost), fastValleys (under eight minutes), bestCampBeaten (highest tier beaten today)",
+  "quests": [
+    {
+      "id": "three-orbs",
+      "tier": "easy",
+      "text": "Collect three orbs",
+      "metric": "orbs",
+      "goal": 3
+    },
+    { "id": "one-duel", "tier": "easy", "text": "Win a duel", "metric": "duelsWon", "goal": 1 },
+    {
+      "id": "a-walk",
+      "tier": "easy",
+      "text": "Walk five hundred metres",
+      "metric": "metres",
+      "goal": 500
+    },
+    {
+      "id": "two-camps",
+      "tier": "easy",
+      "text": "Take on two camps",
+      "metric": "duelsFought",
+      "goal": 2
+    },
+
+    {
+      "id": "a-valley",
+      "tier": "medium",
+      "text": "Finish a valley",
+      "metric": "valleys",
+      "goal": 1
+    },
+    {
+      "id": "three-duels",
+      "tier": "medium",
+      "text": "Win three duels",
+      "metric": "duelsWon",
+      "goal": 3
+    },
+    {
+      "id": "a-hard-camp",
+      "tier": "medium",
+      "text": "Beat a camp at orb five or higher",
+      "metric": "bestCampBeaten",
+      "goal": 5
+    },
+    { "id": "six-orbs", "tier": "medium", "text": "Collect six orbs", "metric": "orbs", "goal": 6 },
+
+    {
+      "id": "perfect",
+      "tier": "hard",
+      "text": "Finish a valley in perfect order",
+      "metric": "perfectValleys",
+      "goal": 1
+    },
+    {
+      "id": "flawless",
+      "tier": "hard",
+      "text": "Finish a valley without losing a duel",
+      "metric": "flawlessValleys",
+      "goal": 1
+    },
+    {
+      "id": "quick",
+      "tier": "hard",
+      "text": "Finish a valley in under eight minutes",
+      "metric": "fastValleys",
+      "goal": 1
+    },
+    {
+      "id": "the-seventh",
+      "tier": "hard",
+      "text": "Beat the camp at orb seven",
+      "metric": "bestCampBeaten",
+      "goal": 7
+    }
+  ]
+}

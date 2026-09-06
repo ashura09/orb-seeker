@@ -25,6 +25,7 @@ import * as P from './palette.js';
 import itemsFile from '../content/items.json';
 import titlesFile from '../content/titles.json';
 import villagersFile from '../content/villagers.json';
+import questsFile from '../content/quests.json';
 
 /** Throw with a message that says which row is wrong and why. */
 function bad(file, id, why) {
@@ -192,4 +193,48 @@ export function loadVillagers(headwear, props) {
       voice: { ...raw.voice },
     };
   });
+}
+
+// ---------------------------------------------------------------------------
+// DAILY QUESTS
+//
+// A quest is a counter and a number to reach. The counters themselves live in
+// quests.js, which is what keeps them -- so the legal metric names are passed in,
+// exactly as the title fields are. A quest naming a counter nobody keeps would
+// otherwise sit at zero forever and look merely difficult.
+// ---------------------------------------------------------------------------
+export const QUEST_TIERS = ['easy', 'medium', 'hard'];
+
+export function loadQuests(metrics) {
+  const known = new Set(metrics);
+  const seen = new Set();
+  const list = questsFile.quests.map((raw) => {
+    const id = raw.id || '(missing id)';
+    for (const key of ['id', 'tier', 'text', 'metric']) {
+      if (typeof raw[key] !== 'string' || !raw[key]) {
+        bad('quests.json', id, `needs a non-empty "${key}"`);
+      }
+    }
+    if (seen.has(raw.id)) bad('quests.json', id, 'appears twice');
+    seen.add(raw.id);
+    if (!QUEST_TIERS.includes(raw.tier)) {
+      bad('quests.json', id, `is tier "${raw.tier}" (must be ${QUEST_TIERS.join(', ')})`);
+    }
+    if (!known.has(raw.metric)) {
+      bad('quests.json', id, `counts "${raw.metric}", which nothing keeps a count of`);
+    }
+    if (!Number.isFinite(raw.goal) || raw.goal <= 0) {
+      bad('quests.json', id, 'needs a goal greater than 0');
+    }
+    return { id: raw.id, tier: raw.tier, text: raw.text, metric: raw.metric, goal: raw.goal };
+  });
+
+  // Every tier must have something to offer, or a day would arrive with only two
+  // quests on it and nothing saying why.
+  for (const tier of QUEST_TIERS) {
+    if (!list.some((q) => q.tier === tier)) {
+      throw new Error(`content/quests.json: no "${tier}" quests, so a day could not be filled`);
+    }
+  }
+  return list;
 }

@@ -283,6 +283,18 @@ export const CONFIG = {
   // All of this applies to a player's FIRST valley only. Once they know the
   // game, a free orb at the door is not a welcome, it is a chore skipped.
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // DAILY QUESTS — docs/GAME-DESIGN.md section 5.
+  //
+  // Three a day, one of each tier, on a 24-hour reset. Lifted from 99 Nights in
+  // the Forest, which added exactly this and climbed the charts on it. The
+  // cheapest retention device that exists, and it costs no geometry at all.
+  // ---------------------------------------------------------------------------
+  quests: {
+    xp: { easy: 40, medium: 90, hard: 200 },
+    badges: [10, 50, 100], // lifetime completions that earn a title
+  },
+
   onboarding: {
     firstOrbDistance: 13, // metres: visible from where you stand, reachable in ~15s
     bramAfter: 3.5, // seconds after that first orb before Bram comes over

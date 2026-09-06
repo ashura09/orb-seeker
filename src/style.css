@@ -838,3 +838,53 @@ canvas#c {
   flex: 0 0 auto;
   margin-top: 12px;
 }
+
+/* ---------------------------------------------------------------------------
+   Today's three daily quests, inside the satchel.
+   --------------------------------------------------------------------------- */
+.quest {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(27, 26, 23, 0.12);
+  text-align: left;
+}
+.quest:last-child {
+  border-bottom: 0;
+}
+.qtext {
+  font-size: 14px;
+}
+.qcount {
+  font-size: 13px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.qbar {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.12);
+  overflow: hidden;
+}
+.qbar i {
+  display: block;
+  height: 100%;
+  background: var(--brass-dark);
+  border-radius: 2px;
+}
+/* A finished quest steps back rather than shouting: it is no longer something
+   to do, and the two still to do are what the panel is for. */
+.quest.done .qtext {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.quest.done .qcount {
+  color: var(--brass-dark);
+  opacity: 1;
+}
+.quest.done .qbar i {
+  opacity: 0.5;
+}

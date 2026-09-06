@@ -140,7 +140,7 @@ Titles are also the honest answer to the NFT question in section 10 — they are
 unforgeable in the only way that matters to a child, because you either did the
 thing or you did not.
 
-## 5. Daily quests
+## 5. Daily quests — built
 
 Three per day, one of each tier, 24-hour reset, drawn from a **fixed pool** so they can be
 tested. No server.
@@ -220,7 +220,7 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1, 2, 3 and 4**, plus the ladder, titles, the rigged
+**Built so far: steps 1 to 5**, plus the ladder, titles, the rigged
 characters and the content pipeline — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150

@@ -96,6 +96,24 @@
       "name": "Keeper's Own",
       "hint": "Reach the top of the ladder.",
       "when": [["tier", "==", "Keeper's Own"]]
+    },
+    {
+      "id": "errands-i",
+      "name": "Errands I",
+      "hint": "Complete 10 daily quests.",
+      "when": [["questsDone", ">=", 10]]
+    },
+    {
+      "id": "errands-ii",
+      "name": "Errands II",
+      "hint": "Complete 50 daily quests.",
+      "when": [["questsDone", ">=", 50]]
+    },
+    {
+      "id": "errands-iii",
+      "name": "Errands III",
+      "hint": "Complete 100 daily quests.",
+      "when": [["questsDone", ">=", 100]]
     }
   ]
 }

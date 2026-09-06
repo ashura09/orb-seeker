@@ -39,6 +39,8 @@ export const EVENTS = {
   ORB_COLLECTED: 'orbs:collected', // one orb taken     (payload: the orb)
   DUEL_ENDED: 'duel:ended', // a duel finished   (payload: {won, tier, taps})
   TITLES_EARNED: 'titles:earned', // one or more titles awarded (payload: [title])
+  RUN_COMPLETE: 'run:complete', // a valley finished (payload: the run's numbers)
+  QUEST_DONE: 'quests:done', // a daily quest completed (payload: the quest)
 };
 
 const listeners = new Map();

@@ -15,7 +15,7 @@
 // anything that produces the numbers, so nothing had to learn that a score
 // screen exists.
 import { $, G } from './state.js';
-import { on, EVENTS } from './events.js';
+import { on, emit, EVENTS } from './events.js';
 import { save } from './save.js';
 import { seedCode, runScore, ladderFor } from './rules.js';
 import { checkTitles, baseContext, wornTitle } from './titles.js';
@@ -172,6 +172,15 @@ function showCard() {
   // thing on this card that another person can act on.
   $('scoreSeed').textContent = seedCode(G.worldSeed);
   $('scoreTitle').textContent = G.orderKept ? 'A perfect gathering' : 'The seven, gathered';
+  // Announced so the daily quests can count it without run.js knowing they exist.
+  emit(EVENTS.RUN_COMPLETE, {
+    seconds,
+    orbs: run.orbs,
+    perfectOrder: G.orderKept,
+    duelsWon: run.duelsWon,
+    duelsLost: run.duelsLost,
+    score: scored,
+  });
   $('score').classList.remove('hidden');
 }
 

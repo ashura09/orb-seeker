@@ -3,23 +3,12 @@
 // startup with the id and the reason, rather than producing a title nobody can
 // ever earn or a shop item with no colour.
 import { describe, it, expect } from 'vitest';
-import { ITEMS, loadTitles, loadVillagers } from '../src/content.js';
+import { ITEMS, loadTitles, loadVillagers, loadQuests, QUEST_TIERS } from '../src/content.js';
 import * as P from '../src/palette.js';
-
-const FIELDS = [
-  'orbsEver',
-  'valleys',
-  'wishes',
-  'bestTaps',
-  'ownsEverything',
-  'perfectOrder',
-  'finished',
-  'seconds',
-  'duelsLost',
-  'beatTier',
-  'level',
-  'tier',
-];
+// Imported, not copied. This list used to be duplicated here, and the moment a
+// field was added to the game the copy went stale and the whole suite refused to
+// load -- which is at least loud, but the fix is to have one list.
+import { FIELDS } from '../src/titles.js';
 
 describe('items, from content/items.json', () => {
   it('loads the whole shop', () => {
@@ -160,5 +149,43 @@ describe('villagers, from content/villagers.json', () => {
       message = e.message;
     }
     expect(message).toMatch(/villagers\.json/);
+  });
+});
+
+describe('daily quests, from content/quests.json', () => {
+  const METRICS = [
+    'orbs',
+    'duelsWon',
+    'duelsFought',
+    'metres',
+    'valleys',
+    'perfectValleys',
+    'flawlessValleys',
+    'fastValleys',
+    'bestCampBeaten',
+  ];
+  const quests = loadQuests(METRICS);
+
+  it('can fill a day: every tier has something to offer', () => {
+    for (const tier of QUEST_TIERS) {
+      expect(quests.some((q) => q.tier === tier)).toBe(true);
+    }
+  });
+
+  it('gives every quest a goal worth reaching', () => {
+    for (const q of quests) {
+      expect(q.goal).toBeGreaterThan(0);
+      expect(q.text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('refuses a quest counting something nobody counts', () => {
+    // The failure this prevents: a quest naming a metric no code keeps would sit
+    // at zero for ever and look merely difficult rather than broken.
+    expect(() => loadQuests(['orbs'])).toThrow(/nothing keeps a count of/);
+  });
+
+  it('refuses a pool that cannot fill a tier', () => {
+    expect(() => loadQuests(METRICS.filter((m) => m !== 'orbs'))).toThrow();
   });
 });

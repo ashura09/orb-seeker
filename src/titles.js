@@ -30,7 +30,7 @@ import { loadTitles } from './content.js';
  * anything not on this list throws at startup with the id and the typo, instead
  * of quietly never firing and looking like an achievement nobody has earned.
  */
-const FIELDS = [
+export const FIELDS = [
   'orbsEver',
   'valleys',
   'wishes',
@@ -43,6 +43,7 @@ const FIELDS = [
   'beatTier',
   'level',
   'tier',
+  'questsDone',
 ];
 
 /**
@@ -124,6 +125,7 @@ export function baseContext() {
     // language deliberately cannot compare one field against another, and
     // keeping it that small is worth more than the generality.
     ownsEverything: ITEMS.every((i) => owned(i.id)),
+    questsDone: save.questsDone || 0,
     // Run-shaped fields default to "no run just happened", so a check fired by a
     // level-up cannot accidentally award a run title.
     perfectOrder: false,

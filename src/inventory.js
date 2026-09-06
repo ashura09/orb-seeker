@@ -12,6 +12,7 @@ import { worn, toggleWorn, wearIfRoom, slots, wornCount } from './loadout.js';
 import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
 import { emit, on, EVENTS } from './events.js';
+import { todaysQuests, questProgress, questDone } from './quests.js';
 import { plantWish } from './wishstones.js';
 
 // {g, kind:'item'|'wish', id?, text?, phase}
@@ -86,6 +87,8 @@ export function collectPickup(p, idx) {
 }
 
 export function renderSatchel() {
+  renderDailies();
+
   const w = $('satchelWishes');
   w.innerHTML = '';
   if (!save.wishes.length)
@@ -194,3 +197,38 @@ $('satchelClose').addEventListener('click', () => {
   $('satchel').classList.add('hidden');
   G.state = 'play';
 });
+
+// ---------------------------------------------------------------------------
+// Today's three.
+//
+// Shown inside the satchel rather than behind a button of their own. Screen
+// space on a phone is the scarcest thing this game has, and the satchel is
+// already where you go to see what you have got.
+// ---------------------------------------------------------------------------
+function renderDailies() {
+  const box = $('satchelQuests');
+  box.innerHTML = '';
+  for (const q of todaysQuests()) {
+    const row = document.createElement('div');
+    row.className = 'quest' + (questDone(q) ? ' done' : '');
+
+    const text = document.createElement('span');
+    text.className = 'qtext';
+    text.textContent = q.text;
+
+    const count = document.createElement('span');
+    count.className = 'qcount';
+    // Done says "done", not "3/3": a finished thing should stop looking like a
+    // sum to be checked.
+    count.textContent = questDone(q) ? 'done' : `${questProgress(q)}/${q.goal}`;
+
+    const bar = document.createElement('div');
+    bar.className = 'qbar';
+    const fill = document.createElement('i');
+    fill.style.width = `${Math.round((questProgress(q) / q.goal) * 100)}%`;
+    bar.appendChild(fill);
+
+    row.append(text, count, bar);
+    box.appendChild(row);
+  }
+}

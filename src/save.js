@@ -43,6 +43,8 @@ export const save = {
   worn: null,
   lowGraphics: false,
   taught: false, // has this player been through the first sixty seconds?
+  questsDone: 0, // lifetime daily quests completed, for the Errands badges
+  daily: null, // today's three: { day, ids, counts, done } -- see quests.js
 };
 
 // A save that cannot be read is a new game, which is survivable. A save that
@@ -72,13 +74,25 @@ if (typeof save.items !== 'object' || save.items === null || Array.isArray(save.
 }
 if (!Array.isArray(save.wishes)) save.wishes = [];
 save.wishes = save.wishes.filter((w) => w && typeof w.text === 'string');
-for (const k of ['fragments', 'wins', 'cycles', 'bestTaps', 'orbsEver', 'bestRun']) {
+for (const k of ['fragments', 'wins', 'cycles', 'bestTaps', 'orbsEver', 'bestRun', 'questsDone']) {
   if (!Number.isFinite(save[k])) save[k] = 0;
 }
 if (typeof save.lowGraphics !== 'boolean') save.lowGraphics = false;
 // A save from before onboarding existed belongs to somebody who has played, so
 // they are taught by definition -- nobody should be handed a tutorial on their
 // fiftieth valley.
+// A malformed daily block would break every counter; dropping it costs one day.
+if (
+  !save.daily ||
+  typeof save.daily !== 'object' ||
+  typeof save.daily.day !== 'string' ||
+  !Array.isArray(save.daily.ids) ||
+  !Array.isArray(save.daily.done) ||
+  typeof save.daily.counts !== 'object' ||
+  save.daily.counts === null
+) {
+  save.daily = null;
+}
 if (typeof save.taught !== 'boolean') save.taught = (save.cycles || 0) > 0 || (save.wins || 0) > 0;
 // Titles are ids, and an id that is not a string can only have come from a
 // corrupt save -- dropping it costs one badge, keeping it crashes the list.
