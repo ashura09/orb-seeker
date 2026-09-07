@@ -19,8 +19,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Orb Seeker" />
-    <script type="module" crossorigin src="./assets/index-DdwS69gx.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BHXnB3Ni.css">
+    <script type="module" crossorigin src="./assets/index-DWjTSvw4.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-2NP2Ca6E.css">
   </head>
   <body>
     <canvas id="c"></canvas>
@@ -52,6 +52,24 @@
         <h1>Orb Seeker</h1>
         <p id="introLine">Something is glowing over the rise.</p>
         <button id="startBtn">Go and see</button>
+        <div class="codebox">
+          <button id="haveCode" class="linkbtn">Someone sent me a valley</button>
+          <div id="codeEntry" hidden>
+            <input
+              id="codeInput"
+              type="text"
+              inputmode="latin"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="12"
+              placeholder="VALE-XXXXXX"
+              aria-label="Valley code"
+            />
+            <button id="codeGo">Walk it</button>
+            <p id="codeError" class="seedhint"></p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -66,11 +84,17 @@
           <ul id="scoreRows"></ul>
           <div class="titleshead" hidden>New titles</div>
           <ul id="scoreTitles" hidden></ul>
+          <div class="turning">
+            <div class="turnhead">The Turning <span id="turnMarks"></span></div>
+            <p class="seedhint">The valley is about to change. Choose what it becomes.</p>
+            <div id="turnPick"></div>
+            <p id="turnNext" class="seedhint"></p>
+          </div>
           <div class="seedbox">
             <span class="seedlabel">This valley</span>
             <code id="scoreSeed">VALE-XXXXXX</code>
             <button id="scoreCopy" class="linkbtn">Copy code</button>
-            <p class="seedhint">Send it to a friend and they walk the same valley.</p>
+            <p class="seedhint" id="seedHint">Send it to a friend and they walk the same valley.</p>
           </div>
         </div>
         <button id="scoreDone">Onward</button>
@@ -144,6 +168,8 @@
     <div id="satchel" class="panel hidden">
       <div class="card">
         <h1>Inventory</h1>
+        <div class="section">Today</div>
+        <div id="satchelQuests"></div>
         <div class="section">Wishes kept</div>
         <div id="satchelWishes"></div>
         <div class="section">Items</div>
