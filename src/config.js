@@ -107,6 +107,24 @@ export const CONFIG = {
     offset: 14, // from the ruin's centre, so it stands beside it and not on it
   },
 
+  // ---------- the lake's surface ----------
+  //
+  // The sheet was flat and still, and its rim was a circle. Both are fixed by one
+  // idea: bake each vertex's WATER DEPTH into the mesh. Depth drives the waves
+  // (they fade to nothing in the shallows, as real ones do), draws the foam
+  // exactly where the land comes up through the surface, and lets the shader
+  // throw away anything over dry ground -- so the lake's outline is the terrain's
+  // contour rather than a disc.
+  wave: {
+    rings: 30, // how finely the sheet is divided, out from the middle
+    segments: 72, // and around
+    height: 0.14, // metres, peak to trough
+    speed: 0.9,
+    scale: 0.22, // waves per metre; smaller is longer, lazier swell
+    foamDepth: 0.55, // water shallower than this whitens at the edge
+    foamStrength: 0.6,
+  },
+
   // ---------- the map ----------
   map: {
     resolution: 288, // pixels across the drawn valley. Every pixel costs

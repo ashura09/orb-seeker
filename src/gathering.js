@@ -10,6 +10,7 @@ import { paintSky, setNightLevel, followPlayer } from './sky.js';
 import { buildWorld } from './world.js';
 import { makeRng } from './rng.js';
 import { indoorFactor } from './cave.js';
+import { updateWater } from './water.js';
 import { forcedNight } from './modifiers.js';
 import { placeOrbs } from './orbs.js';
 import { homeWanderers } from './wanderers.js';
@@ -46,6 +47,7 @@ export function updateDayNight(dt) {
     indoorFactor(player.position.x, player.position.z) * CONFIG.cave.maxDark,
   );
   setNightLevel(dark);
+  updateWater(dt); // the lake's swell is one uniform
   // Gated on `visible`, not just on existence: the lantern is built once and
   // hidden when unworn, and a lantern you took off must not still glow.
   if (cosmetics.lantern?.visible)

@@ -21,10 +21,113 @@ const waterMat = new THREE.MeshStandardMaterial({
   metalness: 0.05,
   depthWrite: false, // reeds and lilies read through the surface
 });
-const water = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.water.radius, 48), waterMat);
-water.rotation.x = -Math.PI / 2;
+// ---------------------------------------------------------------------------
+// THE SHEET
+//
+// A radial grid rather than a CircleGeometry fan, because a fan has one vertex
+// in the middle and the rest on the rim -- nothing in between for a wave to move.
+// Built flat in XZ so nothing has to be rotated and the shader can think in world
+// terms.
+// ---------------------------------------------------------------------------
+function sheet(radius, rings, segments) {
+  const pos = [];
+  const idx = [];
+  pos.push(0, 0, 0); // the middle
+  for (let i = 1; i <= rings; i++) {
+    const r = (i / rings) * radius;
+    for (let j = 0; j < segments; j++) {
+      const a = (j / segments) * Math.PI * 2;
+      pos.push(Math.cos(a) * r, 0, Math.sin(a) * r);
+    }
+  }
+  const at = (ring, seg) => 1 + (ring - 1) * segments + (seg % segments);
+  for (let j = 0; j < segments; j++) idx.push(0, at(1, j + 1), at(1, j)); // the fan at the middle
+  for (let i = 1; i < rings; i++) {
+    for (let j = 0; j < segments; j++) {
+      const a = at(i, j),
+        b = at(i, j + 1),
+        c = at(i + 1, j),
+        d = at(i + 1, j + 1);
+      idx.push(a, b, d, a, d, c);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  // How deep the water is over each vertex. Filled in by fillWater, because it
+  // depends on where the lake ended up and how high it filled.
+  g.setAttribute('aDepth', new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3), 1));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+const WAVE = CONFIG.wave;
+const waterGeo = sheet(CONFIG.water.radius, WAVE.rings, WAVE.segments);
+const water = new THREE.Mesh(waterGeo, waterMat);
 water.renderOrder = 1;
 scene.add(water);
+
+// ---------------------------------------------------------------------------
+// The surface itself: waves in the vertex stage, foam and the shoreline in the
+// fragment stage. Both run on the GPU, so an animated lake costs one uniform a
+// frame rather than two thousand vertices rewritten on the CPU.
+// ---------------------------------------------------------------------------
+const uTime = { value: 0 };
+waterMat.onBeforeCompile = (shader) => {
+  shader.uniforms.uTime = uTime;
+  shader.uniforms.uFoamDepth = { value: WAVE.foamDepth };
+  shader.uniforms.uFoam = { value: WAVE.foamStrength };
+
+  shader.vertexShader = shader.vertexShader
+    .replace(
+      '#include <common>',
+      `#include <common>
+       attribute float aDepth;
+       varying float vDepth;
+       uniform float uTime;`,
+    )
+    .replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>
+       vDepth = aDepth;
+       // Two crossing swells at different rates, so the surface never repeats
+       // in an obvious rhythm. Faded out by depth: real water goes flat as it
+       // shelves, and without that the waves march up onto the beach.
+       float shallow = smoothstep(0.0, 1.2, aDepth);
+       float w = sin(position.x * ${WAVE.scale} + uTime * ${WAVE.speed}) +
+                 cos(position.z * ${WAVE.scale * 1.37} - uTime * ${WAVE.speed * 0.8});
+       transformed.y += w * ${WAVE.height * 0.5} * shallow;`,
+    );
+
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      '#include <common>',
+      `#include <common>
+       varying float vDepth;
+       uniform float uFoamDepth;
+       uniform float uFoam;`,
+    )
+    .replace(
+      '#include <dithering_fragment>',
+      `#include <dithering_fragment>
+       // Anything over dry land is not water. Throwing it away here is what
+       // makes the lake's edge the TERRAIN's contour rather than the disc it is
+       // drawn on -- the shoreline draws itself.
+       if (vDepth <= 0.0) discard;
+       float foam = 1.0 - smoothstep(0.0, uFoamDepth, vDepth);
+       gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0), foam * uFoam);
+       gl_FragColor.a = mix(gl_FragColor.a, 1.0, foam * 0.6);`,
+    );
+};
+
+/** Called once a frame. The whole animation is this one number. */
+export function updateWater(dt) {
+  uTime.value += dt;
+}
+
+/** The swell's clock, exposed so it can be checked from outside rather than
+ *  taken on trust -- a wave that lives in a shader leaves no other trace. */
+export const waveTime = () => uTime.value;
 
 // The height of the water sheet, so main.js can tell when you are wading, and
 // how far it reaches -- which is decided by the basin, not by config alone.
@@ -117,7 +220,20 @@ export function fillWater() {
   if (water.visible) {
     // The geometry is built once at CONFIG.water.radius, so the chosen shore is
     // a scale rather than a rebuilt mesh.
-    water.scale.setScalar(waterRadius / W.radius);
+    const scale = waterRadius / W.radius;
+    water.scale.setScalar(scale);
     water.position.set(cx, waterLevel, cz);
+
+    // Bake how deep the water is over every vertex. Done here because it needs
+    // the level and the centre, which are only decided above -- and done once
+    // per valley rather than per frame, since neither moves afterwards.
+    const pos = water.geometry.attributes.position;
+    const depth = water.geometry.attributes.aDepth;
+    for (let i = 0; i < pos.count; i++) {
+      const wx = cx + pos.getX(i) * scale;
+      const wz = cz + pos.getZ(i) * scale;
+      depth.setX(i, waterLevel - surfaceHeightAt(wx, wz));
+    }
+    depth.needsUpdate = true;
   }
 }

@@ -770,3 +770,27 @@ only while nothing else added obstacles after the scatter. The cave now does, on
 the same event, and listener order comes from the import graph — so on some builds
 this would have deleted the cave's walls and left the wish stones intangible. They
 are tagged now, and removed by tag.
+
+## The lake moves, and its edge is the land's
+
+The water was a still, flat sheet whose rim was a circle. Both are fixed by one
+idea: **bake each vertex's water depth into the mesh**.
+
+- **The shoreline is now the terrain's contour.** Anything over dry ground is
+  thrown away in the shader, so the lake's outline is drawn by the land it sits
+  in rather than by the disc it is drawn on.
+- **Foam** whitens wherever the water is shallower than 55cm — which is exactly
+  where the ground comes up through the surface, all the way round, following
+  every bay and spit.
+- **Waves**: two crossing swells at different rates, faded out by depth, because
+  real water flattens as it shelves and without that the waves march up the beach.
+- The sheet became a radial grid rather than a `CircleGeometry` fan — a fan has
+  one vertex in the middle and the rest on the rim, with nothing in between for
+  a wave to move.
+
+It runs entirely on the GPU: an animated lake costs **one uniform a frame**, not
+two thousand vertices rewritten on the CPU. 143 draw calls, unchanged.
+
+The swell's clock is exported so it can be checked rather than taken on trust —
+a wave that lives in a shader leaves no other trace. Verified advancing at real
+time, and the foam proves the shader compiled.
