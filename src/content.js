@@ -26,6 +26,7 @@ import itemsFile from '../content/items.json';
 import titlesFile from '../content/titles.json';
 import villagersFile from '../content/villagers.json';
 import questsFile from '../content/quests.json';
+import modifiersFile from '../content/modifiers.json';
 
 /** Throw with a message that says which row is wrong and why. */
 function bad(file, id, why) {
@@ -235,6 +236,40 @@ export function loadQuests(metrics) {
     if (!list.some((q) => q.tier === tier)) {
       throw new Error(`content/quests.json: no "${tier}" quests, so a day could not be filled`);
     }
+  }
+  return list;
+}
+
+// ---------------------------------------------------------------------------
+// VALLEY MODIFIERS
+//
+// What each one DOES is code, not data -- an effect is logic. What is data is
+// its name, its hint and the level it opens at. The ids are handed in by
+// modifiers.js, which owns the effects, so a modifier nobody has written an
+// effect for is refused rather than silently doing nothing.
+// ---------------------------------------------------------------------------
+export function loadModifiers(implemented) {
+  const known = new Set(implemented);
+  const seen = new Set();
+  const list = modifiersFile.modifiers.map((raw) => {
+    const id = raw.id || '(missing id)';
+    for (const key of ['id', 'name', 'hint']) {
+      if (typeof raw[key] !== 'string' || !raw[key]) {
+        bad('modifiers.json', id, `needs a non-empty "${key}"`);
+      }
+    }
+    if (seen.has(raw.id)) bad('modifiers.json', id, 'appears twice');
+    seen.add(raw.id);
+    if (!known.has(raw.id)) bad('modifiers.json', id, 'has no effect written for it');
+    if (!Number.isInteger(raw.unlockLevel) || raw.unlockLevel < 1) {
+      bad('modifiers.json', id, 'needs an unlockLevel of 1 or more');
+    }
+    return { id: raw.id, name: raw.name, hint: raw.hint, unlockLevel: raw.unlockLevel };
+  });
+  if (!list.some((m) => m.unlockLevel === 1)) {
+    throw new Error(
+      'content/modifiers.json: nothing is available at level 1, so a new player would have no choice at all',
+    );
   }
   return list;
 }

@@ -80,7 +80,7 @@ valleys** — weeks for a child, not an afternoon and not months.
 | 20–24  | **Valewarden**   | 4th slot. Hard dailies appear.             |
 | 25–30  | **Dragonfriend** | 5th slot. The Keeper greets you by rank.   |
 
-### The Turning
+### The Turning — built
 
 The valley already regenerates from a seed after every ceremony, and today that is pure
 loss. Rename it **the Turning**, attach a reward, and it becomes the reason to continue.
@@ -220,7 +220,7 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1 to 6**, plus the ladder, titles, the rigged
+**Built so far: steps 1 to 7**, plus the ladder, titles, the rigged
 characters and the content pipeline — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150

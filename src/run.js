@@ -19,6 +19,13 @@ import { on, emit, EVENTS } from './events.js';
 import { save } from './save.js';
 import { seedCode, runScore, ladderFor } from './rules.js';
 import { checkTitles, baseContext, wornTitle } from './titles.js';
+import {
+  availableModifiers,
+  nextModifier,
+  chooseModifier,
+  activeModifier,
+  turnings,
+} from './modifiers.js';
 import { currentLevel } from './progress.js';
 import { progressSummary } from './progress.js';
 
@@ -186,12 +193,17 @@ function showCard() {
   const badge = wornTitle();
   if (badge) list.append(row('Title', badge.name));
 
+  renderTurning();
+
   // The valley code. Shown last and given its own line, because it is the only
   // thing on this card that another person can act on.
   $('scoreSeed').textContent = seedCode(G.worldSeed);
   // Someone who arrived by code is being told what to do with it; someone in
   // their own valley is being offered something to send.
-  document.querySelector('#score .seedhint').textContent = G.visiting
+  // By id, not by `#score .seedhint`. That selector took the FIRST hint in the
+  // card, and once the Turning block was added above the seed box it was that
+  // one -- so the Turning ended up telling you to send the valley to a friend.
+  $('seedHint').textContent = G.visiting
     ? 'You walked a valley someone sent you. Send your time back.'
     : 'Send it to a friend and they walk the same valley.';
   $('scoreTitle').textContent = G.orderKept ? 'A perfect gathering' : 'The seven, gathered';
@@ -234,3 +246,42 @@ $('scoreCopy').addEventListener('click', async () => {
   }
   setTimeout(() => ($('scoreCopy').textContent = 'Copy code'), 2000);
 });
+
+// ---------------------------------------------------------------------------
+// THE TURNING
+//
+// The valley regenerates after every ceremony whatever anybody does. It always
+// did, and it always granted nothing -- the world you had learned simply went.
+// Naming it and letting you choose what the next one becomes turns the game's
+// largest subtraction into its reason to keep going, and costs nothing to build
+// because the re-roll was already there.
+//
+// You keep everything: level, items, titles, wish stones, best times. The only
+// thing that changes is the valley, which was going to change anyway.
+// ---------------------------------------------------------------------------
+function renderTurning() {
+  // One mark per valley turned, capped so a devoted player does not get a wall
+  // of them. Marks rather than a number: it should read as a record, not a score.
+  const n = turnings();
+  $('turnMarks').textContent = n === 0 ? '' : n <= 12 ? '·'.repeat(n) : `·×${n}`;
+
+  const pick = $('turnPick');
+  pick.innerHTML = '';
+  const chosen = activeModifier().id;
+  for (const m of availableModifiers()) {
+    const b = document.createElement('button');
+    b.className = 'turnopt' + (m.id === chosen ? ' on' : '');
+    b.textContent = m.name;
+    b.title = m.hint;
+    b.addEventListener('click', () => {
+      chooseModifier(m.id);
+      renderTurning();
+    });
+    pick.appendChild(b);
+  }
+
+  const soon = nextModifier();
+  $('turnNext').textContent = soon
+    ? `${soon.name} opens at level ${soon.unlockLevel}.`
+    : activeModifier().hint;
+}

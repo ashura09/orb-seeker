@@ -13,6 +13,7 @@ import { on, emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import { voiceOf } from './voice.js';
 import { addXp } from './progress.js';
+import { duelRateScale, lootScale } from './modifiers.js';
 
 const duelEl = $('duel');
 const D = CONFIG.duel;
@@ -134,7 +135,7 @@ export function updateDuel(dt) {
     return;
   }
   duel.time -= dt;
-  duel.them += dt * tierRate(duel.w.tier);
+  duel.them += dt * tierRate(duel.w.tier) * duelRateScale();
   renderDuel();
   if (duel.them >= 1) endDuel(false);
   // Time out: whoever is further along wins, and a dead heat goes to the player.
@@ -152,7 +153,7 @@ export function endDuel(won) {
     // pay scales with the camp's tier: about 3 near orb 1, about 10 near orb 7,
     // doubled on a flawless roll. The arithmetic lives in rules.js so it can be tested.
     const paid = duelLoot(duel.w.tier);
-    loot = paid.loot;
+    loot = Math.round(paid.loot * lootScale());
     const flawless = paid.flawless;
     $('resultBig').textContent = flawless ? 'Flawless!' : 'You win';
     $('resultSay').textContent = `“${voiceOf(duel.w.short).theyLose}”`;

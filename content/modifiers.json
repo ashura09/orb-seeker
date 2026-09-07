@@ -1,0 +1,35 @@
+{
+  "$comment": "Valley modifiers, chosen at the Turning. The valley already re-rolls after every ceremony and always granted nothing for it; choosing how the next one differs is what turns that loss into a step forward. `unlockLevel` gates each one, so there is something still to come at level twenty. What each one DOES lives in modifiers.js — an effect is logic, not data.",
+  "modifiers": [
+    {
+      "id": "none",
+      "name": "An ordinary valley",
+      "hint": "The seven, scattered as usual.",
+      "unlockLevel": 1
+    },
+    {
+      "id": "thin",
+      "name": "Thin Woods",
+      "hint": "Fewer trees. You can see a long way, and so can they.",
+      "unlockLevel": 5
+    },
+    {
+      "id": "night",
+      "name": "Night Valley",
+      "hint": "Dark the whole way. The orbs are easier to spot, the ground is not.",
+      "unlockLevel": 10
+    },
+    {
+      "id": "rich",
+      "name": "Rich Vein",
+      "hint": "Every camp pays half again.",
+      "unlockLevel": 15
+    },
+    {
+      "id": "fierce",
+      "name": "Fierce Camps",
+      "hint": "Quicker hands than usual, and they pay for it.",
+      "unlockLevel": 20
+    }
+  ]
+}

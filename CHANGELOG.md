@@ -548,3 +548,33 @@ Bram's camp match to the decimal. Three tests now hold that invariant, because
 ESLint caught a second one on the way: the seed was chosen with a `??` chain, and
 `Number()` returns `NaN` rather than null for nonsense — so `?seed=banana` would
 have been accepted and produced a puzzling blank world.
+
+## The Turning
+
+The valley regenerates after every ceremony. It always did, and it always granted
+nothing — the world you had learned simply went. Naming it **the Turning** and
+letting you choose what the next one becomes turns the game's largest subtraction
+into its reason to keep going, and cost almost nothing to build because the
+re-roll was already there.
+
+You keep everything: level, items, titles, wish stones, best times. The only
+thing that changes is the valley, which was going to change anyway.
+
+- Five modifiers, opening as you climb: **An ordinary valley** (level 1), **Thin
+  Woods** (5), **Night Valley** (10), **Rich Vein** (15) and **Fierce Camps**
+  (20). The card names the next one and the level it opens at, so there is always
+  something still to come.
+- **Fierce Camps pays more as well as demanding more.** Difficulty without reward
+  is a punishment, and this is something the player chose.
+- Turnings show as marks rather than a number — a record, not a score — and
+  collapse to `·×N` past a dozen so a devoted player is not given a wall of dots.
+- `content/modifiers.json` carries each one's name, hint and unlock level; the
+  effects are code, because an effect is logic. A modifier with no effect written
+  for it is refused at startup rather than being offered, chosen, and then
+  changing nothing.
+- Verified rather than assumed: Thin Woods took a valley from 633 obstacles to 366.
+
+One fault found by looking: the Turning's own hint read _"Send it to a friend and
+they walk the same valley"_. `document.querySelector('#score .seedhint')` takes
+the FIRST hint in the card, and adding the Turning above the seed box made that
+the wrong one. Targeted by id now.

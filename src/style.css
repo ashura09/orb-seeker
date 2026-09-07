@@ -926,3 +926,47 @@ canvas#c {
   min-height: 1.2em;
   color: var(--brass-dark);
 }
+
+/* ---------------------------------------------------------------------------
+   The Turning, on the run card.
+   --------------------------------------------------------------------------- */
+.turning {
+  margin: 12px 0 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(27, 26, 23, 0.05);
+}
+.turnhead {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+/* The marks are the record of how many valleys this player has turned. Spaced
+   out, because a run of dots with no gaps reads as an ellipsis. */
+#turnMarks {
+  letter-spacing: 0.35em;
+  color: var(--brass-dark);
+  font-weight: bold;
+}
+#turnPick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 8px 0 6px;
+}
+.card .turnopt {
+  padding: 8px 12px;
+  min-height: 44px; /* a thumb, not a mouse */
+  border-radius: 999px;
+  border: 2px solid var(--brass-dark);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: bold;
+}
+.card .turnopt.on {
+  background: var(--face);
+  color: var(--mint);
+}

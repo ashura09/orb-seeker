@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { scene, G } from './state.js';
 import { CONFIG } from './config.js';
+import { propScale } from './modifiers.js';
 import { PROPS, PROP_MATERIAL, PROP_RADIUS, PROP_SINK, PROP_HEIGHT } from './props.js';
 import { WORLD_R, LANDMARKS, centres, regionAt } from './regions.js';
 import { surfaceHeightAt } from './terrain.js';
@@ -219,7 +220,10 @@ export function scatterScenery(rng) {
   const placements = {}; // kind -> [{x, z, s, rot}]
   for (const kind of Object.keys(PROPS)) placements[kind] = [];
 
-  const total = G.propBudget ?? CONFIG.world.props; // low graphics lowers this
+  // Low graphics lowers this, and so does the Thin Woods modifier -- which the
+  // player chose, and which incidentally buys back draw calls as well as
+  // sightlines.
+  const total = Math.round((G.propBudget ?? CONFIG.world.props) * propScale());
   let placed = 0,
     guard = 0;
   while (guard++ < total * 300 && placed < total) {

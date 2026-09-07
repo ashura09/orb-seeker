@@ -9,6 +9,7 @@ import { player, cosmetics } from './player.js';
 import { paintSky, setNightLevel, followPlayer } from './sky.js';
 import { buildWorld } from './world.js';
 import { makeRng } from './rng.js';
+import { forcedNight } from './modifiers.js';
 import { placeOrbs } from './orbs.js';
 import { homeWanderers } from './wanderers.js';
 import { forgetExplored } from './map.js';
@@ -101,7 +102,9 @@ export function updateStates(dt, recallAWish) {
       scene.remove(keeper);
       G.departT = -1;
       G.ceremony = false;
-      G.nightTarget = 0;
+      // A Night Valley stays night: that is the whole modifier, and dawn
+      // arriving halfway through would quietly cancel what the player chose.
+      G.nightTarget = forcedNight() ? 1 : 0;
       G.respawnT = CER.respawnSeconds;
       $('hint').style.opacity = 0.75;
     }

@@ -3,7 +3,14 @@
 // startup with the id and the reason, rather than producing a title nobody can
 // ever earn or a shop item with no colour.
 import { describe, it, expect } from 'vitest';
-import { ITEMS, loadTitles, loadVillagers, loadQuests, QUEST_TIERS } from '../src/content.js';
+import {
+  ITEMS,
+  loadTitles,
+  loadVillagers,
+  loadQuests,
+  QUEST_TIERS,
+  loadModifiers,
+} from '../src/content.js';
 import * as P from '../src/palette.js';
 // Imported, not copied. This list used to be duplicated here, and the moment a
 // field was added to the game the copy went stale and the whole suite refused to
@@ -187,5 +194,30 @@ describe('daily quests, from content/quests.json', () => {
 
   it('refuses a pool that cannot fill a tier', () => {
     expect(() => loadQuests(METRICS.filter((m) => m !== 'orbs'))).toThrow();
+  });
+});
+
+describe('valley modifiers, from content/modifiers.json', () => {
+  const IMPLEMENTED = ['none', 'thin', 'night', 'rich', 'fierce'];
+  const mods = loadModifiers(IMPLEMENTED);
+
+  it('offers a new player something, and something still to come', () => {
+    // A chooser that is empty at level 1 is a feature nobody meets.
+    expect(mods.some((m) => m.unlockLevel === 1)).toBe(true);
+    // And the ladder of unlocks must actually go somewhere.
+    expect(Math.max(...mods.map((m) => m.unlockLevel))).toBeGreaterThan(10);
+  });
+
+  it('explains every one of them', () => {
+    for (const m of mods) {
+      expect(m.name.length).toBeGreaterThan(0);
+      expect(m.hint.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('refuses a modifier nobody has written an effect for', () => {
+    // The failure this prevents: a modifier offered on the card, chosen by a
+    // player, that then changes nothing whatsoever about the valley.
+    expect(() => loadModifiers(['none'])).toThrow(/no effect written for it/);
   });
 });

@@ -82,11 +82,17 @@
           <ul id="scoreRows"></ul>
           <div class="titleshead" hidden>New titles</div>
           <ul id="scoreTitles" hidden></ul>
+          <div class="turning">
+            <div class="turnhead">The Turning <span id="turnMarks"></span></div>
+            <p class="seedhint">The valley is about to change. Choose what it becomes.</p>
+            <div id="turnPick"></div>
+            <p id="turnNext" class="seedhint"></p>
+          </div>
           <div class="seedbox">
             <span class="seedlabel">This valley</span>
             <code id="scoreSeed">VALE-XXXXXX</code>
             <button id="scoreCopy" class="linkbtn">Copy code</button>
-            <p class="seedhint">Send it to a friend and they walk the same valley.</p>
+            <p class="seedhint" id="seedHint">Send it to a friend and they walk the same valley.</p>
           </div>
         </div>
         <button id="scoreDone">Onward</button>
