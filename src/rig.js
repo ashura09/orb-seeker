@@ -64,6 +64,18 @@ const CLIP_DAMPING = {
   idle: { 'arm-left': 0.3, 'arm-right': 0.3 },
   walk: { 'arm-left': 0.9, 'arm-right': 0.9 },
   sprint: { 'arm-left': 0.95, 'arm-right': 0.95 },
+
+  // Kenney's jump is a STRIDE in mid-air: the left leg swings back 75 degrees
+  // while the right swings forward 45. That works on their figure because the
+  // clip also TRANSLATES the legs apart -- and translation is exactly what we
+  // drop, because it is measured in their centimetres.
+  //
+  // So we inherited a 120-degree scissor on legs more than twice as long, which
+  // Ashura saw immediately: the monkey crossed his legs into an X every time he
+  // jumped. Damped to a third it is a tuck, which is what a jump should look
+  // like, and it keeps the shape of the original motion rather than replacing it.
+  jump: { 'leg-left': 0.3, 'leg-right': 0.3 },
+  fall: { 'leg-left': 0.45, 'leg-right': 0.45 },
 };
 
 /**
