@@ -72,12 +72,15 @@ export function echoToast(msg, secs = 5) {
 
 // Crawl and whistle had permanent on-screen buttons. They were removed: they
 // occupied the bottom-right corner of a phone screen full time, and by the
-// player's own account they were never used -- nothing in the game ever asks
+// player's own account they were never used -- nothing in the game ever asked
 // you to be quiet or to make noise on purpose, so there was no moment to reach
-// for them. The MECHANICS are untouched (crawling is still slower and quieter,
-// whistling still carries), and the C and V keys still fire them; only the
-// buttons are gone. If a reason to crawl ever appears, this is where the
-// control comes back -- ideally offered when it is needed rather than always.
+// for them.
+//
+// That has since been settled properly rather than left hanging. CRAWLING IS
+// GONE: no situation ever required it, and inventing a stealth system to justify
+// a button is the mistake docs/GAME-DESIGN.md exists to prevent. THE WHISTLE IS
+// BACK, with a button, because it now calls the nearest villager over for a duel
+// -- it earned the screen space by acquiring a purpose.
 
 // Jump is on pointerdown, not click: a click waits for the finger to lift, which
 // on a phone is a jump that happens after you wanted it.

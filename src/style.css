@@ -970,3 +970,19 @@ canvas#c {
   background: var(--face);
   color: var(--mint);
 }
+
+/* The whistle sits beside Jump. It earned its screen space back by acquiring a
+   purpose: it calls the nearest villager over for a duel. Disabled while it
+   cools off, because a control that does nothing when pressed teaches people to
+   stop pressing it. */
+#whistleBtn {
+  /* Directly above Jump, sharing its right edge. `.actbtn` sets the corner; this
+     only lifts it clear, using the same safe-area inset so it stays put on a
+     phone with a home bar. */
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+  font-size: 15px;
+  padding: 12px 18px;
+}
+#whistleBtn:disabled {
+  opacity: 0.4;
+}

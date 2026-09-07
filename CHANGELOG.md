@@ -578,3 +578,29 @@ One fault found by looking: the Turning's own hint read _"Send it to a friend an
 they walk the same valley"_. `document.querySelector('#score .seedhint')` takes
 the FIRST hint in the card, and adding the Turning above the seed box made that
 the wrong one. Targeted by id now.
+
+## Crawl is cut. The whistle earned its button back.
+
+The two mechanics that had no answer to "what is this for" are settled rather
+than left hanging.
+
+**Crawling is gone.** No situation in the game ever required it: nothing hunts
+you, and slipping quietly past a camp was never worth being slower for. Inventing
+a stealth system to justify a button is the exact mistake `docs/GAME-DESIGN.md`
+exists to prevent, so the mechanic goes rather than the design bending around it.
+Removed from the config, the state, the movement, the villagers' hearing and the
+jump rule. The crouch animation stays in the file — one line away if a reason
+ever turns up.
+
+**The whistle has a button again, because it now does something.** It used to
+only widen how far you could be heard, which is a mechanic you cannot see
+working. It now calls the nearest villager over for a duel and names them —
+_"You whistle. Sable looks up."_ An ambush you endure becomes a fight you choose,
+and it makes "win three duels" playable instead of a matter of waiting around.
+
+It greys out while cooling off, because a control that does nothing when pressed
+teaches people to stop pressing it. Verified: whistled at 37m, the Pilgrim walked
+to 2.2m, button re-enabled.
+
+That is every step of the build order that costs no geometry. Still 141 draw
+calls, and none of the eight steps spent one.

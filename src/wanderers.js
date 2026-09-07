@@ -63,6 +63,34 @@ function animateLimbs(w, moving) {
   w.anim.setAnim(moving ? 'walk' : 'idle');
 }
 
+/**
+ * Call the nearest villager over for a duel.
+ *
+ * The whistle used to do nothing but widen how far you could be heard, which is
+ * a mechanic you cannot see working. Now it picks somebody and sends them: an
+ * ambush you endure becomes a fight you choose, which is also what makes the
+ * "win three duels" daily playable instead of a matter of waiting around.
+ *
+ * Returns whoever is coming, or null if every camp is still cooling off.
+ */
+export function summonNearest() {
+  let best = null;
+  let bestD = Infinity;
+  for (const w of wanderers) {
+    if (w.cooldown > 0) continue;
+    const d = Math.hypot(w.g.position.x - player.position.x, w.g.position.z - player.position.z);
+    if (d < bestD) {
+      bestD = d;
+      best = w;
+    }
+  }
+  if (!best) return null;
+  best.tx = player.position.x;
+  best.tz = player.position.z;
+  best.wait = 0;
+  return best;
+}
+
 export function updateWanderers(dt) {
   // The bench is a still life. Villagers wandering in and out of frame was the
   // last thing making two runs disagree -- 158 draw calls against 176, from the
@@ -73,7 +101,6 @@ export function updateWanderers(dt) {
   // How far you carry. Crawling multiplies the base so it still stacks with the
   // Silver bell; whistling overrides both for as long as the noise lasts.
   let hear = worn('bell') ? W.hearingWithBell : W.hearingRange;
-  if (G.crawling) hear *= W.crawlHearingMultiplier;
   if (G.whistleT > 0) hear = Math.max(hear, W.whistleRange);
   for (const w of wanderers) {
     w.anim.update(dt); // advances whichever clip this villager is playing

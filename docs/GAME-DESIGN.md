@@ -220,7 +220,7 @@ Draw-call cost against a budget with **one call spare of 150**.
 | 9   | Merge the player's ~31 meshes     | frees ~25 |
 | 10  | The landmark, then sound          | +2 calls  |
 
-**Built so far: steps 1 to 7**, plus the ladder, titles, the rigged
+**Built so far: steps 1 to 8** — everything in the plan that costs no geometry, plus the ladder, titles, the rigged
 characters and the content pipeline — seeker levels, slots by rank, and the run score screen with its valley code.
 
 **Steps 1–8 add no 3D objects at all.** The thing that has been blocking us — 149 of 150

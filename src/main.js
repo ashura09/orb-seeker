@@ -13,10 +13,10 @@ import { makeRng } from './rng.js';
 import { loadProps } from './props.js';
 import { setupShadows, buildEnvironment } from './sky.js';
 import { setupBloom, render as renderFrame, resize as resizeBloom } from './bloom.js';
-import { player, applyCosmetics, setCrawlPose, setAirPose } from './player.js';
+import { player, applyCosmetics, setAirPose } from './player.js';
 import { placeOrbs } from './orbs.js';
 import { keys, joy, setCamDist } from './input.js';
-import { homeWanderers } from './wanderers.js';
+import { homeWanderers, summonNearest } from './wanderers.js';
 import { spawnPickup } from './inventory.js';
 import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
@@ -30,7 +30,7 @@ import { updateDayNight, updateStates } from './gathering.js';
 import { updatePlayer } from './motion.js';
 import { updateCamera } from './camera.js';
 import { wishEcho } from './voice.js';
-import { on, EVENTS } from './events.js';
+import { on, emit, EVENTS } from './events.js';
 import { CONFIG } from './config.js';
 import './shop.js';
 
@@ -87,23 +87,23 @@ setupBloom();
 
 initStats(renderer);
 
-// ---------- crawl and whistle ----------
+// ---------- the whistle ----------
 //
-// The two ends of one dial. Villagers notice you at CONFIG.wanderers.hearingRange;
-// crawling multiplies that down and whistling forces it up, so you can choose to
-// slip past the camp guarding the orb you want -- or call its keeper over when
-// you would rather have the fragments.
-on(EVENTS.CRAWL_TOGGLE, () => {
-  if (G.state !== 'play') return;
-  G.crawling = !G.crawling;
-  setCrawlPose(G.crawling);
-  toast(G.crawling ? 'Crawling. Slower, and harder to hear.' : 'Standing.', 1.6);
-});
+// CRAWLING IS GONE. It existed with no situation that required it: there is no
+// stealth in this game, nothing hunts you, and slipping quietly past a camp was
+// never worth being slower for. docs/GAME-DESIGN.md's rule is that a mechanic
+// with no answer to "what is this for" does not ship, and inventing a stealth
+// system to justify a button would have been the exact mistake that document
+// exists to prevent. So it goes.
+//
+// The whistle stays, because it now has an answer. It used to only widen how far
+// you could be heard -- a mechanic you cannot see working. Now it calls somebody
+// over: an ambush you endure becomes a fight you choose.
 
-// You cannot jump from a crawl, and you cannot jump twice. Both are refusals
-// rather than silent no-ops elsewhere in the loop, so the rule lives in one place.
+// You cannot jump twice. A refusal here rather than a silent no-op in the loop,
+// so the rule lives in one place.
 on(EVENTS.JUMP, () => {
-  if (G.state !== 'play' || G.airborne || G.crawling) return;
+  if (G.state !== 'play' || G.airborne) return;
   G.airborne = true;
   G.vy = CONFIG.player.jumpSpeed;
   G.airY = surfaceHeightAt(player.position.x, player.position.z);
@@ -116,9 +116,21 @@ on(EVENTS.WHISTLE, () => {
   const W = CONFIG.wanderers;
   G.whistleT = W.whistleSeconds;
   G.whistleCd = W.whistleCooldown;
-  toast('You whistle. It carries.', 1.8);
   if (navigator.vibrate) navigator.vibrate([15, 40, 15]);
+
+  // Naming who is coming is the whole difference between a noise and a summons.
+  const coming = summonNearest();
+  toast(coming ? `You whistle. ${coming.short} looks up.` : 'You whistle. Nobody answers.', 2);
 });
+
+// The button only exists while you are playing, and greys out while the whistle
+// is cooling off -- a control that does nothing when pressed teaches people to
+// stop pressing it.
+const whistleBtn = $('whistleBtn');
+whistleBtn.addEventListener('click', () => emit(EVENTS.WHISTLE));
+export function refreshWhistleButton() {
+  whistleBtn.disabled = G.whistleCd > 0;
+}
 
 // The tuning panel, only when asked for with ?tune on the URL. A dynamic import
 // means Vite splits lil-gui into its own chunk, so players who never open the
@@ -243,6 +255,7 @@ function frame() {
   watchFrameRate(dt); // drops quality on its own if this phone cannot keep up
   markExplored(dt); // the map remembers where you have walked
   updateToast(dt);
+  refreshWhistleButton(); // greys out while the whistle is cooling off
   drawFinder(dt, f.x, f.z, rx, rz);
   renderFrame(); // through the bloom composer when it is on
 }

@@ -217,10 +217,10 @@ export const CONFIG = {
     gravity: 16, // metres per second squared
     jumpClearance: 0.05, // how far your feet must be above a thing to pass it
 
-    // Crawling: quieter, but slow. The trade is the point -- you give up ground
+    // (Crawling lived here. It was cut: no situation in the game ever required
+    // it, and inventing a stealth system to justify a button is the mistake
+    // docs/GAME-DESIGN.md exists to prevent.)
     // to give up noise. Started at 0.42, which playtesting found unbearable:
-    // slow enough that nobody ever chose it.
-    crawlSpeedMultiplier: 0.62,
   },
 
   // ---------- camera ----------
@@ -327,10 +327,6 @@ export const CONFIG = {
     waitMax: 4,
     cooldown: 25, // seconds before the same villager challenges again
     bobRate: 9,
-
-    // Crawling multiplies how far they hear you, so it stacks correctly with
-    // the Silver bell instead of overriding it.
-    crawlHearingMultiplier: 0.45,
 
     // Whistling is the opposite: for a moment you are audible from much
     // further away, and anyone in range comes looking.

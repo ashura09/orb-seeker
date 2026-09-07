@@ -188,13 +188,10 @@ export const updateAnim = anim.update;
 export const currentAnim = anim.current;
 
 // ---------------------------------------------------------------------------
-// Crawling and jumping are now animations rather than hand-set rotations. Both
-// keep their old names so nothing else had to change.
+// Jumping is an animation now rather than a hand-set rotation. setCrawlPose went
+// with the crawl itself: the clip is still in the file, and if a reason to crouch
+// ever turns up it is one line away.
 // ---------------------------------------------------------------------------
-export function setCrawlPose(on) {
-  if (on) setAnim('crouch');
-}
-
 export function setAirPose(on) {
   if (on) setAnim('jump', 0.08); // a jump should snap, not ease
 }

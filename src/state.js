@@ -60,7 +60,6 @@ export const G = {
   camDist: CONFIG.camera.distance, // live zoom; pinch and the wheel move it
   lowGraphics: false, // set by graphics.js when the phone cannot keep up
   propBudget: CONFIG.world.props, // effective scenery count; low mode lowers it
-  crawling: false, // quieter and slower
   airborne: false, // off the ground, so gravity is running
   vy: 0, // vertical speed while airborne, metres per second
   airY: 0, // world height while airborne; the ground is not in charge

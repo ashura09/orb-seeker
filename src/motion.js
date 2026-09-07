@@ -33,7 +33,6 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
       const k =
         Math.min(len, 1) *
         (worn('boots') ? P.bootsMultiplier : 1) *
-        (G.crawling ? P.crawlSpeedMultiplier : 1) *
         (wading ? CONFIG.water.wadeSpeed : 1);
       const vx = f.x * -my + rx * mx,
         vz = f.z * -my + rz * mx,
@@ -95,7 +94,6 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
     // one sine wave, both legs on its inverse, the same swing at every speed, and
     // nothing whatsoever for jumping, landing, crouching or standing still.
     if (G.airborne) setAnim(G.vy > 0 ? 'jump' : 'fall');
-    else if (G.crawling) setAnim('crouch');
     else if (moving) setAnim(fast ? 'sprint' : 'walk');
     else setAnim('idle');
     for (const o of orbs) {
