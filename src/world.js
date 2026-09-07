@@ -15,10 +15,21 @@
 //   6. water     fills a basin, so it must know the finished terrain
 import { makeRng } from './rng.js';
 import { placeRegions, centres, WORLD_R, regionAt } from './regions.js';
-import { heightAt, surfaceHeightAt, setNoiseOffset } from './terrain.js';
+import {
+  heightAt,
+  surfaceHeightAt,
+  setNoiseOffset,
+  supportHeightAt,
+  useObstacles,
+} from './terrain.js';
 import { shapeGround } from './ground.js';
 import { buildHorizon } from './horizon.js';
 import { scatterScenery, obstacles } from './scatter.js';
+
+// terrain.js needs to know what has been scattered onto it before it can say what
+// you are standing on. Handed over rather than imported, so terrain.js does not
+// depend on the module that decorates it.
+useObstacles(obstacles);
 import { emit, EVENTS } from './events.js';
 import { fillWater, waterLevel, waterRadius, isInWater } from './water.js';
 
@@ -61,6 +72,7 @@ export {
   regionAt,
   heightAt,
   surfaceHeightAt,
+  supportHeightAt,
   isInWater,
   waterLevel,
   waterRadius,

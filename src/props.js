@@ -77,10 +77,14 @@ const CATALOGUE = {
       'cliff_rock',
     ],
     size: 7.0,
-    radius: 2.6,
+    // Widened from 2.6. A cliff block is a BOX and this is a circle, so the
+    // circle has to be generous or the corners are walk-through. The ring
+    // overlaps its neighbours at this radius, which is what makes the plateau
+    // read as a wall rather than a row of standing stones.
+    radius: 3.4,
     sink: 2.2,
   },
-  cliffCave: { files: ['cliff_cave_rock'], size: 7.0, radius: 2.6, sink: 2.0 },
+  cliffCave: { files: ['cliff_cave_rock'], size: 7.0, radius: 3.4, sink: 2.0 },
 
   // landmark pieces
   tent: { files: ['tent_detailedOpen', 'tent_smallClosed'], size: 3.0, radius: 1.0 },

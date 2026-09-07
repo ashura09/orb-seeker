@@ -632,3 +632,43 @@ noise, and does not need to — this is a valley of coloured boxes.
 Verified by instrumenting the audio graph rather than by listening: context
 running after the first gesture, correct note counts per event, the seven orb
 frequencies forming a major scale, and zero oscillators created while muted.
+
+## You can stand on things, and the cliffs are solid
+
+Two complaints, and they turned out to be different faults.
+
+### Standing on rocks
+
+Nothing in the valley could be stood on. The vertical position came only from the
+terrain, and the horizontal push used `feet > top + clearance` — so the instant
+you landed on a rock you were exactly level with it, failed that test, and were
+shoved off sideways. Jumping had nothing to jump _onto_.
+
+- `supportHeightAt` asks what is under your feet, which is not the same question
+  as how high the ground is: the terrain, or the top of something you are above.
+- **Low things are steps and tall things are walls**, separated by one number
+  (`stepUp`, 50cm). Below it you walk straight on. Above it you are stopped until
+  you jump — and then you land on top, and stay there.
+- Verified: dropped onto a 1.12m rock and came to rest at its top (18.59) rather
+  than the ground beneath it (17.47).
+
+### Walking through walls
+
+**Not the terrain.** I wrote a slope limit first, then measured: the steepest
+metre anywhere in a valley rises 1.14, which any sane limit permits. The hills are
+meant to be walked. So the rule never fired, and a rule that never fires is dead
+code — removed.
+
+The walls were the **cliff blocks**, and they were wrong three separate ways:
+
+1. They passed a hardcoded `0.8` to `addObstacle` while being _drawn_ at
+   0.85–1.45 scale, so a block six to ten metres across got a collision circle
+   four metres wide.
+2. Their radius was tuned for a circle inside a box; widened from 2.6 to 3.4.
+3. Even fixed, the ring was 26 blocks with **6.9° of angular jitter on an 8.5°
+   spacing** and a radial wobble four metres deep. Measured properly, the lip is a
+   372m circle and a block covers 7.8m — so it needs 60 slots, not 26.
+
+Now 80% solid with **exactly three passes**, 25–29m wide. A plateau with no way up
+is scenery; a plateau with three passes is somewhere to go, and the passes are what
+makes the rest of it read as a wall rather than as an accident.

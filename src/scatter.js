@@ -287,22 +287,54 @@ export function scatterScenery(rng) {
   if (highland && PROPS.cliff) {
     const R = highland.region.radius;
     const ring = CONFIG.world.cliffRing;
+
+    // THE PASSES.
+    //
+    // The ring used to be spaced so widely that every block had a gap to its
+    // neighbour: a row of standing stones you walked between, while looking at
+    // what appeared to be a continuous rock face. That is what "you can walk
+    // through walls" was.
+    //
+    // Packed tight enough to overlap now -- and then deliberately opened in a
+    // few places. A plateau with no way up is scenery; a plateau with three
+    // passes is somewhere to go, and the passes are what makes the wall read as
+    // a wall rather than as an accident.
+    const passes = CONFIG.world.cliffPasses;
+    const passWidth = CONFIG.world.cliffPassWidth;
     for (let i = 0; i < ring; i++) {
-      const a = (i / ring) * Math.PI * 2 + rng() * 0.12;
-      const d = R * (0.92 + rng() * 0.16);
+      const around = i / ring;
+      const atAPass = passes.some((p) => Math.abs(((around - p + 1.5) % 1) - 0.5) < passWidth);
+      if (atAPass) continue;
+      // 1.1 degrees of wobble, which is about a metre of arc. It used to be 6.9
+      // degrees -- seven metres, on an eight metre spacing -- so blocks bunched
+      // and left holes wide enough to walk through.
+      const a = around * Math.PI * 2 + rng() * 0.02;
+      // Only a little radial wobble. At 0.92-1.08 the blocks were spread across
+      // a band four metres deep rather than sitting on a ring, so neighbours
+      // that looked adjacent were nowhere near each other and the wall was full
+      // of holes. Enough jitter to not look extruded, not enough to open gaps.
+      const d = R * (0.985 + rng() * 0.03);
       const x = highland.x + Math.cos(a) * d,
         z = highland.z + Math.sin(a) * d;
       if (Math.hypot(x, z) > WORLD_R - 4) continue;
       const kind = rng() < 0.12 && PROPS.cliffCave ? 'cliffCave' : 'cliff';
       const variants = PROPS[kind];
+      // The scale the block is DRAWN at, which is also the scale it has to be
+      // solid at. This used to place the block at 0.85-1.45 and then hand
+      // addObstacle a flat 0.8: a cliff drawn six to ten metres across got a
+      // collision circle four metres wide, so you could walk in through its
+      // edges and straight out the other side. That was the walking through
+      // walls -- not the terrain, which never exceeds a 1.14 rise per metre
+      // anywhere and is meant to be walkable.
+      const scale = 0.85 + rng() * 0.6;
       placements[kind].push({
         x,
         z,
-        s: 0.85 + rng() * 0.6,
+        s: scale,
         variant: (rng() * variants.length) | 0,
         rot: a + Math.PI / 2 + (rng() - 0.5) * 0.5,
       });
-      addObstacle(kind, x, z, 0.8);
+      addObstacle(kind, x, z, scale);
     }
   }
 

@@ -36,7 +36,17 @@ export const CONFIG = {
     props: 1150, // total scenery; regions decide the mix. Raised with
     // clumping: stands leave more open ground between them,
     // so the same count read as sparser than it did scattered.
-    cliffRing: 26, // cliff blocks ringing the highland plateau
+    // Packed to overlap, from measurement rather than guesswork: the lip is a
+    // 372 m circle and a block covers 7.8 m, so 60 slots gives every block a
+    // fifth of itself overlapping its neighbour. At 26 -- the original -- each
+    // one had a gap beside it, and the "cliff" was a row of standing stones with
+    // walkable spaces between them.
+    cliffRing: 60,
+    // Where the way up is, as fractions around the ring, and how wide. Three
+    // passes: enough that the plateau is reachable without hunting, few enough
+    // that the rest of it is a wall.
+    cliffPasses: [0.08, 0.42, 0.75],
+    cliffPassWidth: 0.035,
     pillars: 8,
     groundSegments: 128, // terrain detail, about 4.7 m per quad across 600 m
   },
@@ -216,6 +226,12 @@ export const CONFIG = {
     jumpSpeed: 6.2, // metres per second, straight up
     gravity: 16, // metres per second squared
     jumpClearance: 0.05, // how far your feet must be above a thing to pass it
+
+    // A step you can take without jumping: kerb height, not knee height. Below
+    // this a rock is a step and you walk straight onto it; above it, the rock is
+    // a wall until you jump. That one number is the whole difference between
+    // scenery you bump into and scenery you climb.
+    stepUp: 0.5,
 
     // (Crawling lived here. It was cut: no situation in the game ever required
     // it, and inventing a stealth system to justify a button is the mistake

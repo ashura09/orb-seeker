@@ -5,7 +5,7 @@
 import { G } from './state.js';
 import { CONFIG } from './config.js';
 import { player, cosmetics, setAirPose, setAnim, updateAnim, updateTail } from './player.js';
-import { WORLD_R, obstacles, surfaceHeightAt, isInWater } from './world.js';
+import { WORLD_R, obstacles, surfaceHeightAt, supportHeightAt, isInWater } from './world.js';
 import { worn } from './loadout.js';
 import { orbs, collect, updateOrbLights, updateVanish } from './orbs.js';
 import { updateBurst } from './burst.js';
@@ -39,6 +39,11 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
         vl = Math.hypot(vx, vz) || 1;
       player.position.x += (vx / vl) * P.speed * k * dt;
       player.position.z += (vz / vl) * P.speed * k * dt;
+      // No slope limit here, deliberately. I wrote one, then measured the
+      // terrain: the steepest metre anywhere in a valley rises 1.14, which any
+      // sane limit allows. The hills are meant to be walked. What you could walk
+      // through was the CLIFF BLOCKS, whose collision circle was half the size of
+      // the block -- fixed in scatter.js. A rule that never fires is dead code.
       player.rotation.y = Math.atan2(vx, vz);
       bob += dt * P.bobRate * k;
       moving = true;
@@ -53,11 +58,16 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
       player.position.z *= WORLD_R / pr;
     }
     for (const ob of obstacles) {
-      // If your feet are above it, you pass over it. This is what makes jumping
-      // a verb rather than a flourish: rocks, stumps and logs can be cleared,
-      // boulders and trees cannot. The height came from the camera work -- the
-      // obstacle already had to know how tall it was.
-      if (player.position.y > ob.top + P.jumpClearance) continue;
+      // Low things are STEPS and tall things are WALLS, and the one number
+      // that separates them is stepUp. Below it you walk straight on and the
+      // support height carries you up; above it you are stopped until you jump
+      // over -- or land on top, which now holds you.
+      //
+      // The old rule needed your feet strictly above `top + clearance`, which
+      // meant that the instant you landed on a rock you were exactly level with
+      // it, failed the test, and were shoved off sideways. That is why nothing
+      // in this valley could be stood on.
+      if (ob.top <= player.position.y + P.stepUp) continue;
       const dx = player.position.x - ob.x,
         dz = player.position.z - ob.z,
         d = Math.hypot(dx, dz),
@@ -69,7 +79,9 @@ export function updatePlayer(dt, mx, my, f, rx, rz) {
     }
 
     // ----- vertical -----
-    const feetGround = surfaceHeightAt(player.position.x, player.position.z);
+    // What is under your feet, which is the ground OR the top of something you
+    // are above. Jumping now has somewhere to land.
+    const feetGround = supportHeightAt(player.position.x, player.position.z, player.position.y);
     if (G.airborne) {
       G.vy -= P.gravity * dt;
       G.airY += G.vy * dt;

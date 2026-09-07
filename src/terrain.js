@@ -142,3 +142,37 @@ export function mottle(x, z) {
 export function setNoiseOffset(v) {
   noiseOffset = v;
 }
+
+// ---------------------------------------------------------------------------
+// WHAT IS UNDER YOUR FEET, which is not the same question as how high the ground
+// is.
+//
+// The terrain is a heightfield and every prop was purely something to bump into:
+// you could never stand on a rock, because the moment you landed on one the
+// horizontal push shoved you off it again. So jumping had nothing to jump ONTO,
+// and the valley was a flat plane with obstacles glued to it.
+//
+// This returns the highest thing you could actually be standing on at a point --
+// the ground, or the top of a rock you are above.
+//
+// `feetY` matters: a boulder two metres up is not supporting you, it is in your
+// way. Only things at or below your feet (plus a step) can hold you up.
+// ---------------------------------------------------------------------------
+export function supportHeightAt(x, z, feetY, step = 0.5) {
+  let h = surfaceHeightAt(x, z);
+  for (const ob of obstaclesRef) {
+    if (ob.top <= h) continue; // buried in the hill; nothing to stand on
+    if (ob.top > feetY + step) continue; // above you: a wall, not a floor
+    const dx = x - ob.x;
+    const dz = z - ob.z;
+    if (dx * dx + dz * dz < ob.r * ob.r) h = Math.max(h, ob.top);
+  }
+  return h;
+}
+
+// Set by world.js once the scatter exists. Kept as a reference rather than an
+// import so terrain.js stays free of the module that scatters things onto it.
+let obstaclesRef = [];
+export function useObstacles(list) {
+  obstaclesRef = list;
+}
