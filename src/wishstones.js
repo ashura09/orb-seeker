@@ -127,8 +127,14 @@ function placeFromText(text, i) {
   return { x: Math.cos(angle) * radius, z: Math.sin(angle) * radius };
 }
 
-/** How many obstacle entries we added, so a rebuild can take them back out. */
-let obstacleCount = 0;
+// Ours are tagged rather than counted.
+//
+// This used to remove "the last N entries", which was true only while nothing
+// else added obstacles after the scatter. The cave now does, on the same event,
+// and listener order is decided by the import graph -- so on some builds this
+// would have deleted the cave's walls and left the wish stones intangible. A
+// tag cannot get that wrong.
+const MINE = 'wish';
 
 /**
  * Rewrite every instance from save.wishes.
@@ -137,11 +143,9 @@ let obstacleCount = 0;
  * (which clears the obstacle list this pushes into).
  */
 export function rebuildWishStones() {
-  // Drop the entries we added last time. Ours are always at the end, because
-  // scatter fills the list first and this runs after it.
-  if (obstacleCount) {
-    obstacles.length -= obstacleCount;
-    obstacleCount = 0;
+  // Drop the ones we added last time, wherever they ended up in the list.
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    if (obstacles[i].owner === MINE) obstacles.splice(i, 1);
   }
 
   const list = save.wishes.slice(-W.max); // the most recent, if someone is prolific
@@ -158,8 +162,7 @@ export function rebuildWishStones() {
     scratch.scale.setScalar(1);
     scratch.updateMatrix();
     stones.setMatrixAt(i, scratch.matrix);
-    obstacles.push({ x: w.x, z: w.z, r: W.radius, top: y + W.height });
-    obstacleCount++;
+    obstacles.push({ x: w.x, z: w.z, r: W.radius, top: y + W.height, owner: MINE });
   });
 
   stones.count = list.length;

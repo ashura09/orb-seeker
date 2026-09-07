@@ -9,6 +9,7 @@ import { player, cosmetics } from './player.js';
 import { paintSky, setNightLevel, followPlayer } from './sky.js';
 import { buildWorld } from './world.js';
 import { makeRng } from './rng.js';
+import { indoorFactor } from './cave.js';
 import { forcedNight } from './modifiers.js';
 import { placeOrbs } from './orbs.js';
 import { homeWanderers } from './wanderers.js';
@@ -32,11 +33,23 @@ export function updateDayNight(dt) {
   // Fog still tracks the sky so the horizon dissolves into it rather than
   // ending against it.
   scene.fog.color.copy(DAY).lerp(NIGHT, G.night);
-  setNightLevel(G.night);
+  // HOW DARK IT IS WHERE YOU ARE STANDING, which is not the same as the time of
+  // day. Indoors reads as night to the lights -- the roof is over you, so the
+  // valley's sun has no business reaching you. Whichever is darker wins, so a
+  // cave at night does not come out brighter than a cave at noon.
+  //
+  // Computed once and used for BOTH the world's light and the lantern's. The
+  // lantern used to brighten on `G.night` alone, so in the one place it is meant
+  // to matter -- a dark room in the middle of the afternoon -- it stayed dim.
+  const dark = Math.max(
+    G.night,
+    indoorFactor(player.position.x, player.position.z) * CONFIG.cave.maxDark,
+  );
+  setNightLevel(dark);
   // Gated on `visible`, not just on existence: the lantern is built once and
   // hidden when unworn, and a lantern you took off must not still glow.
   if (cosmetics.lantern?.visible)
-    cosmetics.lanternLight.intensity = DN.lanternBase + G.night * DN.lanternNightBoost;
+    cosmetics.lanternLight.intensity = DN.lanternBase + dark * DN.lanternNightBoost;
 
   // the sun and its shadow box travel with you
   followPlayer(player.position.x, player.position.y, player.position.z);

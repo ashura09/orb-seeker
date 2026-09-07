@@ -64,10 +64,47 @@ export const CONFIG = {
     spireStack: 0.62, // how much of each block's height the next one sits above
     spireDrift: 0.5, // sideways wander per unit of scale, so it is not a telescope
 
-    cavePillarOffset: 2.6,
-    cavePillarRadius: 0.56,
+    // A cave block is an arch: two pillars either side of the opening.
+    //
+    // Sized from the MODEL, not from the solid cliff it sits among. The cave is a
+    // thin panel -- seven metres wide but only 1.2 m deep -- so the fat pillars
+    // this started with put a metre of invisible rock in front of the archway:
+    // you were stopped before reaching an opening you could see straight through,
+    // which is the same lie as a wall you can walk into.
+    //
+    // Radius is a fraction of 3.4, so 0.3 is about a metre -- the panel's depth.
+    // The gap left between them is 2.96 m, which is the archway itself.
+    cavePillarOffset: 2.5,
+    cavePillarRadius: 0.3,
     pillars: 8,
     groundSegments: 128, // terrain detail, about 4.7 m per quad across 600 m
+  },
+
+  // ---------------------------------------------------------------------------
+  // THE CAVE — the one indoor place.
+  //
+  // Built ON the ground rather than dug into it, because the terrain is a
+  // heightfield and cannot have a roof. See cave.js.
+  // ---------------------------------------------------------------------------
+  cave: {
+    radius: 8.5, // inside measurement, in metres
+    segments: 18, // wall pieces around the ring
+    segmentRadius: 1.5, // how solid each piece is to walk into
+    wallThickness: 1.1,
+    wallHeight: 4.6, // tall enough to stand a long way under
+    roofHeight: 3.6,
+    doorAt: 0.5, // where the doorway sits around the ring, as a fraction
+    doorWidth: 0.055, // and how much of the ring it takes out
+    fade: 5, // metres over which it goes dark, so stepping in is not a switch
+    // How dark it is allowed to get. At 1 it matched deep night and you could
+    // not see the floor: a child without the lantern would simply be blind, and
+    // a dark room you cannot navigate is a dead end rather than a place.
+    //
+    // At 0.72 you can read the shape of the room, and the lantern is the
+    // difference between managing and being comfortable -- which is what an item
+    // should be.
+    maxDark: 0.72,
+    offset: 14, // from the ruin's centre, so it stands beside it and not on it
   },
 
   // ---------- the map ----------

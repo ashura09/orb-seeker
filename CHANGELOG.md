@@ -723,3 +723,50 @@ stacks rather than standing things on the ground.
 
 It leans and drifts as it rises rather than telescoping straight up, and the
 drift is deterministic, so the same seed builds the same spire.
+
+## Somewhere indoors, and the cliffs read as cliffs
+
+### The cave
+
+Ashura asked for a part of the map that is a cave or something inside. The valley
+was one continuous outdoors, and a game with no interior has no change of air.
+
+**It is built on the ground, not dug into it.** The terrain is a heightfield —
+one height per point — so it cannot have an overhang, let alone a roof. Carving a
+chamber is not hard, it is impossible in the representation. So the cave is a
+walled, roofed rotunda you walk into at ground level, standing beside the ruin,
+whose whole theme is that somebody built something here once. The floor is simply
+the terrain, so nothing about walking, falling or standing had to change.
+
+One draw call for the entire building: the wall segments and the roof merge into
+a single mesh with their colours baked in. **143 calls before, 143 after.**
+
+**And it finally gives the brass lantern a job.** Stepping inside pushes the same
+dial that nightfall uses, so it is dark under the roof at noon. Capped at 0.72 —
+at full night you could not see the floor, and a dark room you cannot navigate is
+a dead end rather than a place. Now you can read the room, and the lantern is the
+difference between managing and being comfortable, which is what an item should be.
+
+Fixed while there: the lantern brightened on `G.night` alone, so in the one place
+it exists for — a dark room in the middle of the afternoon — it stayed dim. It
+answers to how dark it is where you are standing now, not to the clock.
+
+### The cliffs were waist-high
+
+The cliff model is 7 m wide but only 3.5 m tall, and it was sunk 2.2 m to hide its
+footing on a slope — leaving **1.1 to 1.9 m of visible rock**. A jump reaches 1.7.
+So the plateau wall was a waist-high lip that looked exactly like something you
+could hop, and could not be, which is the worst thing a wall can be. Sunk 1.2 m
+now: 2.0 to 3.3 m of rock, unmistakably a wall.
+
+The cave blocks in that ring had the opposite fault. The model is a thin panel —
+seven metres wide, 1.2 deep — and its collision was a metre of invisible rock in
+front of an archway you could see straight through. Sized from the panel now.
+
+### A trap closed
+
+`wishstones.js` removed its obstacles by taking "the last N entries", which held
+only while nothing else added obstacles after the scatter. The cave now does, on
+the same event, and listener order comes from the import graph — so on some builds
+this would have deleted the cave's walls and left the wish stones intangible. They
+are tagged now, and removed by tag.

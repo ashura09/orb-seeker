@@ -82,7 +82,15 @@ const CATALOGUE = {
     // overlaps its neighbours at this radius, which is what makes the plateau
     // read as a wall rather than a row of standing stones.
     radius: 3.4,
-    sink: 2.2,
+    // Sunk less than it was. `sink` buries a block's base so no gap shows under
+    // its downhill edge -- but at 2.2 only 1.1 to 1.9 m of rock stood above the
+    // ground, and the model is just 3.5 m tall to begin with. The "cliff" was a
+    // waist-high lip that looked exactly like something you could hop over, and
+    // could not be, which is the worst thing a wall can be.
+    //
+    // At 1.2 it shows 2.0 to 3.3 m: unmistakably a wall, and still buried enough
+    // to hide its footing on a slope.
+    sink: 1.2,
   },
   cliffCave: { files: ['cliff_cave_rock'], size: 7.0, radius: 3.4, sink: 2.0 },
 
