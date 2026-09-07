@@ -70,7 +70,13 @@ function buildInstances(placements) {
       mesh.receiveShadow = true;
       const D = CONFIG.detail;
       group.forEach((p, i) => {
-        dummy.position.set(p.x, surfaceHeightAt(p.x, p.z) - (PROP_SINK[kind] || 0) * p.s, p.z);
+        // `p.y` is an explicit height, used by the spire, which stacks blocks
+        // on top of each other rather than standing them on the ground.
+        dummy.position.set(
+          p.x,
+          p.y ?? surfaceHeightAt(p.x, p.z) - (PROP_SINK[kind] || 0) * p.s,
+          p.z,
+        );
         dummy.rotation.set(0, p.rot, 0);
         dummy.scale.setScalar(p.s);
         dummy.updateMatrix();
@@ -276,6 +282,49 @@ export function scatterScenery(rng) {
     placements[kind].push({ x, z, s, variant, rot: rng() * Math.PI * 2 });
     placed++;
     addObstacle(kind, x, z, s);
+  }
+
+  // ----- the Spire -----
+  //
+  // One thing you can see from anywhere, so the valley has a centre and the map
+  // has something to be a map OF. Every landmark until now was a tent or a fence
+  // three metres tall -- you had to be standing next to one to know it existed,
+  // which is not what a landmark is for.
+  //
+  // It stands on the highland, which gives the plateau a reason to exist and the
+  // three passes somewhere to lead. Built from the SAME cliff blocks as the ring,
+  // stacked and tapering, so it costs no extra draw call at all: more instances
+  // of a mesh that is already being drawn.
+  const spireAt = centres.find((c) => c.region.name === 'highland');
+  if (spireAt && PROPS.cliff) {
+    const C = CONFIG.world;
+    const base = surfaceHeightAt(spireAt.x, spireAt.z);
+    let y = base - 3; // sunk, so the bottom block is bedrock rather than a boulder
+    for (let i = 0; i < C.spireBlocks; i++) {
+      const t = i / (C.spireBlocks - 1);
+      const s = C.spireBase * (1 - t) + C.spireTop * t;
+      // A slight lean and drift as it rises, so it reads as stacked rock and not
+      // as a telescope. Deterministic: the same seed builds the same spire.
+      const drift = C.spireDrift * s;
+      const x = spireAt.x + Math.cos(i * 2.399) * drift;
+      const z = spireAt.z + Math.sin(i * 2.399) * drift;
+      placements.cliff.push({
+        x,
+        z,
+        y,
+        s,
+        variant: i % PROPS.cliff.length,
+        rot: i * 2.399,
+      });
+      y += 7 * s * C.spireStack; // 7 m is the block's own height
+    }
+    // One obstacle at the foot of it. You walk around the Spire, not through it.
+    obstacles.push({
+      x: spireAt.x,
+      z: spireAt.z,
+      r: C.spireBase * 2.6,
+      top: base + 6,
+    });
   }
 
   // ----- cliffs around the plateau's lip -----

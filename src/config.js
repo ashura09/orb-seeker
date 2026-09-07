@@ -55,6 +55,15 @@ export const CONFIG = {
     //
     // Gap = 2*offset - 2*(3.4 * radius) = 1.4 m. The monkey is 0.9 m across, so
     // that is a passage rather than a squeeze, and no wider than it needs to be.
+    // THE SPIRE, on the highland: the one thing visible from anywhere.
+    // Built from cliff blocks, so it adds no draw call -- just more instances of
+    // a mesh already on screen.
+    spireBlocks: 11,
+    spireBase: 1.9, // scale of the bottom block
+    spireTop: 0.3, // and the top one
+    spireStack: 0.62, // how much of each block's height the next one sits above
+    spireDrift: 0.5, // sideways wander per unit of scale, so it is not a telescope
+
     cavePillarOffset: 2.6,
     cavePillarRadius: 0.56,
     pillars: 8,

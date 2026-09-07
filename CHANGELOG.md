@@ -703,3 +703,23 @@ first fix, and two rounds of tuning chased a phantom.
 circumference. That is better than a magic number, but it should be recorded that
 it fixed nothing: the highland radius is 62m on every seed measured, so the
 constant it replaced was already correct.
+
+## The Spire
+
+There was no landmark. Each region had one — a tent, a fence, a small statue,
+three metres tall — so you had to be standing beside one to know it existed.
+That is not what a landmark is for, and a map of a valley with nothing in it is
+a map of a field.
+
+The Spire is a fifty-metre stack of tapering rock on the highland, about seventy
+metres above the valley floor. It is visible from anywhere, which means the map
+finally has a centre and the three cliff passes have somewhere to lead — the
+plateau stops being scenery and becomes the place you can always see.
+
+**It costs no draw calls.** It is built from the same cliff blocks as the ring,
+so it is eleven more instances of a mesh already being drawn. 143 calls before,
+143 after. Prop instances gained an optional explicit height, since a spire
+stacks rather than standing things on the ground.
+
+It leans and drifts as it rises rather than telescoping straight up, and the
+drift is deterministic, so the same seed builds the same spire.
