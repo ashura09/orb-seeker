@@ -604,3 +604,31 @@ to 2.2m, button re-enabled.
 
 That is every step of the build order that costs no geometry. Still 141 draw
 calls, and none of the eight steps spent one.
+
+## Sound, synthesised
+
+The game had none. Every beat built this week happened in silence: the collection
+burst, the level, the promotion, the won duel.
+
+**There are no audio files.** Everything is synthesised at runtime with the Web
+Audio API. That is a choice, not a shortcut: nothing to download so the game stays
+instant on a phone, no licence to track, and every sound is a handful of numbers
+tunable from `config.js` like the rest of the game. It cannot make a realistic
+noise, and does not need to — this is a valley of coloured boxes.
+
+- **The orbs play a scale.** Orb one is C and orb seven is B, so gathering them in
+  order plays a rising C major scale — measured at 262, 294, 330, 349, 392, 440,
+  494 Hz. The reward for keeping the order becomes something you can _hear_
+  before anyone explains it.
+- Duel taps are pitched by how full your bar is, so a duel you are winning sounds
+  like a rising run.
+- **Losing sounds like a shrug, not a buzzer.** A nine-year-old loses a lot and
+  must not be punished for it in the ears.
+- Level, rank, quest, title, whistle and jump all have their own shape.
+- Every note has an attack and a decay. A tone that starts instantly clicks.
+- Master volume is deliberately modest: a game that is loud by default is a game
+  that gets muted permanently. Mute lives in the satchel and persists.
+
+Verified by instrumenting the audio graph rather than by listening: context
+running after the first gesture, correct note counts per event, the seven orb
+frequencies forming a major scale, and zero oscillators created while muted.

@@ -13,6 +13,7 @@ import { toast, bump, ordinal } from './ui.js';
 import { ITEMS, item } from './shop.js';
 import { emit, on, EVENTS } from './events.js';
 import { todaysQuests, questProgress, questDone } from './quests.js';
+import { isMuted, toggleMute } from './sound.js';
 import { plantWish } from './wishstones.js';
 
 // {g, kind:'item'|'wish', id?, text?, phase}
@@ -88,6 +89,7 @@ export function collectPickup(p, idx) {
 
 export function renderSatchel() {
   renderDailies();
+  $('muteBtn').textContent = isMuted() ? 'Sound: off' : 'Sound: on';
 
   const w = $('satchelWishes');
   w.innerHTML = '';
@@ -232,3 +234,10 @@ function renderDailies() {
     box.appendChild(row);
   }
 }
+
+// Kept in the satchel with everything else rather than given a permanent corner
+// of the screen. It is a thing you set once.
+$('muteBtn').addEventListener('click', () => {
+  toggleMute();
+  $('muteBtn').textContent = isMuted() ? 'Sound: off' : 'Sound: on';
+});

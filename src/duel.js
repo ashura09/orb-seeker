@@ -14,6 +14,7 @@ import { CONFIG } from './config.js';
 import { voiceOf } from './voice.js';
 import { addXp } from './progress.js';
 import { duelRateScale, lootScale } from './modifiers.js';
+import { tapBlip } from './sound.js';
 
 const duelEl = $('duel');
 const D = CONFIG.duel;
@@ -106,6 +107,7 @@ export function tap() {
   if (duel.taps === 0) duel.tapStart = performance.now();
   duel.taps++;
   duel.you += worn('grip') ? D.tapValueWithGrip : D.tapValue;
+  tapBlip(Math.min(1, duel.you)); // pitched by how full your bar is
   if (navigator.vibrate) navigator.vibrate(8);
   renderDuel();
   if (duel.you >= 1) endDuel(true);

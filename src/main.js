@@ -22,6 +22,7 @@ import { drawFinder } from './finder.js';
 import { toast, updateToast, initStats, echoToast } from './ui.js';
 import { markExplored } from './map.js';
 import { openingLine, openingButton } from './onboarding.js';
+import { wakeSound } from './sound.js';
 import { seedFromCode, seedCode } from './rules.js';
 import './progress.js';
 import './run.js';
@@ -163,6 +164,7 @@ $('introLine').textContent = openingLine();
 $('startBtn').textContent = openingButton();
 
 $('startBtn').addEventListener('click', () => {
+  wakeSound(); // browsers refuse to make a noise until the page has been touched
   $('start').classList.add('hidden');
   G.state = 'play';
   setTimeout(recallAWish, 2200); // let the panel clear before the memory arrives

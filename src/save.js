@@ -47,6 +47,7 @@ export const save = {
   daily: null, // today's three: { day, ids, counts, done } -- see quests.js
   bestBySeed: {}, // valley seed -> your best time on it, in seconds
   modifier: 'none', // the Turning's choice for the valley being played
+  muted: false, // the sound toggle, kept between sessions
 };
 
 // A save that cannot be read is a new game, which is survivable. A save that
@@ -99,6 +100,7 @@ if (typeof save.taught !== 'boolean') save.taught = (save.cycles || 0) > 0 || (s
 // Titles are ids, and an id that is not a string can only have come from a
 // corrupt save -- dropping it costs one badge, keeping it crashes the list.
 if (typeof save.modifier !== 'string') save.modifier = 'none';
+if (typeof save.muted !== 'boolean') save.muted = false;
 if (typeof save.bestBySeed !== 'object' || save.bestBySeed === null) save.bestBySeed = {};
 if (!Array.isArray(save.titles)) save.titles = [];
 save.titles = save.titles.filter((t) => typeof t === 'string');

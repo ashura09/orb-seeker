@@ -290,6 +290,15 @@ export const CONFIG = {
   // the Forest, which added exactly this and climbed the charts on it. The
   // cheapest retention device that exists, and it costs no geometry at all.
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // SOUND. Synthesised, not sampled -- see sound.js for why there are no files.
+  // ---------------------------------------------------------------------------
+  sound: {
+    volume: 0.35, // master. Deliberately modest: this is played on a phone, often
+    // in a room with other people in it, and a game that is loud
+    // by default is a game that gets muted permanently.
+  },
+
   quests: {
     xp: { easy: 40, medium: 90, hard: 200 },
     badges: [10, 50, 100], // lifetime completions that earn a title

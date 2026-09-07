@@ -36,3 +36,13 @@ animation gains. So he keeps his own body and borrows a skeleton.
   it and since a mid-2025 login outage the account page and auto-rigger have been
   intermittently broken. Not a dependency worth taking on.
 - **Kenney Modular Characters** — 2D sprites, not 3D. Wrong pack for this.
+
+## Sound
+
+**None borrowed.** Every sound in the game is synthesised at runtime with the Web
+Audio API — see `src/sound.js`. There are no audio files, no downloads and no
+licences to track, and each sound is a handful of numbers that can be tuned from
+`config.js` like everything else.
+
+The trade is that it cannot make a realistic noise. It does not need to: this is a
+valley of coloured boxes, and a clean tone suits it better than a sample would.
