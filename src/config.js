@@ -36,17 +36,27 @@ export const CONFIG = {
     props: 1150, // total scenery; regions decide the mix. Raised with
     // clumping: stands leave more open ground between them,
     // so the same count read as sparser than it did scattered.
-    // Packed to overlap, from measurement rather than guesswork: the lip is a
-    // 372 m circle and a block covers 7.8 m, so 60 slots gives every block a
-    // fifth of itself overlapping its neighbour. At 26 -- the original -- each
-    // one had a gap beside it, and the "cliff" was a row of standing stones with
-    // walkable spaces between them.
-    cliffRing: 60,
+    // Metres between cliff blocks along the lip. A block covers about 7.8 m, so
+    // this leaves each one overlapping its neighbours by a fifth of itself.
+    //
+    // A SPACING and not a count: the highland's radius changes with the seed, and
+    // a fixed count walled some valleys and left others a picket fence -- 29% to
+    // 65% solid across five seeds. The count now follows from the circumference.
+    cliffSpacing: 6.2,
     // Where the way up is, as fractions around the ring, and how wide. Three
     // passes: enough that the plateau is reachable without hunting, few enough
     // that the rest of it is a wall.
     cliffPasses: [0.08, 0.42, 0.75],
     cliffPassWidth: 0.035,
+    // A cave block is an arch: two pillars either side of the opening. The
+    // numbers are set so the pair covers about as much of the wall as the solid
+    // block it replaces -- the first attempt used slim pillars and turned every
+    // cave into a hole three times wider than its archway.
+    //
+    // Gap = 2*offset - 2*(3.4 * radius) = 1.4 m. The monkey is 0.9 m across, so
+    // that is a passage rather than a squeeze, and no wider than it needs to be.
+    cavePillarOffset: 2.6,
+    cavePillarRadius: 0.56,
     pillars: 8,
     groundSegments: 128, // terrain detail, about 4.7 m per quad across 600 m
   },

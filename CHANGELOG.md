@@ -672,3 +672,34 @@ The walls were the **cliff blocks**, and they were wrong three separate ways:
 Now 80% solid with **exactly three passes**, 25–29m wide. A plateau with no way up
 is scenery; a plateau with three passes is somewhere to go, and the passes are what
 makes the rest of it read as a wall rather than as an accident.
+
+## Cave arches are walkable again
+
+Ashura: _"some walls have a hollow in the middle so it looks like you could walk
+under it, but now it's blocked — before you could go through."_
+
+He is describing `cliff_cave_rock`, which has an archway through it. Making the
+cliffs solid put one collision circle over the whole block, sealing the one part
+of it that visibly ought to be a passage — **worse than the gap it replaced**,
+because now the game looks like it is lying to you.
+
+A cave is now **two pillars either side of the opening** rather than one circle.
+You walk through the arch; the rock beside it is still rock. The gap is 1.39m
+against a monkey 0.90m across: a passage, not a squeeze, and no wider than needed.
+
+### A correction about the measurements
+
+I twice reported the cliff ring as 29–65% solid and changed things on that basis.
+**That measurement was wrong.** It estimated the plateau's centre as the centroid
+of every obstacle wider than 2.5m — and other large props sit elsewhere in the
+world, so the assumed centre was tens of metres off and the sampling circle
+mostly missed the ring.
+
+Measured from the highland's actual centre, across seven seeds: **80–82% solid,
+two to four ways up, arches 1–4.** Stable. The wall was already fine after the
+first fix, and two rounds of tuning chased a phantom.
+
+`cliffRing` did become `cliffSpacing`, with the count derived from the
+circumference. That is better than a magic number, but it should be recorded that
+it fixed nothing: the highland radius is 62m on every seed measured, so the
+constant it replaced was already correct.

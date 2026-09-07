@@ -31,8 +31,8 @@ const tint = new THREE.Color();
  * looking down over the top of it. Walking past boulders therefore yanked the
  * camera in and released it again, every few seconds.
  */
-function addObstacle(kind, x, z, s) {
-  const r = (PROP_RADIUS[kind] || 0) * s;
+function addObstacle(kind, x, z, s, radiusMul = 1) {
+  const r = (PROP_RADIUS[kind] || 0) * s * radiusMul;
   if (r <= 0) return;
   const h = (PROP_HEIGHT[kind] || 2) * s - (PROP_SINK[kind] || 0) * s;
   obstacles.push({ x, z, r, top: surfaceHeightAt(x, z) + h });
@@ -286,7 +286,15 @@ export function scatterScenery(rng) {
   const highland = centres.find((c) => c.region.name === 'highland');
   if (highland && PROPS.cliff) {
     const R = highland.region.radius;
-    const ring = CONFIG.world.cliffRing;
+
+    // How many blocks it takes to wall this particular lip.
+    //
+    // This was a fixed 60. The highland's radius varies with the seed, so a
+    // fixed count walled some valleys and left others as a picket fence:
+    // measured across five seeds it ranged from 29% solid to 65%. A count is
+    // the wrong thing to configure. The SPACING is the thing that matters, and
+    // the count follows from the circle it has to go round.
+    const ring = Math.max(24, Math.round((2 * Math.PI * R) / CONFIG.world.cliffSpacing));
 
     // THE PASSES.
     //
@@ -334,7 +342,24 @@ export function scatterScenery(rng) {
         variant: (rng() * variants.length) | 0,
         rot: a + Math.PI / 2 + (rng() - 0.5) * 0.5,
       });
-      addObstacle(kind, x, z, scale);
+      if (kind === 'cliffCave') {
+        // A CAVE IS AN ARCH, not a wall. The model has a hole through the
+        // middle, so a single circle over it blocks the one part of it that
+        // visibly ought to be walkable -- which is worse than the gap it
+        // replaced, because now the game looks like it is lying to you.
+        //
+        // Two pillars instead, set either side of the opening along the wall's
+        // own direction, leaving the arch open. You can walk through it, and you
+        // still cannot walk through the rock on either side.
+        const C = CONFIG.world;
+        const tx = -Math.sin(a);
+        const tz = Math.cos(a);
+        const off = C.cavePillarOffset * scale;
+        addObstacle(kind, x + tx * off, z + tz * off, scale, C.cavePillarRadius);
+        addObstacle(kind, x - tx * off, z - tz * off, scale, C.cavePillarRadius);
+      } else {
+        addObstacle(kind, x, z, scale);
+      }
     }
   }
 
